@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <rect width="400" height="250" fill="#cdd8e8"/>
+  <rect x="160" y="80" width="80" height="60" rx="4" fill="#8fa8be"/>
+  <circle cx="175" cy="95" r="8" fill="#e8eff8"/>
+  <polygon points="160,140 200,95 240,140" fill="#7a9cbf"/>
+  <rect x="185" y="115" width="30" height="25" fill="#5a7a9a"/>
+  <text x="200" y="180" text-anchor="middle" font-size="13" fill="#4a6480" font-family="Arial, sans-serif">Imagen no disponible</text>
+  <text x="200" y="200" text-anchor="middle" font-size="10" fill="#7a9cbf" font-family="Arial, sans-serif">Correo Argentino — Red Operativa</text>
+</svg>
