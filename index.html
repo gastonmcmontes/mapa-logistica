@@ -1,128 +1,181 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Red Operativa Nacional — Correo Argentino</title>
-  <meta name="description" content="Red Operativa Nacional de Correo Argentino. Mapa logístico interactivo con centros logísticos, plantas de distribución, sorters e indicadores en tiempo real.">
+  <meta name="description"
+    content="Red Operativa Nacional de Correo Argentino. Mapa logístico interactivo con centros logísticos, plantas de distribución, sorters e indicadores en tiempo real.">
+  <link rel="icon" type="image/png"
+    href="data:image/png;base64,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">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
 
   <!-- =====================================================
-       TOP NAVIGATION BAR
+       SIDEBAR IZQUIERDO (CORREO ARGENTINO)
        ===================================================== -->
-  <header id="topbar">
-    <div class="topbar-left">
-      <!-- Logo Correo Argentino -->
-      <a href="#" class="brand-box" title="Correo Argentino">
-        <svg class="ca-wing-icon" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="14" cy="14" rx="13" ry="13" fill="#002554"/>
-          <path d="M4 14C4 8.5 8.5 4 14 4C19.5 4 24 8.5 24 14C24 19.5 19.5 24 14 24" stroke="#FFD200" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M10 10L24 10C27 10 29 12 29 14C29 16 27 18 24 18L10 18" stroke="#FFD200" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M12 7L28 7C31 7 34 9 34 12" stroke="#FFD200" stroke-width="2.2" stroke-linecap="round"/>
+  <aside id="sidebar-izq" class="sidebar-izq">
+
+    <!-- Bloque superior amarillo con Logo oficial -->
+    <div class="sidebar-brand">
+      <a href="#" class="sidebar-brand-link" title="Correo Argentino">
+        <img src="imagenes/correo_argentino_logo.png" alt="Correo Argentino" class="sidebar-logo-img">
+      </a>
+    </div>
+
+    <!-- Menú de navegación vertical -->
+    <nav class="sidebar-nav">
+      <!-- 1. Inicio -->
+      <a href="#" class="sidebar-link activo" onclick="seleccionarNavSidebar(this, 'inicio')">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
-        <span class="brand-name">Correo<br><strong>Argentino</strong></span>
+        <span>Inicio</span>
       </a>
 
-      <!-- Menu links -->
-      <nav class="top-nav">
-        <a href="#" class="nav-link activo">Inicio</a>
-        <a href="#mapa-seccion" class="nav-link" onclick="expandirMapa(true)">Mapa Nacional</a>
-        <div class="nav-dropdown">
-          <button class="nav-link dropdown-toggle">Centros Logísticos <span class="arrow">⌵</span></button>
-        </div>
-        <div class="nav-dropdown">
-          <button class="nav-link dropdown-toggle">Sorters <span class="arrow">⌵</span></button>
-        </div>
-        <div class="nav-dropdown">
-          <button class="nav-link dropdown-toggle">Transporte <span class="arrow">⌵</span></button>
-        </div>
-        <div class="nav-dropdown">
-          <button class="nav-link dropdown-toggle">Indicadores <span class="arrow">⌵</span></button>
-        </div>
-        <a href="#" class="nav-link">Documentación</a>
-      </nav>
-    </div>
-
-    <div class="topbar-right">
-      <div class="search-pill">
-        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      <!-- 2. Mapeo Nacional -->
+      <a href="#dashboard-principal" class="sidebar-link" onclick="seleccionarNavSidebar(this, 'mapa')">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+          <line x1="8" y1="2" x2="8" y2="18"></line>
+          <line x1="16" y1="6" x2="16" y2="22"></line>
         </svg>
-        <input type="text" id="global-search" placeholder="Buscar nodo, provincia..." autocomplete="off">
-      </div>
+        <span>Mapeo Nacional</span>
+      </a>
 
-      <div class="user-avatar" title="Gabriel Montes">
-        <span>GM</span>
+      <!-- 3. Centros Logísticos -->
+      <a href="#dashboard-principal" class="sidebar-link" onclick="seleccionarNavSidebar(this, 'clog')">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <path d="M9 22V12h6v10"></path>
+          <line x1="9" y1="12" x2="15" y2="12"></line>
+        </svg>
+        <span>Centros Logísticos</span>
+      </a>
+
+      <!-- 4. Sorters -->
+      <a href="#dashboard-principal" class="sidebar-link" onclick="seleccionarNavSidebar(this, 'sorters')">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Sorters</span>
+      </a>
+
+      <!-- 5. Transporte -->
+      <a href="#dashboard-principal" class="sidebar-link" onclick="seleccionarNavSidebar(this, 'transporte')">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+        <span>Transporte</span>
+      </a>
+
+      <!-- 6. Indicadores -->
+      <a href="#dashboard-principal" class="sidebar-link" onclick="seleccionarNavSidebar(this, 'indicadores')">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Indicadores</span>
+      </a>
+
+      <!-- 7. Documentación -->
+      <a href="#" class="sidebar-link" onclick="seleccionarNavSidebar(this, 'documentacion')">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span>Documentación</span>
+      </a>
+    </nav>
+
+    <!-- Pie del sidebar con marca de agua y slogan -->
+    <div class="sidebar-footer">
+      <div class="sidebar-watermark">
+        <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 32C25 52 75 52 90 32C75 42 25 42 10 32Z" fill="#083a75" />
+          <path d="M22 18C38 34 62 34 78 18C62 26 38 26 22 18Z" fill="#083a75" />
+        </svg>
+      </div>
+      <div class="sidebar-footer-text">
+        <h3>Correo<br>Argentino</h3>
+        <p>Conectando todo el país</p>
       </div>
     </div>
-  </header>
+
+  </aside>
 
   <!-- =====================================================
-       HERO BANNER COMPACTO
+       CONTENIDO PRINCIPAL (DERECHA DEL SIDEBAR)
        ===================================================== -->
-  <section id="hero-banner">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <div class="hero-left">
-        <h1 class="hero-title">RED OPERATIVA NACIONAL</h1>
-        <p class="hero-sub">Conectamos personas, empresas y oportunidades en todo el país.</p>
-        <button class="btn-hero" onclick="expandirMapa(true)">
-          Explorar el mapa <span class="btn-arrow">→</span>
-        </button>
+  <div id="main-wrapper" class="main-wrapper">
+
+    <!-- =====================================================
+         HEADER SUPERIOR DEL CONTENIDO (TÍTULO + WIDGETS)
+         ===================================================== -->
+    <header class="dashboard-header-bar">
+      <div class="header-titles">
+        <h1 class="header-main-title">RED OPERATIVA NACIONAL</h1>
+        <p class="header-main-sub">Centros, transportes, personas, y oportunidades en todo el país.</p>
       </div>
 
-      <div class="hero-right">
-        <div class="hero-stats-card">
-          <div class="stats-top">
-            <span class="stats-heading">Más logística</span>
-            <span class="stats-subheading">para un país que avanza</span>
+      <div class="header-widgets">
+        <!-- Widget 1: Más logística -->
+        <div class="header-widget-card">
+          <div class="widget-icon-box">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="#002554">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+            </svg>
           </div>
+          <div class="widget-text">
+            <strong>Más logística</strong>
+            <span>para un país que avanza</span>
+          </div>
+        </div>
 
-          <div class="stats-grid-compact">
-            <div class="stat-compact">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="#FFD200"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
-              <div class="stat-text-compact">
-                <strong>34</strong> <span>Nodos Operativos</span>
-              </div>
-            </div>
-
-            <div class="stat-compact">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="#FFD200"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 2h2v2h-2V5zm0 4h2v2h-2V9zm-4-4h2v2H8V5zm0 4h2v2H8V9zm-4 8v-2h2v2H4zm0-4v-2h2v2H4zm0-4V5h2v2H4zm14 8h-6v-6h6v6zm0-8h-2V5h2v2z"/></svg>
-              <div class="stat-text-compact">
-                <strong>6</strong> <span>Centros Logísticos</span>
-              </div>
-            </div>
-
-            <div class="stat-compact">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="#FFD200"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-              <div class="stat-text-compact">
-                <strong>24</strong> <span>Plantas Distribución</span>
-              </div>
-            </div>
-
-            <div class="stat-compact">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="#FFD200"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-              <div class="stat-text-compact">
-                <strong>+3.800</strong> <span>Personal operativo</span>
-              </div>
+        <!-- Widget 2: Clima -->
+        <div class="header-widget-card">
+          <div class="widget-icon-box">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <circle cx="12" cy="12" r="5" fill="#FFB703" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="#FFB703" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="widget-text">
+            <span class="widget-city">Buenos Aires</span>
+            <div class="widget-temp-line">
+              <strong>24°</strong>
+              <span class="widget-desc">Parcialmente nublado</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </header>
 
   <!-- =====================================================
        DASHBOARD MAIN: MAPA (IZQUIERDA) + INDICADORES (DERECHA)
        ===================================================== -->
   <main id="dashboard-principal">
-    
+
     <!-- ================== COLUMNA MAPA ================== -->
     <div id="columna-mapa" class="columna-mapa">
       <div class="card-mapa">
@@ -131,14 +184,16 @@
         <div class="mapa-card-header">
           <div class="mapa-header-title">
             <svg class="ico-mapa-title" viewBox="0 0 24 24" width="24" height="24" fill="#002554">
-              <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+              <path
+                d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z" />
             </svg>
             <h2>Mapa Operativo Nacional</h2>
           </div>
 
           <!-- Botón de expandir / contraer -->
           <div class="mapa-header-actions">
-            <button id="btn-toggle-expand" class="btn-toggle-expand" onclick="toggleExpandirMapa()" title="Hacer el mapa más grande">
+            <button id="btn-toggle-expand" class="btn-toggle-expand" onclick="toggleExpandirMapa()"
+              title="Hacer el mapa más grande">
               <span id="expand-icon" class="ico-expand">⛶</span>
               <span id="expand-text">Ampliar mapa</span>
             </button>
@@ -155,34 +210,57 @@
 
         <!-- Área de Mapa -->
         <div id="mapa-contenedor" class="mapa-contenedor">
-          
+
           <!-- Controles de zoom sobre el mapa -->
           <div class="mapa-floating-controls">
-            <button class="btn-ctrl-mapa" onclick="zoomIn()" title="Acercar">+</button>
-            <button class="btn-ctrl-mapa" onclick="zoomOut()" title="Alejar">−</button>
-            <button class="btn-ctrl-mapa" onclick="zoomReset()" title="Restablecer vista">↺</button>
+            <button class="btn-ctrl-mapa" id="btn-zoom-in" onclick="zoomIn()" title="Acercar">+</button>
+            <button class="btn-ctrl-mapa" id="btn-zoom-out" onclick="zoomOut()" title="Alejar">−</button>
+            <button class="btn-ctrl-mapa" id="btn-zoom-reset" onclick="zoomReset()" title="Restablecer vista">↺</button>
+            <button class="btn-ctrl-mapa" id="btn-zoom-center" onclick="zoomReset()" title="Centrar mapa">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="7"></circle>
+                <line x1="12" y1="1" x2="12" y2="5"></line>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="1" y1="12" x2="5" y2="12"></line>
+                <line x1="19" y1="12" x2="23" y2="12"></line>
+              </svg>
+            </button>
           </div>
 
-          <!-- Leyenda del mapa (estilo anterior) -->
+          <!-- Leyenda del mapa (calcada a la imagen) -->
           <div class="mapa-leyenda">
-            <div class="leyenda-fila"><span class="leyenda-dot dot-verde"></span> Galería disponible</div>
-            <div class="leyenda-fila"><span class="leyenda-dot dot-gris"></span> Galería pendiente</div>
-            <p class="leyenda-sub">Límites provinciales aproximados</p>
+            <div class="leyenda-fila"><span class="leyenda-dot dot-verde"></span> Centros operativos</div>
+            <div class="leyenda-fila"><span class="leyenda-dot dot-amarillo"></span> Centros pendientes</div>
+            <p class="leyenda-sub">Puntos en tiempo real, actualizados<br>cada 5 minutos.</p>
+          </div>
+
+          <!-- Compás / Rosa de los vientos (abajo a la izquierda) -->
+          <div class="mapa-compass">
+            <div class="compass-arrow-wrap">
+              <div class="compass-n">N</div>
+              <svg class="compass-arrow" viewBox="0 0 24 24" width="22" height="22">
+                <polygon points="12 2 16 15 12 12" fill="#002554" />
+                <polygon points="12 2 8 15 12 12" fill="#7ba0c7" />
+                <polygon points="12 12 16 15 12 21" fill="#c4d5e7" />
+                <polygon points="12 12 8 15 12 21" fill="#9dbcdb" />
+              </svg>
+            </div>
+            <span class="compass-label">Argentina</span>
           </div>
 
           <!-- Lienzo SVG del mapa -->
           <div id="mapa-wrap" class="mapa-wrap">
-            <svg id="mapa-svg" viewBox="0 0 500 900" xmlns="http://www.w3.org/2000/svg">
+            <svg id="mapa-svg" viewBox="0 0 430 900" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <filter id="shadow-prov">
-                  <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#00309050"/>
+                  <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#00309050" />
                 </filter>
                 <linearGradient id="gradient-cluster" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#002554"/>
-                  <stop offset="100%" stop-color="#093d78"/>
+                  <stop offset="0%" stop-color="#002554" />
+                  <stop offset="100%" stop-color="#093d78" />
                 </linearGradient>
                 <filter id="shadow-cluster" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#001838" flood-opacity="0.35"/>
+                  <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#001838" flood-opacity="0.35" />
                 </filter>
               </defs>
               <!-- Las provincias y nodos se construyen con script.js -->
@@ -207,7 +285,8 @@
         <div class="seccion-header">
           <div class="seccion-title">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
             </svg>
             <h3>Indicadores Operativos</h3>
           </div>
@@ -227,60 +306,83 @@
 
         <!-- Grid de 6 Tarjetas de Indicadores (calcado a la imagen) -->
         <div class="kpi-grid">
-          
-          <!-- 1. Piezas Diarias (Azul Marino) -->
+
+          <!-- 1. Paquetes Diarias (Azul Marino) -->
           <div class="kpi-card kpi-blue">
+            <svg class="kpi-watermark" viewBox="0 0 24 24">
+              <rect x="2" y="10" width="5" height="12" rx="1"></rect>
+              <rect x="9.5" y="5" width="5" height="17" rx="1"></rect>
+              <rect x="17" y="1" width="5" height="21" rx="1"></rect>
+            </svg>
             <div class="kpi-icon-wrap">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-                <path d="M20 7l-8-4-8 4 8 4 8-4zm-8 6l-8-4v8l8 4V13zm2 .9l6-3V19l-6 3V13.9z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path d="M20 7l-8-4-8 4 8 4 8-4zm-8 6l-8-4v8l8 4V13zm2 .9l6-3V19l-6 3V13.9z" />
               </svg>
             </div>
             <div class="kpi-value" id="kpi-piezas">298.080</div>
-            <div class="kpi-label">Piezas diarias</div>
-            <div class="kpi-badge badge-green">⬆ +12% vs. mes anterior</div>
+            <div class="kpi-label">Paquetes diarias</div>
+            <div class="kpi-badge badge-green">↑ 4,2% vs. mes anterior</div>
           </div>
 
           <!-- 2. SLA Nacional (Amarillo) -->
           <div class="kpi-card kpi-yellow">
+            <svg class="kpi-watermark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"></circle>
+              <polyline points="12 7 12 12 15 15"></polyline>
+            </svg>
             <div class="kpi-icon-wrap">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path
+                  d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
               </svg>
             </div>
             <div class="kpi-value" id="kpi-sla">97,8%</div>
-            <div class="kpi-label">SLA Nacional</div>
-            <div class="kpi-badge badge-green-dark">⬆ +0,6 p.p.</div>
+            <div class="kpi-label">% SLA Nacional</div>
+            <div class="kpi-badge badge-green-dark">↑ 0,4 p.p.</div>
           </div>
 
           <!-- 3. Dotación operativa (Blanco) -->
           <div class="kpi-card kpi-white">
+            <svg class="kpi-watermark" viewBox="0 0 24 24">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
             <div class="kpi-icon-wrap icon-blue">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path
+                  d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
               </svg>
             </div>
             <div class="kpi-value" id="kpi-dotacion">3.800</div>
             <div class="kpi-label">Dotación operativa</div>
-            <div class="kpi-badge badge-green">⬆ +5%</div>
+            <div class="kpi-badge badge-green">↑ 1,5%</div>
           </div>
 
           <!-- 4. Nodos operativos (Blanco) -->
           <div class="kpi-card kpi-white">
+            <svg class="kpi-watermark" viewBox="0 0 24 24">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 2h2v2h-2V5zm0 4h2v2h-2V9zm-4-4h2v2H8V5zm0 4h2v2H8V9zm-4 8v-2h2v2H4zm0-4v-2h2v2H4zm0-4V5h2v2H4zm14 8h-6v-6h6v6zm0-8h-2V5h2v2z" />
+            </svg>
             <div class="kpi-icon-wrap icon-blue">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 2h2v2h-2V5zm0 4h2v2h-2V9zm-4-4h2v2H8V5zm0 4h2v2H8V9zm-4 8v-2h2v2H4zm0-4v-2h2v2H4zm0-4V5h2v2H4zm14 8h-6v-6h6v6zm0-8h-2V5h2v2z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path
+                  d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 2h2v2h-2V5zm0 4h2v2h-2V9zm-4-4h2v2H8V5zm0 4h2v2H8V9zm-4 8v-2h2v2H4zm0-4v-2h2v2H4zm0-4V5h2v2H4zm14 8h-6v-6h6v6zm0-8h-2V5h2v2z" />
               </svg>
             </div>
             <div class="kpi-value" id="kpi-nodos">34</div>
             <div class="kpi-label">Nodos operativos</div>
-            <div class="kpi-badge badge-green">✓ Red 100% activa</div>
+            <div class="kpi-badge badge-green">↑ 8% vs. mes anterior</div>
           </div>
 
           <!-- 5. Sorters automáticos (Blanco) -->
           <div class="kpi-card kpi-white">
+            <svg class="kpi-watermark" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
             <div class="kpi-icon-wrap icon-blue">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
               </svg>
             </div>
             <div class="kpi-value" id="kpi-sorters">3</div>
@@ -290,14 +392,18 @@
 
           <!-- 6. Vehículos operativos (Blanco) -->
           <div class="kpi-card kpi-white">
+            <svg class="kpi-watermark" viewBox="0 0 24 24">
+              <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+            </svg>
             <div class="kpi-icon-wrap icon-blue">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-                <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path
+                  d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
               </svg>
             </div>
             <div class="kpi-value" id="kpi-vehiculos">520</div>
             <div class="kpi-label">Vehículos operativos</div>
-            <div class="kpi-badge badge-green">+18 unidades</div>
+            <div class="kpi-badge badge-green">↑ 12% vs. mes anterior</div>
           </div>
 
         </div>
@@ -307,8 +413,9 @@
       <section class="card-seccion">
         <div class="seccion-header">
           <div class="seccion-title">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
-              <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="#002554">
+              <path
+                d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
             </svg>
             <h3>Acceso Rápido</h3>
           </div>
@@ -317,66 +424,94 @@
         <div class="acceso-grid">
           <!-- 1. Centros Logísticos (Azul Marino) -->
           <button class="btn-acceso acceso-blue" onclick="filtrarTipoNodo('CLOG')">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-              <path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 4.5l5 4.5H7l5-4.5z"/>
-            </svg>
-            <span>Centros Logísticos</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+              </svg>
+              <span>Centros Logísticos</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
 
           <!-- 2. Sorters (Amarillo) -->
           <button class="btn-acceso acceso-yellow" onclick="filtrarTipoNodo('Sorter')">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-              <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-            </svg>
-            <span>Sorters</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+              <span>Sorters</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
 
           <!-- 3. Transporte (Blanco) -->
           <button class="btn-acceso acceso-white" onclick="filtrarTipoNodo('Transporte')">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#002554">
-              <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-            </svg>
-            <span>Transporte</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </svg>
+              <span>Transporte</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
 
           <!-- 4. Dotación (Blanco) -->
           <button class="btn-acceso acceso-white">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#002554">
-              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-            </svg>
-            <span>Dotación</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+              <span>Dotación</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
 
           <!-- 5. SLA y Calidad (Blanco) -->
           <button class="btn-acceso acceso-white">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#002554">
-              <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
-            </svg>
-            <span>SLA y Calidad</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
+                <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" />
+              </svg>
+              <span>SLA y Calidad</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
 
           <!-- 6. Inmuebles (Blanco) -->
           <button class="btn-acceso acceso-white">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#002554">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 2h2v2h-2V5zm0 4h2v2h-2V9zm-4-4h2v2H8V5zm0 4h2v2H8V9zm-4 8v-2h2v2H4zm0-4v-2h2v2H4zm0-4V5h2v2H4zm14 8h-6v-6h6v6zm0-8h-2V5h2v2z"/>
-            </svg>
-            <span>Inmuebles</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 2h2v2h-2V5zm0 4h2v2h-2V9zm-4-4h2v2H8V5zm0 4h2v2H8V9zm-4 8v-2h2v2H4zm0-4v-2h2v2H4zm0-4V5h2v2H4zm14 8h-6v-6h6v6zm0-8h-2V5h2v2z" />
+              </svg>
+              <span>Inmuebles</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
 
           <!-- 7. Documentación (Blanco) -->
           <button class="btn-acceso acceso-white">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#002554">
-              <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-            </svg>
-            <span>Documentación</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+              </svg>
+              <span>Documentación</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
 
           <!-- 8. Reportes (Blanco) -->
           <button class="btn-acceso acceso-white">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="#002554">
-              <path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2 0v8.99H22c-.47-4.74-4.24-8.52-9-8.99zm0 11.01V22c4.76-.47 8.53-4.25 9-8.99H13z"/>
-            </svg>
-            <span>Reportes</span>
+            <div class="btn-acceso-left">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="#002554">
+                <path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2 0v8.99H22c-.47-4.74-4.24-8.52-9-8.99zm0 11.01V22c4.76-.47 8.53-4.25 9-8.99H13z" />
+              </svg>
+              <span>Reportes</span>
+            </div>
+            <span class="btn-arrow">→</span>
           </button>
         </div>
       </section>
@@ -384,6 +519,7 @@
     </div>
 
   </main>
+  </div> <!-- fin main-wrapper -->
 
   <!-- =====================================================
        POPUP DETALLE DEL NODO SELECCIONADO
@@ -393,10 +529,17 @@
     <div class="popup-nodo-card">
       <button class="btn-cerrar-popup" onclick="deseleccionarTodo()" title="Cerrar">✕</button>
 
-      <div class="popup-img-wrap" onclick="abrirGaleriaDesdePopup()" style="cursor:pointer;" title="Hacer clic para ver en pantalla completa">
-        <img id="popup-img" src="imagenes/placeholder.jpg" alt="Foto del nodo" onerror="this.src='imagenes/placeholder.jpg'">
+      <div class="popup-img-wrap" onclick="abrirGaleriaDesdePopup()" style="cursor:pointer;"
+        title="Hacer clic para ver en pantalla completa">
+        <img id="popup-img" src="imagenes/placeholder.jpg" alt="Foto del nodo"
+          onerror="this.src='imagenes/placeholder.jpg'">
         <span id="popup-badge-tipo" class="popup-badge-tipo">Centro Logístico (CLOG)</span>
-        <span class="popup-img-zoom-hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Ampliar foto</span>
+        <span class="popup-img-zoom-hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            style="vertical-align:-1px;margin-right:4px;">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>Ampliar foto</span>
       </div>
 
       <!-- Tira interactiva de miniaturas de fotos del nodo -->
@@ -427,12 +570,17 @@
         </div>
 
         <p id="popup-desc" class="popup-desc">
-          Nodo estratégico para la distribución y clasificación de envíos en toda la provincia de Córdoba y conexión con el Corredor Central.
+          Nodo estratégico para la distribución y clasificación de envíos en toda la provincia de Córdoba y conexión con
+          el Corredor Central.
         </p>
 
         <div class="popup-actions">
           <button class="btn-popup-galeria" onclick="abrirGaleriaDesdePopup()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:7px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Ver galería fotográfica (<span id="popup-cant-fotos">0</span> fotos)
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:7px;">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+              <circle cx="12" cy="13" r="4" />
+            </svg>Ver galería fotográfica (<span id="popup-cant-fotos">0</span> fotos)
           </button>
         </div>
       </div>
@@ -469,4 +617,5 @@
   <script src="script.js"></script>
 
 </body>
+
 </html>

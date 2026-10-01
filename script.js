@@ -357,7 +357,7 @@ const redConexiones = [
 // =============================================================
 // 2. PROYECCIÓN MERCATOR CONFORME
 // =============================================================
-const VIEWBOX_W = 500;
+const VIEWBOX_W = 430;
 const VIEWBOX_H = 900;
 
 let proj = {
@@ -491,7 +491,7 @@ async function cargarYConstruirMapa() {
   } catch (err) {
     console.error("Error al cargar mapa:", err);
     svg.innerHTML = `
-      <text x="250" y="450" text-anchor="middle" fill="#002554" font-size="14" font-family="Plus Jakarta Sans, sans-serif">
+      <text x="250" y="450" text-anchor="middle" fill="#002554" font-size="14" font-family="Gilroy, sans-serif">
         Cargando Mapa Operativo Nacional...
       </text>`;
   }
@@ -507,7 +507,7 @@ function renderizarMapaCompleto(svg, geojson) {
   svg.setAttribute("viewBox", `0 0 ${VIEWBOX_W} ${VIEWBOX_H}`);
 
   // Calcular proyección conforme sobre las 24 provincias
-  calcularProyeccion(geojson, VIEWBOX_W, VIEWBOX_H, 16);
+  calcularProyeccion(geojson, VIEWBOX_W, VIEWBOX_H, 8);
 
   // --- Capa 1: Provincias Argentinas ---
   const gProvincias = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -541,6 +541,20 @@ function renderizarMapaCompleto(svg, geojson) {
   gLabels.id = "g-labels";
   svg.appendChild(gLabels);
 
+function getProvFontSize(provName) {
+  const norm = provName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (norm.includes("ciudad") || norm.includes("caba")) return 8.0;
+  if (norm.includes("tucuman")) return 9.5;
+  if (norm.includes("misiones")) return 9.5;
+  if (norm.includes("buenos aires") || norm.includes("santa cruz") || norm.includes("chubut") || norm.includes("rio negro") || norm.includes("la pampa")) {
+    return 13.5;
+  }
+  if (norm.includes("cordoba") || norm.includes("mendoza") || norm.includes("santa fe") || norm.includes("salta") || norm.includes("santiago del estero") || norm.includes("chaco") || norm.includes("neuquen")) {
+    return 12.0;
+  }
+  return 10.8;
+}
+
   geojson.features.forEach(feature => {
     const rawName = feature.properties.name || feature.properties.nombre || "";
     if (!rawName) return;
@@ -564,6 +578,8 @@ function renderizarMapaCompleto(svg, geojson) {
     label.setAttribute("x", cx.toFixed(1));
     label.setAttribute("y", cy.toFixed(1));
     label.setAttribute("class", "label-provincia");
+    const baseSize = getProvFontSize(rawName);
+    label.setAttribute("data-base-size", baseSize.toFixed(1));
     label.textContent = rawName.toUpperCase();
     gLabels.appendChild(label);
   });
@@ -583,18 +599,35 @@ function renderizarMapaCompleto(svg, geojson) {
  */
 /**
  * Agrupa nodos en círculos de cluster según cercanía visual en el nivel de zoom actual.
- * - En vista general o al achicar (zoom out), los nodos cercanos se consolidan en círculos
- *   con el número de CLOGs disponibles, evitando solapamientos de etiquetas.
- * - Al hacer zoom o hacer clic en el cluster, se separan y muestran sus etiquetas completas.
+ * - En vista general (s = 1.0), los nodos muy cercanos se consolidan en círculos elegantes.
+ * - A medida que se hace zoom, los clusters se disuelven de forma suave y dinámica.
+ * - A zoom profundo (s >= 3.2), todos los nodos se muestran individuales y con anti-colisión.
+ */
+/**
+ * Obtiene el factor de escala real entre las unidades SVG y los píxeles de pantalla del contenedor.
+ * Garantiza que las tarjetas, textos y clusters tengan un tamaño en pantalla óptimo y 100% legible.
+ */
+function obtenerSvgScale() {
+  const contenedor = document.getElementById("mapa-contenedor");
+  if (!contenedor) return 0.667;
+  const rect = contenedor.getBoundingClientRect();
+  if (!rect.width || !rect.height) return 0.667;
+  return Math.min(rect.width / VIEWBOX_W, rect.height / VIEWBOX_H);
+}
+
+/**
+ * Agrupa nodos en círculos de cluster según cercanía visual en el nivel de zoom actual.
+ * - En vista general (s = 1.0), los nodos muy cercanos se consolidan en círculos elegantes.
+ * - A medida que se hace zoom, los clusters se disuelven de forma suave y dinámica.
+ * - A zoom profundo (s >= 3.0), todos los nodos se muestran individuales y con anti-colisión.
  */
 function calcularClusters(nodos) {
   const s = escala;
-  // Umbral en píxeles de pantalla: nodos a menos de 56px en pantalla se agrupan
-  const UMBRAL_PX = 56;
-  const umbralSVG = UMBRAL_PX / s;
+  const svgScale = obtenerSvgScale();
+  const UMBRAL_PX = 46;
+  const umbralSVG = UMBRAL_PX / (svgScale * s);
 
-  // A zoom profundo (s >= 3.6), todos los nodos del país se muestran individuales
-  if (s >= 3.6) {
+  if (s >= 3.0) {
     return nodos.map(n => {
       const p = proyecto(n.lng, n.lat);
       return { nodos: [n], cx: p.x, cy: p.y };
@@ -620,7 +653,6 @@ function calcularClusters(nodos) {
       const n2 = nodos[j];
       const p2 = proyecto(n2.lng, n2.lat);
 
-      // Distancia entre el centroide acumulado del grupo y el nodo candidato
       const dist = Math.hypot(p2.x - sumX / grupo.length, p2.y - sumY / grupo.length);
       if (dist < umbralSVG) {
         visitados.add(n2.id);
@@ -642,6 +674,8 @@ function calcularClusters(nodos) {
 
 /**
  * Renderiza la capa de nodos y badges según el nivel de zoom actual.
+ * Aplica algoritmo de prevención de colisiones para que las tarjetas
+ * nunca se pisen entre sí en ningún nivel de zoom.
  */
 function renderizarNodos() {
   const svg = document.getElementById("mapa-svg");
@@ -659,32 +693,38 @@ function renderizarNodos() {
   const s = escala;
   const clusters = calcularClusters(nodosData);
 
+  const nodosIndividuales = [];
   clusters.forEach(cluster => {
     if (cluster.nodos.length > 1) {
       _renderCluster(cluster, gNodos, s);
     } else {
-      _renderNodoSimple(cluster.nodos[0], gNodos, s);
+      nodosIndividuales.push(cluster.nodos[0]);
     }
   });
+
+  if (nodosIndividuales.length > 0) {
+    _renderNodosConLayoutDinamico(nodosIndividuales, gNodos, s);
+  }
 }
 
 /** Dibuja un cluster agrupado: Círculo moderno tipo cluster con el número de CLOGs */
 function _renderCluster(cluster, parent, s) {
+  const svgScale = obtenerSvgScale();
+  const toSVG = px => px / (svgScale * s);
+
   const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
   g.setAttribute("class", "cluster-g");
 
-  const k = Math.pow(Math.max(s, 0.6), 0.35);
   const count = cluster.nodos.length;
-
-  // Radio del círculo según la cantidad de nodos agrupados
-  const baseR = count >= 5 ? 16.0 : (count >= 3 ? 14.5 : 13.0);
-  const R = baseR / k;
+  // Radio del círculo calibrado en píxeles reales de pantalla (amplio, nítido y táctil)
+  const baseRPx = count >= 5 ? 19.5 : (count >= 3 ? 17.0 : 15.0);
+  const R = toSVG(baseRPx);
 
   // 1. Halo suave exterior
   const halo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   halo.setAttribute("cx", cluster.cx.toFixed(3));
   halo.setAttribute("cy", cluster.cy.toFixed(3));
-  halo.setAttribute("r", (R + 4.5 / k).toFixed(3));
+  halo.setAttribute("r", toSVG(baseRPx + 5.0).toFixed(3));
   halo.setAttribute("fill", "rgba(255, 210, 0, 0.28)");
   halo.setAttribute("pointer-events", "none");
 
@@ -695,19 +735,20 @@ function _renderCluster(cluster, parent, s) {
   circle.setAttribute("r", R.toFixed(3));
   circle.setAttribute("fill", "#002554");
   circle.setAttribute("stroke", "#FFD200");
-  circle.setAttribute("stroke-width", (2.2 / k).toFixed(3));
+  circle.setAttribute("stroke-width", toSVG(2.2).toFixed(3));
   circle.setAttribute("class", "cluster-circle-bg");
 
-  // 3. Número de nodos (grande, centrado, ultra legible)
+  // 3. Número de nodos (grande, centrado, ultra legible: 14.5px - 16.5px en pantalla)
+  const fontSizePx = count >= 5 ? 16.5 : 14.5;
   const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
   txt.setAttribute("x", cluster.cx.toFixed(3));
   txt.setAttribute("y", cluster.cy.toFixed(3));
   txt.setAttribute("text-anchor", "middle");
   txt.setAttribute("dominant-baseline", "central");
   txt.setAttribute("fill", "#FFD200");
-  txt.setAttribute("font-family", "Inter, -apple-system, sans-serif");
+  txt.setAttribute("font-family", "Gilroy, sans-serif");
   txt.setAttribute("font-weight", "900");
-  txt.setAttribute("font-size", ((baseR * 0.9) / k).toFixed(3));
+  txt.setAttribute("font-size", toSVG(fontSizePx).toFixed(3));
   txt.setAttribute("class", "cluster-text");
   txt.setAttribute("pointer-events", "none");
   txt.textContent = count;
@@ -729,8 +770,8 @@ function _renderCluster(cluster, parent, s) {
     const screenX = elemRect.left + elemRect.width / 2 - rect.left;
     const screenY = elemRect.top + elemRect.height / 2 - rect.top;
 
-    // Zoom hacia el cluster: si tiene muchos nodos (como AMBA) salta a 3.6x, si tiene 2-3 salta a 2.3x
-    const targetScale = count >= 4 ? Math.max(escala * 2.2, 3.6) : Math.max(escala * 1.8, 2.3);
+    // Zoom hacia el cluster: si tiene muchos nodos salta a 3.8x, si tiene pocos salta a 2.4x
+    const targetScale = count >= 4 ? Math.max(escala * 2.2, 3.8) : Math.max(escala * 1.8, 2.4);
 
     const mapX = (screenX - panX) / escala;
     const mapY = (screenY - panY) / escala;
@@ -745,155 +786,337 @@ function _renderCluster(cluster, parent, s) {
   parent.appendChild(g);
 }
 
-/** Dibuja un nodo individual con Pin nítido y Pill badge que protege el texto de pisadas */
-function _renderNodoSimple(nodo, parent, s) {
-  const p = proyecto(nodo.lng, nodo.lat);
+// Direcciones preferidas según geografía natural
+const PREFERENCIAS_DIRECCION = {
+  vte_lopez: ["top", "top-right", "top-left", "right", "top-offset"],
+  moreno: ["left", "top-left", "bottom-left", "bottom", "left-offset"],
+  mercado_central: ["bottom-left", "bottom", "bottom-offset", "left"],
+  quilmes: ["bottom-right", "bottom", "right", "bottom-offset"],
+  barracas: ["right", "top-right", "bottom-right", "right-offset"],
+  la_plata: ["bottom-right", "bottom", "right", "bottom-offset"],
+  rosario: ["top", "top-left", "left", "right"],
+  pergamino: ["left", "bottom-left", "bottom", "top-left"],
+  mercedes: ["left", "top-left", "bottom-left", "top"],
+  santa_fe: ["top", "top-right", "right", "top-left"],
+  cordoba: ["top", "top-left", "left", "right"],
+  rio_cuarto: ["bottom", "bottom-left", "left", "bottom-right"],
+  villa_maria: ["right", "top-right", "top", "bottom-right"],
+  resistencia: ["top-left", "left", "top", "bottom-left"],
+  corrientes: ["bottom-right", "right", "bottom", "top-right"],
+  posadas: ["top-right", "right", "top", "bottom-right"],
+  salta: ["left", "top-left", "bottom-left", "top"],
+  tucuman: ["right", "top-right", "bottom-right", "bottom"],
+  santiago_estero: ["bottom", "bottom-right", "right", "bottom-left"],
+  san_juan: ["left", "bottom-left", "top-left", "bottom"],
+  mendoza: ["bottom-left", "left", "bottom", "top-left"],
+  san_luis: ["top", "top-right", "right", "left"],
+  santa_rosa: ["top", "top-right", "right", "left"],
+  mar_del_plata: ["right", "bottom-right", "top-right", "bottom"],
+  bahia_blanca: ["left", "bottom-left", "bottom", "top-left"],
+  neuquen: ["left", "top-left", "bottom-left", "bottom"],
+  bariloche: ["left", "bottom-left", "top-left", "bottom"],
+  trelew: ["right", "top-right", "bottom-right", "top"],
+  comodoro_rivadavia: ["bottom-right", "right", "bottom", "left"],
+  rio_gallegos: ["right", "top-right", "bottom-right", "bottom"],
+  ushuaia: ["bottom", "bottom-right", "right", "bottom-left"]
+};
 
-  // Escala suavizada: a mayor zoom (s), los nodos y textos crecen visualmente en pantalla en vez de quedarse microscópicos
-  const k = Math.pow(Math.max(s, 0.6), 0.35);
+const TODAS_DIRECCIONES = [
+  "right", "left", "top", "bottom",
+  "top-right", "bottom-right", "top-left", "bottom-left",
+  "top-offset", "bottom-offset", "right-offset", "left-offset"
+];
 
-  // Dimensiones del puntito (nodo físico en el mapa)
-  const DOT_R = 7.2 / k;
-  const INNER_R = 3.2 / k;
-  const GLOW_R = 12.0 / k;
-  const SW = 1.8 / k;
-
-  // Direcciones inteligentes calculadas para evitar solapamientos en áreas densas
-  let dir = "right";
-  if (nodo.id === "vte_lopez") dir = "top";
-  else if (nodo.id === "moreno") dir = "left";
-  else if (nodo.id === "mercado_central") dir = "bottom-left";
-  else if (nodo.id === "quilmes") dir = "bottom-right";
-  else if (nodo.id === "barracas") dir = "right";
-  else if (nodo.id === "rio_cuarto") dir = "bottom";
-  else if (nodo.id === "villa_maria") dir = "top";
-  else if (nodo.id === "santa_fe") dir = "top";
-  else if (nodo.id === "rosario") dir = "bottom";
-  else if (nodo.id === "resistencia") dir = "top-left";
-  else if (nodo.id === "corrientes") dir = "bottom-right";
-  else if (nodo.id === "trelew") dir = "top";
-  else if (nodo.id === "comodoro_rivadavia") dir = "bottom";
-
-  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  g.setAttribute("class", "marcador-g");
-  g.dataset.id = nodo.id;
-
-  // Dimensiones de la etiqueta con el nombre del CLOG
-  const nombreTexto = nodo.nombre;
-  const charWidth = 6.2 / k;
-  const pillW = (nombreTexto.length * charWidth + 14 / k);
-  const pillH = 16.5 / k;
-  const fontSize = 9.2 / k;
-  const pillRadius = 4.5 / k;
-  const gap = 5.0 / k;
-
+function calcularGeometriaPill(p, dir, pillW, pillH, DOT_R, gap) {
   let pillX = p.x + DOT_R + gap;
   let pillY = p.y - pillH / 2;
   let textX = pillX + pillW / 2;
   let textY = p.y;
+  let connector = null;
 
-  if (dir === "left") {
-    pillX = p.x - DOT_R - gap - pillW;
-    pillY = p.y - pillH / 2;
-    textX = pillX + pillW / 2;
-    textY = p.y;
-  } else if (dir === "top") {
-    pillX = p.x - pillW / 2;
-    pillY = p.y - DOT_R - gap - pillH;
-    textX = p.x;
-    textY = pillY + pillH / 2;
-  } else if (dir === "bottom") {
-    pillX = p.x - pillW / 2;
-    pillY = p.y + DOT_R + gap;
-    textX = p.x;
-    textY = pillY + pillH / 2;
-  } else if (dir === "bottom-left") {
-    pillX = p.x - DOT_R - gap - pillW;
-    pillY = p.y + DOT_R * 0.4 + gap;
-    textX = pillX + pillW / 2;
-    textY = pillY + pillH / 2;
-  } else if (dir === "bottom-right") {
-    pillX = p.x + DOT_R + gap;
-    pillY = p.y + DOT_R * 0.4 + gap;
-    textX = pillX + pillW / 2;
-    textY = pillY + pillH / 2;
-  } else if (dir === "top-left") {
-    pillX = p.x - DOT_R - gap - pillW;
-    pillY = p.y - DOT_R - gap - pillH * 0.5;
-    textX = pillX + pillW / 2;
-    textY = pillY + pillH / 2;
+  switch (dir) {
+    case "right":
+      pillX = p.x + DOT_R + gap;
+      pillY = p.y - pillH / 2;
+      textX = pillX + pillW / 2;
+      textY = p.y;
+      break;
+    case "left":
+      pillX = p.x - DOT_R - gap - pillW;
+      pillY = p.y - pillH / 2;
+      textX = pillX + pillW / 2;
+      textY = p.y;
+      break;
+    case "top":
+      pillX = p.x - pillW / 2;
+      pillY = p.y - DOT_R - gap - pillH;
+      textX = p.x;
+      textY = pillY + pillH / 2;
+      break;
+    case "bottom":
+      pillX = p.x - pillW / 2;
+      pillY = p.y + DOT_R + gap;
+      textX = p.x;
+      textY = pillY + pillH / 2;
+      break;
+    case "top-right":
+      pillX = p.x + DOT_R * 0.7 + gap;
+      pillY = p.y - DOT_R * 0.7 - gap - pillH;
+      textX = pillX + pillW / 2;
+      textY = pillY + pillH / 2;
+      break;
+    case "bottom-right":
+      pillX = p.x + DOT_R * 0.7 + gap;
+      pillY = p.y + DOT_R * 0.7 + gap;
+      textX = pillX + pillW / 2;
+      textY = pillY + pillH / 2;
+      break;
+    case "top-left":
+      pillX = p.x - DOT_R * 0.7 - gap - pillW;
+      pillY = p.y - DOT_R * 0.7 - gap - pillH;
+      textX = pillX + pillW / 2;
+      textY = pillY + pillH / 2;
+      break;
+    case "bottom-left":
+      pillX = p.x - DOT_R * 0.7 - gap - pillW;
+      pillY = p.y + DOT_R * 0.7 + gap;
+      textX = pillX + pillW / 2;
+      textY = pillY + pillH / 2;
+      break;
+    case "top-offset":
+      pillX = p.x - pillW / 2;
+      pillY = p.y - DOT_R - gap * 3 - pillH * 1.3;
+      textX = p.x;
+      textY = pillY + pillH / 2;
+      connector = { x1: p.x, y1: p.y - DOT_R, x2: p.x, y2: pillY + pillH };
+      break;
+    case "bottom-offset":
+      pillX = p.x - pillW / 2;
+      pillY = p.y + DOT_R + gap * 3 + pillH * 0.5;
+      textX = p.x;
+      textY = pillY + pillH / 2;
+      connector = { x1: p.x, y1: p.y + DOT_R, x2: p.x, y2: pillY };
+      break;
+    case "right-offset":
+      pillX = p.x + DOT_R + gap * 3;
+      pillY = p.y - pillH / 2;
+      textX = pillX + pillW / 2;
+      textY = p.y;
+      connector = { x1: p.x + DOT_R, y1: p.y, x2: pillX, y2: p.y };
+      break;
+    case "left-offset":
+      pillX = p.x - DOT_R - gap * 3 - pillW;
+      pillY = p.y - pillH / 2;
+      textX = pillX + pillW / 2;
+      textY = p.y;
+      connector = { x1: p.x - DOT_R, y1: p.y, x2: pillX + pillW, y2: p.y };
+      break;
   }
 
-  // --- Capa 1: Fondo del Pill (se dibuja primero para no tapar el puntito) ---
-  const pillBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-  pillBg.setAttribute("x", pillX.toFixed(3));
-  pillBg.setAttribute("y", pillY.toFixed(3));
-  pillBg.setAttribute("width", pillW.toFixed(3));
-  pillBg.setAttribute("height", pillH.toFixed(3));
-  pillBg.setAttribute("rx", pillRadius.toFixed(3));
-  pillBg.setAttribute("ry", pillRadius.toFixed(3));
-  pillBg.setAttribute("fill", "#ffffff");
-  pillBg.setAttribute("stroke", "#c4d8ea");
-  pillBg.setAttribute("stroke-width", (1.2 / k).toFixed(3));
-  pillBg.setAttribute("class", "label-pill-bg");
-  pillBg.setAttribute("pointer-events", "none");
+  return {
+    pillX, pillY, textX, textY, connector,
+    box: { x1: pillX, y1: pillY, x2: pillX + pillW, y2: pillY + pillH }
+  };
+}
 
-  // Texto del nombre del CLOG (nítido, negrita institucional Correo Argentino)
-  const labelTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  labelTxt.setAttribute("x", textX.toFixed(3));
-  labelTxt.setAttribute("y", textY.toFixed(3));
-  labelTxt.setAttribute("text-anchor", "middle");
-  labelTxt.setAttribute("dominant-baseline", "central");
-  labelTxt.setAttribute("fill", "#002554");
-  labelTxt.setAttribute("font-family", "Inter, -apple-system, sans-serif");
-  labelTxt.setAttribute("font-size", fontSize.toFixed(3));
-  labelTxt.setAttribute("font-weight", "800");
-  labelTxt.setAttribute("class", "label-pill-text");
-  labelTxt.setAttribute("pointer-events", "none");
-  labelTxt.textContent = nombreTexto;
+function hayColision(box, cajasOcupadas, puntosOtros, DOT_R, pad) {
+  for (let i = 0; i < cajasOcupadas.length; i++) {
+    const b = cajasOcupadas[i];
+    if (!(box.x2 + pad < b.x1 || box.x1 - pad > b.x2 || box.y2 + pad < b.y1 || box.y1 - pad > b.y2)) {
+      return true;
+    }
+  }
+  for (let i = 0; i < puntosOtros.length; i++) {
+    const pt = puntosOtros[i];
+    if (!(box.x2 + pad < pt.x - DOT_R || box.x1 - pad > pt.x + DOT_R || box.y2 + pad < pt.y - DOT_R || box.y1 - pad > pt.y + DOT_R)) {
+      return true;
+    }
+  }
+  return false;
+}
 
-  g.appendChild(pillBg);
-  g.appendChild(labelTxt);
+/**
+ * Renderiza nodos individuales asegurando que ninguna tarjeta se pise con otra.
+ * Calibra el tamaño en píxeles de pantalla reales (12.5px fuente, 26px alto tarjeta),
+ * garantizando lectura clara, nitidez y espacio de separación al hacer zoom.
+ */
+function _renderNodosConLayoutDinamico(nodos, parent, s) {
+  const svgScale = obtenerSvgScale();
+  const toSVG = px => px / (svgScale * s);
 
-  // --- Capa 2: Puntito del CLOG (se dibuja ENCIMA para garantizar 100% de visibilidad) ---
-  // Halo exterior
-  const halo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  halo.setAttribute("cx", p.x.toFixed(3));
-  halo.setAttribute("cy", p.y.toFixed(3));
-  halo.setAttribute("r", GLOW_R.toFixed(3));
-  halo.setAttribute("fill", "rgba(0, 37, 84, 0.16)");
+  // Dimensiones exactamente calibradas en PÍXELES DE PANTALLA para máxima legibilidad
+  const DOT_R = toSVG(7.5);       // Diámetro del punto: 15px en pantalla
+  const INNER_R = toSVG(3.4);     // Centro dorado: 6.8px en pantalla
+  const GLOW_R = toSVG(13.0);     // Halo suave: 26px en pantalla
+  const SW = toSVG(1.8);          // Borde blanco del punto: 1.8px
+  const gap = toSVG(5.5);         // Separación punto-tarjeta: 5.5px
+  const pillH = toSVG(25.5);      // Altura tarjeta: 25.5px en pantalla (100% legible y cómoda)
+  const fontSize = toSVG(12.0);   // Tipografía: 12px en pantalla (nítida y clara)
+  const charW = toSVG(7.2);       // Ancho medio por carácter
+  const pillPad = toSVG(18.0);    // Padding horizontal (9px cada lado)
+  const pillRadius = toSVG(5.5);  // Esquinas redondeadas
+  const pad = toSVG(3.0);         // Margen anti-colisión: 3px en pantalla
 
-  // Círculo base (Verde institucional Correo)
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  circle.setAttribute("cx", p.x.toFixed(3));
-  circle.setAttribute("cy", p.y.toFixed(3));
-  circle.setAttribute("r", DOT_R.toFixed(3));
-  circle.setAttribute("fill", "#008a38");
-  circle.setAttribute("stroke", "#ffffff");
-  circle.setAttribute("stroke-width", SW.toFixed(3));
-  circle.setAttribute("class", "node-dot-core");
+  // Puntos de todos los nodos activos para evitar que una tarjeta tape el punto de otro nodo
+  const puntosTodos = nodos.map(n => ({ id: n.id, ...proyecto(n.lng, n.lat) }));
 
-  // Centro amarillo institucional
-  const centerDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  centerDot.setAttribute("cx", p.x.toFixed(3));
-  centerDot.setAttribute("cy", p.y.toFixed(3));
-  centerDot.setAttribute("r", INNER_R.toFixed(3));
-  centerDot.setAttribute("fill", "#FFD200");
-  centerDot.setAttribute("pointer-events", "none");
-
-  g.appendChild(halo);
-  g.appendChild(circle);
-  g.appendChild(centerDot);
-
-  g.addEventListener("click", e => {
-    if (huboMovimiento) return;
-    e.stopPropagation();
-    document.querySelectorAll(".marcador-g").forEach(m => m.classList.remove("seleccionado"));
-    g.classList.add("seleccionado");
-    abrirDetalleNodo(nodo);
+  // Ordenar para dar prioridad de posicionamiento a nodos metropolitanos densos
+  const nodosOrdenados = [...nodos].sort((a, b) => {
+    const pA = PREFERENCIAS_DIRECCION[a.id] ? 0 : 1;
+    const pB = PREFERENCIAS_DIRECCION[b.id] ? 0 : 1;
+    return pA - pB;
   });
 
-  parent.appendChild(g);
+  const cajasOcupadas = [];
+
+  nodosOrdenados.forEach(nodo => {
+    const p = puntosTodos.find(pt => pt.id === nodo.id);
+    const puntosOtros = puntosTodos.filter(pt => pt.id !== nodo.id);
+
+    const pillW = nodo.nombre.length * charW + pillPad;
+
+    const preferencias = PREFERENCIAS_DIRECCION[nodo.id] || [];
+    const listaDirecciones = [
+      ...preferencias,
+      ...TODAS_DIRECCIONES.filter(d => !preferencias.includes(d))
+    ];
+
+    let elegida = null;
+    for (let i = 0; i < listaDirecciones.length; i++) {
+      const dir = listaDirecciones[i];
+      const geom = calcularGeometriaPill(p, dir, pillW, pillH, DOT_R, gap);
+      if (!hayColision(geom.box, cajasOcupadas, puntosOtros, DOT_R, pad)) {
+        elegida = geom;
+        break;
+      }
+    }
+
+    let esHoverOnly = false;
+    if (!elegida) {
+      elegida = calcularGeometriaPill(p, listaDirecciones[0] || "top", pillW, pillH, DOT_R, gap);
+      esHoverOnly = true;
+    } else {
+      cajasOcupadas.push(elegida.box);
+    }
+
+    // Construcción del elemento SVG
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.setAttribute("class", "marcador-g");
+    g.dataset.id = nodo.id;
+
+    // Línea conectora si la tarjeta fue desplazada para evitar colisión
+    if (elegida.connector && !esHoverOnly) {
+      const linea = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      linea.setAttribute("x1", elegida.connector.x1.toFixed(3));
+      linea.setAttribute("y1", elegida.connector.y1.toFixed(3));
+      linea.setAttribute("x2", elegida.connector.x2.toFixed(3));
+      linea.setAttribute("y2", elegida.connector.y2.toFixed(3));
+      linea.setAttribute("stroke-width", toSVG(1.4).toFixed(3));
+      linea.setAttribute("class", "label-connector");
+      g.appendChild(linea);
+    }
+
+    // Contenedor de la tarjeta (pill + texto)
+    const pillWrap = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    pillWrap.setAttribute("class", `label-pill-wrap ${esHoverOnly ? "label-pill-hover-only" : ""}`);
+
+    const pillBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    pillBg.setAttribute("x", elegida.pillX.toFixed(3));
+    pillBg.setAttribute("y", elegida.pillY.toFixed(3));
+    pillBg.setAttribute("width", pillW.toFixed(3));
+    pillBg.setAttribute("height", pillH.toFixed(3));
+    pillBg.setAttribute("rx", pillRadius.toFixed(3));
+    pillBg.setAttribute("ry", pillRadius.toFixed(3));
+    pillBg.setAttribute("fill", "#ffffff");
+    pillBg.setAttribute("stroke", "#c4d8ea");
+    pillBg.setAttribute("stroke-width", toSVG(1.2).toFixed(3));
+    pillBg.setAttribute("class", "label-pill-bg");
+
+    const labelTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    labelTxt.setAttribute("x", elegida.textX.toFixed(3));
+    labelTxt.setAttribute("y", elegida.textY.toFixed(3));
+    labelTxt.setAttribute("text-anchor", "middle");
+    labelTxt.setAttribute("dominant-baseline", "central");
+    labelTxt.setAttribute("fill", "#002554");
+    labelTxt.setAttribute("font-family", "Gilroy, sans-serif");
+    labelTxt.setAttribute("font-size", fontSize.toFixed(3));
+    labelTxt.setAttribute("font-weight", "800");
+    labelTxt.setAttribute("class", "label-pill-text");
+    labelTxt.setAttribute("pointer-events", "all");
+    labelTxt.setAttribute("cursor", "pointer");
+    labelTxt.textContent = nodo.nombre;
+
+    pillBg.setAttribute("pointer-events", "all");
+    pillBg.setAttribute("cursor", "pointer");
+    pillWrap.setAttribute("pointer-events", "all");
+    pillWrap.setAttribute("cursor", "pointer");
+
+    pillWrap.appendChild(pillBg);
+    pillWrap.appendChild(labelTxt);
+    g.appendChild(pillWrap);
+
+    // Puntito del CLOG (se dibuja encima para visibilidad total)
+    const halo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    halo.setAttribute("cx", p.x.toFixed(3));
+    halo.setAttribute("cy", p.y.toFixed(3));
+    halo.setAttribute("r", GLOW_R.toFixed(3));
+    halo.setAttribute("fill", "rgba(0, 37, 84, 0.16)");
+
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", p.x.toFixed(3));
+    circle.setAttribute("cy", p.y.toFixed(3));
+    circle.setAttribute("r", DOT_R.toFixed(3));
+    circle.setAttribute("fill", "#008a38");
+    circle.setAttribute("stroke", "#ffffff");
+    circle.setAttribute("stroke-width", SW.toFixed(3));
+    circle.setAttribute("class", "node-dot-core");
+    circle.setAttribute("cursor", "pointer");
+    circle.setAttribute("pointer-events", "all");
+
+    const centerDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    centerDot.setAttribute("cx", p.x.toFixed(3));
+    centerDot.setAttribute("cy", p.y.toFixed(3));
+    centerDot.setAttribute("r", INNER_R.toFixed(3));
+    centerDot.setAttribute("fill", "#FFD200");
+    centerDot.setAttribute("pointer-events", "none");
+
+    g.appendChild(halo);
+    g.appendChild(circle);
+    g.appendChild(centerDot);
+
+    // Función unificada para seleccionar este nodo y abrir su detalle
+    function seleccionarEsteNodo(e) {
+      if (e) {
+        e.stopPropagation();
+      }
+      document.querySelectorAll(".marcador-g").forEach(m => m.classList.remove("seleccionado"));
+      g.classList.add("seleccionado");
+      if (parent.lastElementChild !== g) {
+        parent.appendChild(g);
+      }
+      abrirDetalleNodo(nodo);
+    }
+
+    // Al pasar el mouse, traer al frente absoluto en el SVG (sin jitter)
+    g.addEventListener("mouseenter", () => {
+      if (!estaArrastrando && parent.lastElementChild !== g) {
+        parent.appendChild(g);
+      }
+    });
+
+    // Clic en la tarjeta completa (fondo o texto) o en el punto
+    g.addEventListener("click", e => {
+      if (huboMovimiento) return;
+      seleccionarEsteNodo(e);
+    });
+
+    pillWrap.addEventListener("click", e => {
+      if (huboMovimiento) return;
+      seleccionarEsteNodo(e);
+    });
+
+    parent.appendChild(g);
+  });
 }
 
 /** Zoom suave hacia el centroide de un cluster */
@@ -1019,11 +1242,68 @@ function expandirMapa(expandir) {
     if (expandText) expandText.textContent = "Ampliar mapa";
     if (expandIcon) expandIcon.textContent = "⛶";
   }
+
+  // Actualizar pan y escala visual de nodos tras transición de dimensiones
+  setTimeout(() => {
+    const contenedor = document.getElementById("mapa-contenedor");
+    if (contenedor) {
+      limitarPan(contenedor.getBoundingClientRect());
+      aplicarTransformacion(false);
+    }
+  }, 220);
 }
 
 // =============================================================
 // 8. INTERACCIÓN DE PAN (MOVER) Y ZOOM (CON RATÓN Y TOUCH)
 // =============================================================
+const MIN_ESCALA = 1.0;
+const MAX_ESCALA = 9.0;
+
+function limitarPan(rect) {
+  if (!rect) return;
+  if (escala <= MIN_ESCALA) {
+    panX = 0;
+    panY = 0;
+    return;
+  }
+  // Permitir desplazamiento cómodo cuando hay zoom, pero sin perder el país de vista
+  const margenX = rect.width * 0.35;
+  const margenY = rect.height * 0.35;
+  const minPanX = rect.width * (1 - escala) - margenX;
+  const maxPanX = margenX;
+  const minPanY = rect.height * (1 - escala) - margenY;
+  const maxPanY = margenY;
+
+  panX = Math.max(minPanX, Math.min(maxPanX, panX));
+  panY = Math.max(minPanY, Math.min(maxPanY, panY));
+}
+
+function actualizarBotonesZoom() {
+  const btnZoomOut = document.getElementById("btn-zoom-out");
+  const btnZoomIn = document.getElementById("btn-zoom-in");
+  const btnZoomReset = document.getElementById("btn-zoom-reset");
+
+  const alMinimo = escala <= MIN_ESCALA + 0.001;
+  const alMaximo = escala >= MAX_ESCALA - 0.001;
+
+  if (btnZoomOut) {
+    btnZoomOut.disabled = alMinimo;
+    btnZoomOut.classList.toggle("btn-ctrl-disabled", alMinimo);
+    btnZoomOut.title = alMinimo ? "Zoom mínimo alcanzado (vista general)" : "Alejar (−)";
+  }
+  if (btnZoomReset) {
+    const enReset = alMinimo && Math.abs(panX) < 1 && Math.abs(panY) < 1;
+    btnZoomReset.disabled = enReset;
+    btnZoomReset.classList.toggle("btn-ctrl-disabled", enReset);
+    btnZoomReset.title = enReset ? "Vista general ya restablecida" : "Restablecer vista general (↺)";
+  }
+  if (btnZoomIn) {
+    btnZoomIn.disabled = alMaximo;
+    btnZoomIn.classList.toggle("btn-ctrl-disabled", alMaximo);
+    btnZoomIn.title = alMaximo ? "Zoom máximo alcanzado" : "Acercar (+)";
+  }
+}
+
 function aplicarTransformacion(conAnimacion = false) {
   const wrap = document.getElementById("mapa-wrap");
   if (!wrap) return;
@@ -1038,6 +1318,7 @@ function aplicarTransformacion(conAnimacion = false) {
   // Actualizar etiquetas de provincias y re-renderizar nodos/clusters en tiempo real
   ajustarLabelsSegunZoom();
   renderizarNodos();
+  actualizarBotonesZoom();
 }
 
 /**
@@ -1049,12 +1330,12 @@ function ajustarLabelsSegunZoom() {
   const svg = document.getElementById("mapa-svg");
   if (!svg) return;
 
-  const BASE_PROV = 6.4;
-  const opacity = s >= 2.2 ? 0.10 : (s >= 1.6 ? 0.35 : 0.85);
+  const opacity = s >= 2.6 ? 0.20 : (s >= 1.8 ? 0.50 : 0.90);
 
   svg.querySelectorAll(".label-provincia").forEach(el => {
-    el.style.fontSize = (BASE_PROV / s).toFixed(3) + "px";
-    el.style.letterSpacing = (0.3 / s).toFixed(3) + "px";
+    const base = parseFloat(el.getAttribute("data-base-size")) || 11.5;
+    el.style.fontSize = (base / s).toFixed(2) + "px";
+    el.style.letterSpacing = (0.7 / s).toFixed(2) + "px";
     el.style.opacity = opacity;
   });
 }
@@ -1071,9 +1352,17 @@ function zoomCentrado(factor) {
   const mapX = (mouseX - panX) / escala;
   const mapY = (mouseY - panY) / escala;
 
-  const nuevaEscala = Math.min(Math.max(escala * factor, 0.6), 9);
-  panX = mouseX - mapX * nuevaEscala;
-  panY = mouseY - mapY * nuevaEscala;
+  let nuevaEscala = Math.min(Math.max(escala * factor, MIN_ESCALA), MAX_ESCALA);
+
+  if (nuevaEscala <= MIN_ESCALA) {
+    nuevaEscala = MIN_ESCALA;
+    panX = 0;
+    panY = 0;
+  } else {
+    panX = mouseX - mapX * nuevaEscala;
+    panY = mouseY - mapY * nuevaEscala;
+    limitarPan(rect);
+  }
   escala = nuevaEscala;
 
   aplicarTransformacion(true);
@@ -1082,7 +1371,7 @@ function zoomCentrado(factor) {
 function zoomIn() { zoomCentrado(1.3); }
 function zoomOut() { zoomCentrado(1 / 1.3); }
 function zoomReset() {
-  escala = 1;
+  escala = MIN_ESCALA;
   panX = 0;
   panY = 0;
   aplicarTransformacion(true);
@@ -1103,34 +1392,50 @@ function iniciarInteraccionPanZoom() {
     const mapY = (mouseY - panY) / escala;
 
     const factor = e.deltaY < 0 ? 1.15 : (1 / 1.15);
-    const nuevaEscala = Math.min(Math.max(escala * factor, 0.6), 9);
+    let nuevaEscala = Math.min(Math.max(escala * factor, MIN_ESCALA), MAX_ESCALA);
 
-    panX = mouseX - mapX * nuevaEscala;
-    panY = mouseY - mapY * nuevaEscala;
+    if (nuevaEscala <= MIN_ESCALA) {
+      nuevaEscala = MIN_ESCALA;
+      panX = 0;
+      panY = 0;
+    } else {
+      panX = mouseX - mapX * nuevaEscala;
+      panY = mouseY - mapY * nuevaEscala;
+      limitarPan(rect);
+    }
     escala = nuevaEscala;
 
     aplicarTransformacion(false);
   }, { passive: false });
 
   // 2. Arrastre con el ratón (Pan / Drag)
+  let posMouseDownX = 0, posMouseDownY = 0;
   contenedor.addEventListener("mousedown", e => {
     if (e.button !== 0) return; // Solo clic izquierdo
     estaArrastrando = true;
     huboMovimiento = false;
     inicioX = e.clientX - panX;
     inicioY = e.clientY - panY;
+    posMouseDownX = e.clientX;
+    posMouseDownY = e.clientY;
     contenedor.classList.add("arrastrando");
   });
 
   window.addEventListener("mousemove", e => {
     if (!estaArrastrando) return;
-    const dx = Math.abs(e.clientX - (inicioX + panX));
-    const dy = Math.abs(e.clientY - (inicioY + panY));
-    if (dx > 4 || dy > 4) {
+    const dx = Math.abs(e.clientX - posMouseDownX);
+    const dy = Math.abs(e.clientY - posMouseDownY);
+    if (dx > 6 || dy > 6) {
       huboMovimiento = true;
     }
-    panX = e.clientX - inicioX;
-    panY = e.clientY - inicioY;
+    if (escala <= MIN_ESCALA) {
+      panX = 0;
+      panY = 0;
+    } else {
+      panX = e.clientX - inicioX;
+      panY = e.clientY - inicioY;
+      limitarPan(contenedor.getBoundingClientRect());
+    }
     aplicarTransformacion(false);
   });
 
@@ -1138,7 +1443,7 @@ function iniciarInteraccionPanZoom() {
     if (estaArrastrando) {
       estaArrastrando = false;
       contenedor.classList.remove("arrastrando");
-      setTimeout(() => { huboMovimiento = false; }, 60);
+      setTimeout(() => { huboMovimiento = false; }, 40);
     }
   });
 
@@ -1152,7 +1457,7 @@ function iniciarInteraccionPanZoom() {
     }
 
     // Si hizo clic en un nodo, cluster o provincia, ellos manejan su evento
-    if (e.target.closest(".marcador-g") || e.target.closest(".cluster-g") || e.target.closest(".provincia-svg")) {
+    if (e.target.closest(".marcador-g") || e.target.closest(".label-pill-wrap") || e.target.closest(".cluster-g") || e.target.closest(".provincia-svg")) {
       return;
     }
 
@@ -1194,8 +1499,14 @@ function iniciarInteraccionPanZoom() {
     e.preventDefault();
     if (e.touches.length === 1 && estaArrastrando) {
       huboMovimiento = true;
-      panX = e.touches[0].clientX - inicioX;
-      panY = e.touches[0].clientY - inicioY;
+      if (escala <= MIN_ESCALA) {
+        panX = 0;
+        panY = 0;
+      } else {
+        panX = e.touches[0].clientX - inicioX;
+        panY = e.touches[0].clientY - inicioY;
+        limitarPan(contenedor.getBoundingClientRect());
+      }
       aplicarTransformacion(false);
     } else if (e.touches.length === 2 && distInicialToque > 0) {
       huboMovimiento = true;
@@ -1207,9 +1518,16 @@ function iniciarInteraccionPanZoom() {
       const mapX = (mouseX - panX) / escala;
       const mapY = (mouseY - panY) / escala;
 
-      const nuevaEscala = Math.min(Math.max(escalaInicialToque * factor, 0.6), 9);
-      panX = mouseX - mapX * nuevaEscala;
-      panY = mouseY - mapY * nuevaEscala;
+      let nuevaEscala = Math.min(Math.max(escalaInicialToque * factor, MIN_ESCALA), MAX_ESCALA);
+      if (nuevaEscala <= MIN_ESCALA) {
+        nuevaEscala = MIN_ESCALA;
+        panX = 0;
+        panY = 0;
+      } else {
+        panX = mouseX - mapX * nuevaEscala;
+        panY = mouseY - mapY * nuevaEscala;
+        limitarPan(contenedor.getBoundingClientRect());
+      }
       escala = nuevaEscala;
       aplicarTransformacion(false);
     }
@@ -1220,6 +1538,8 @@ function iniciarInteraccionPanZoom() {
     distInicialToque = 0;
     setTimeout(() => { huboMovimiento = false; }, 60);
   });
+
+  actualizarBotonesZoom();
 }
 
 // =============================================================
@@ -1409,4 +1729,65 @@ function configurarBuscador() {
       }
     }
   });
+}
+
+// =============================================================
+// 12. RESPONSIVE: ADAPTAR MAPA AL REDIMENSIONAR O CAMBIAR ZOOM
+// =============================================================
+let timerResize = null;
+window.addEventListener("resize", () => {
+  clearTimeout(timerResize);
+  timerResize = setTimeout(() => {
+    const contenedor = document.getElementById("mapa-contenedor");
+    if (contenedor) {
+      limitarPan(contenedor.getBoundingClientRect());
+      aplicarTransformacion(false);
+    }
+  }, 120);
+});
+
+// =============================================================
+// 13. SIDEBAR IZQUIERDO: SELECCIÓN Y TOGGLE
+// =============================================================
+function seleccionarNavSidebar(el, seccion) {
+  document.querySelectorAll(".sidebar-link").forEach(link => link.classList.remove("activo"));
+  if (el) el.classList.add("activo");
+
+  const crumb = document.getElementById("header-crumb-text");
+
+  if (seccion === "inicio") {
+    expandirMapa(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (crumb) crumb.textContent = "Panel General";
+  } else if (seccion === "mapa") {
+    expandirMapa(true);
+    if (crumb) crumb.textContent = "Mapeo Nacional";
+  } else if (seccion === "clog") {
+    filtrarTipoNodo("CLOG");
+    if (crumb) crumb.textContent = "Centros Logísticos";
+  } else if (seccion === "sorters") {
+    filtrarTipoNodo("Sorter");
+    if (crumb) crumb.textContent = "Sorters";
+  } else if (seccion === "transporte") {
+    filtrarTipoNodo("Transporte");
+    if (crumb) crumb.textContent = "Transporte";
+  } else if (seccion === "indicadores") {
+    expandirMapa(false);
+    const sec = document.querySelector(".card-seccion");
+    if (sec) sec.scrollIntoView({ behavior: "smooth" });
+    if (crumb) crumb.textContent = "Indicadores Operativos";
+  } else if (seccion === "documentacion") {
+    if (crumb) crumb.textContent = "Documentación";
+  }
+
+  // Cerrar sidebar en tablets/móviles tras seleccionar
+  const sidebar = document.getElementById("sidebar-izq");
+  if (sidebar && window.innerWidth <= 992) {
+    sidebar.classList.remove("sidebar-abierto");
+  }
+}
+
+function toggleSidebarMenu() {
+  const sidebar = document.getElementById("sidebar-izq");
+  if (sidebar) sidebar.classList.toggle("sidebar-abierto");
 }
