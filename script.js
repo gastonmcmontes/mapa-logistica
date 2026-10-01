@@ -17,7 +17,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Tucumán",
     lat: -26.81, lng: -65.22,
     capacidad: "12.400 m²", piezasDia: "34.000", operatividad: "24 / 7",
-    fotos: ["imagenes/cuyo-noa/Tucuman.jpg","imagenes/cuyo-noa/Tucunan 1.jpg","imagenes/cuyo-noa/Tucuman 2.jpg"],
+    fotos: ["imagenes/cuyo-noa/Tucuman.jpg", "imagenes/cuyo-noa/Tucunan 1.jpg", "imagenes/cuyo-noa/Tucuman 2.jpg"],
     desc: "Hub principal del Noroeste Argentino (NOA), con conexión directa a Salta, Jujuy, Catamarca y Santiago del Estero."
   },
   {
@@ -25,7 +25,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Mendoza",
     lat: -32.89, lng: -68.84,
     capacidad: "14.200 m²", piezasDia: "29.000", operatividad: "24 / 7",
-    fotos: ["imagenes/cuyo-noa/mendoza.jpg","imagenes/cuyo-noa/mendoza 1.jpg","imagenes/cuyo-noa/mendoza 2.jpg","imagenes/cuyo-noa/Mendoza 3.jpg"],
+    fotos: ["imagenes/cuyo-noa/mendoza.jpg", "imagenes/cuyo-noa/mendoza 1.jpg", "imagenes/cuyo-noa/mendoza 2.jpg", "imagenes/cuyo-noa/Mendoza 3.jpg"],
     desc: "Cabecera logística de la Región Cuyo y punto de conexión bioceánico con el paso Cristo Redentor."
   },
   {
@@ -33,7 +33,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Salta",
     lat: -24.78, lng: -65.41,
     capacidad: "10.800 m²", piezasDia: "13.800", operatividad: "24 / 7",
-    fotos: ["imagenes/cuyo-noa/Salta.jpg","imagenes/cuyo-noa/Salta 1.jpg","imagenes/cuyo-noa/Salta 2.jpg","imagenes/cuyo-noa/Salta 3.jpg"],
+    fotos: ["imagenes/cuyo-noa/Salta.jpg", "imagenes/cuyo-noa/Salta 1.jpg", "imagenes/cuyo-noa/Salta 2.jpg", "imagenes/cuyo-noa/Salta 3.jpg"],
     desc: "Nodo logístico regional del norte argentino, conectando Jujuy, Formosa y el corredor hacia Bolivia."
   },
   {
@@ -41,7 +41,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "San Juan",
     lat: -31.54, lng: -68.54,
     capacidad: "8.500 m²", piezasDia: "11.400", operatividad: "L a S",
-    fotos: ["imagenes/cuyo-noa/San Juan.jpg","imagenes/cuyo-noa/San juan 1.jpg","imagenes/cuyo-noa/San juan 2.jpg"],
+    fotos: ["imagenes/cuyo-noa/San Juan.jpg", "imagenes/cuyo-noa/San juan 1.jpg", "imagenes/cuyo-noa/San juan 2.jpg"],
     desc: "Centro de distribución regional para la provincia de San Juan y zonas precordilleranas."
   },
   {
@@ -49,7 +49,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "San Luis",
     lat: -33.30, lng: -66.34,
     capacidad: "7.800 m²", piezasDia: "9.200", operatividad: "L a S",
-    fotos: ["imagenes/cuyo-noa/San Luis.jpg","imagenes/cuyo-noa/San Luis 1.jpg","imagenes/cuyo-noa/San luis 2.jpg","imagenes/cuyo-noa/San luis 3.jpg"],
+    fotos: ["imagenes/cuyo-noa/San Luis.jpg", "imagenes/cuyo-noa/San Luis 1.jpg", "imagenes/cuyo-noa/San luis 2.jpg", "imagenes/cuyo-noa/San luis 3.jpg"],
     desc: "Nodo operativo de San Luis, articulando con Mendoza y Córdoba."
   },
   {
@@ -57,7 +57,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Jujuy",
     lat: -24.19, lng: -65.30,
     capacidad: "6.500 m²", piezasDia: "7.100", operatividad: "L a V",
-    fotos: ["imagenes/cuyo-noa/Jujuy.jpg","imagenes/cuyo-noa/Jujuy 1.jpg","imagenes/cuyo-noa/Jujuy 2.jpg"],
+    fotos: ["imagenes/cuyo-noa/Jujuy.jpg", "imagenes/cuyo-noa/Jujuy 1.jpg", "imagenes/cuyo-noa/Jujuy 2.jpg"],
     desc: "Centro logístico en la Puna juyeña con cobertura de la Quebrada de Humahuaca y puntos de frontera."
   },
   {
@@ -65,7 +65,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Catamarca",
     lat: -28.47, lng: -65.78,
     capacidad: "5.200 m²", piezasDia: "5.900", operatividad: "L a V",
-    fotos: ["imagenes/cuyo-noa/Catamarca.jpg","imagenes/cuyo-noa/Catamarca 1.jpg","imagenes/cuyo-noa/Catamarca 2.jpg"],
+    fotos: ["imagenes/cuyo-noa/Catamarca.jpg", "imagenes/cuyo-noa/Catamarca 1.jpg", "imagenes/cuyo-noa/Catamarca 2.jpg"],
     desc: "Nodo logístico provincial que cubre minería y agro en el oeste catamarqueño."
   },
   {
@@ -73,7 +73,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "La Rioja",
     lat: -29.41, lng: -66.86,
     capacidad: "4.800 m²", piezasDia: "5.400", operatividad: "L a V",
-    fotos: ["imagenes/cuyo-noa/La Rioja.jpg","imagenes/cuyo-noa/La Rioja 1.jpg","imagenes/cuyo-noa/La Rioja 2.jpg"],
+    fotos: ["imagenes/cuyo-noa/La Rioja.jpg", "imagenes/cuyo-noa/La Rioja 1.jpg", "imagenes/cuyo-noa/La Rioja 2.jpg"],
     desc: "Centro de operaciones provincial de La Rioja, distribución hacia valles y zonas rurales."
   },
   {
@@ -81,7 +81,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Santiago del Estero",
     lat: -27.78, lng: -64.27,
     capacidad: "6.200 m²", piezasDia: "9.800", operatividad: "L a S",
-    fotos: ["imagenes/cuyo-noa/Santiago del Estero.jpg","imagenes/cuyo-noa/Santiago del Estero 1.jpg","imagenes/cuyo-noa/Santiago del Estero 2.jpg"],
+    fotos: ["imagenes/cuyo-noa/Santiago del Estero.jpg", "imagenes/cuyo-noa/Santiago del Estero 1.jpg", "imagenes/cuyo-noa/Santiago del Estero 2.jpg"],
     desc: "Nodo estratégico del Chaco Santiagueño, distribuye hacia el interior y conecta NOA con NEA."
   },
 
@@ -93,7 +93,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Córdoba",
     lat: -31.42, lng: -64.18,
     capacidad: "18.500 m²", piezasDia: "48.500", operatividad: "24 / 7",
-    fotos: ["imagenes/centro-nea/Cordoba frente.jpg","imagenes/centro-nea/Cordoba 1.jpg","imagenes/centro-nea/Cordoba 2.jpg"],
+    fotos: ["imagenes/centro-nea/Cordoba frente.jpg", "imagenes/centro-nea/Cordoba 1.jpg", "imagenes/centro-nea/Cordoba 2.jpg"],
     desc: "Nodo neurálgico del Corredor Central. Distribuye hacia Cuyo, NOA y conecta con Buenos Aires y Rosario."
   },
   {
@@ -101,7 +101,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Santa Fe",
     lat: -32.95, lng: -60.66,
     capacidad: "16.800 m²", piezasDia: "41.200", operatividad: "24 / 7",
-    fotos: ["imagenes/centro-nea/Rosario Frente.jpg","imagenes/centro-nea/Rosario 1.jpg","imagenes/centro-nea/Rosario 2.jpg"],
+    fotos: ["imagenes/centro-nea/Rosario Frente.jpg", "imagenes/centro-nea/Rosario 1.jpg", "imagenes/centro-nea/Rosario 2.jpg"],
     desc: "Plataforma multimodal en el eje fluvial e industrial de Santa Fe y Entre Ríos."
   },
   {
@@ -109,7 +109,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Santa Fe",
     lat: -31.63, lng: -60.70,
     capacidad: "9.000 m²", piezasDia: "16.200", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Santa Fe Frente 2.jpg","imagenes/centro-nea/Santa Fe 1.jpg","imagenes/centro-nea/Santa fe 2.jpg","imagenes/centro-nea/Santa Fe 3.jpg","imagenes/centro-nea/Santa Fe 4.jpg"],
+    fotos: ["imagenes/centro-nea/Santa Fe Frente 2.jpg", "imagenes/centro-nea/Santa Fe 1.jpg", "imagenes/centro-nea/Santa fe 2.jpg", "imagenes/centro-nea/Santa Fe 3.jpg", "imagenes/centro-nea/Santa Fe 4.jpg"],
     desc: "Nodo logístico de la capital provincial de Santa Fe, con distribución al litoral."
   },
   {
@@ -117,7 +117,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Entre Ríos",
     lat: -31.74, lng: -60.52,
     capacidad: "8.500 m²", piezasDia: "10.800", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Parana Frente.jpg","imagenes/centro-nea/Parana 1.jpg","imagenes/centro-nea/Parana 2.jpg","imagenes/centro-nea/Parana frente nave 2.jpg"],
+    fotos: ["imagenes/centro-nea/Parana Frente.jpg", "imagenes/centro-nea/Parana 1.jpg", "imagenes/centro-nea/Parana 2.jpg", "imagenes/centro-nea/Parana frente nave 2.jpg"],
     desc: "Centro operativo de Entre Ríos, articulando el litoral mesopotámico con Córdoba y AMBA."
   },
   {
@@ -125,7 +125,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Córdoba",
     lat: -33.13, lng: -64.35,
     capacidad: "7.500 m²", piezasDia: "8.500", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Rio Cuarto Frente.jpg","imagenes/centro-nea/Rio Cuarto 1.jpg","imagenes/centro-nea/Rio cuarto 2.jpg","imagenes/centro-nea/Rio cuarto 3.jpg"],
+    fotos: ["imagenes/centro-nea/Rio Cuarto Frente.jpg", "imagenes/centro-nea/Rio Cuarto 1.jpg", "imagenes/centro-nea/Rio cuarto 2.jpg", "imagenes/centro-nea/Rio cuarto 3.jpg"],
     desc: "Nodo logístico del sur de Córdoba, con distribución hacia La Pampa y San Luis."
   },
   {
@@ -133,7 +133,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Córdoba",
     lat: -32.41, lng: -63.24,
     capacidad: "6.800 m²", piezasDia: "12.000", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Villa Maria Frente.jpg","imagenes/centro-nea/Villa Maria 2.jpg","imagenes/centro-nea/Villa Maria 3.jpg","imagenes/centro-nea/Villa Maria 4.jpg"],
+    fotos: ["imagenes/centro-nea/Villa Maria Frente.jpg", "imagenes/centro-nea/Villa Maria 2.jpg", "imagenes/centro-nea/Villa Maria 3.jpg", "imagenes/centro-nea/Villa Maria 4.jpg"],
     desc: "Nodo estratégico del centro cordobés, articulando el corredor nacional hacia AMBA."
   },
   {
@@ -141,7 +141,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Corrientes",
     lat: -27.47, lng: -58.83,
     capacidad: "7.200 m²", piezasDia: "12.000", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Corrientes Frente.jpg","imagenes/centro-nea/Corrientes 1.jpg","imagenes/centro-nea/Corrientes 2.jpg","imagenes/centro-nea/Corrientes 3.jpg"],
+    fotos: ["imagenes/centro-nea/Corrientes Frente.jpg", "imagenes/centro-nea/Corrientes 1.jpg", "imagenes/centro-nea/Corrientes 2.jpg", "imagenes/centro-nea/Corrientes 3.jpg"],
     desc: "Centro logístico del NEA, conectando el litoral mesopotámico con Chaco y Misiones."
   },
   {
@@ -149,7 +149,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Chaco",
     lat: -27.46, lng: -58.99,
     capacidad: "6.800 m²", piezasDia: "12.500", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Resistencia frente.jpg","imagenes/centro-nea/Resistencia 1.jpg","imagenes/centro-nea/Resistencia 2.jpg","imagenes/centro-nea/Resistencia 3.jpg"],
+    fotos: ["imagenes/centro-nea/Resistencia frente.jpg", "imagenes/centro-nea/Resistencia 1.jpg", "imagenes/centro-nea/Resistencia 2.jpg", "imagenes/centro-nea/Resistencia 3.jpg"],
     desc: "Nodo logístico de la capital del Chaco, con distribución hacia Formosa y el interior."
   },
   {
@@ -157,7 +157,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Misiones",
     lat: -27.36, lng: -55.90,
     capacidad: "6.400 m²", piezasDia: "11.000", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Posadas Frente.jpg","imagenes/centro-nea/Posadas 1.jpg","imagenes/centro-nea/Posadas 2.jpg","imagenes/centro-nea/Posadas 3.jpg"],
+    fotos: ["imagenes/centro-nea/Posadas Frente.jpg", "imagenes/centro-nea/Posadas 1.jpg", "imagenes/centro-nea/Posadas 2.jpg", "imagenes/centro-nea/Posadas 3.jpg"],
     desc: "Nodo logístico de Misiones, puerta de distribución hacia la Selva Misionera y frontera con Brasil."
   },
 
@@ -169,7 +169,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -38.72, lng: -62.27,
     capacidad: "11.000 m²", piezasDia: "22.800", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Bahia Blanca.jpg","imagenes/metro-pba/Bahia Blanca 1.jpg"],
+    fotos: ["imagenes/metro-pba/Bahia Blanca.jpg", "imagenes/metro-pba/Bahia Blanca 1.jpg"],
     desc: "Puerta logística hacia la Patagonia y nodo de articulación con el sur bonaerense."
   },
   {
@@ -177,7 +177,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Ciudad Autónoma de Buenos Aires",
     lat: -34.64, lng: -58.38,
     capacidad: "18.000 m²", piezasDia: "55.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Barracas.jpg","imagenes/metro-pba/Barracas 1.jpg","imagenes/metro-pba/Barracas 2.jpg","imagenes/metro-pba/Barracas 3.jpg"],
+    fotos: ["imagenes/metro-pba/Barracas.jpg", "imagenes/metro-pba/Barracas 1.jpg", "imagenes/metro-pba/Barracas 2.jpg", "imagenes/metro-pba/Barracas 3.jpg"],
     desc: "Centro logístico urbano en CABA, especializado en última milla para Capital Federal y GBA."
   },
   {
@@ -185,7 +185,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -34.92, lng: -57.95,
     capacidad: "9.500 m²", piezasDia: "14.500", operatividad: "L a S",
-    fotos: ["imagenes/metro-pba/La Plata.jpg","imagenes/metro-pba/La Plata 1.jpg","imagenes/metro-pba/La Plata 2.jpg","imagenes/metro-pba/La Plata 3.jpg"],
+    fotos: ["imagenes/metro-pba/La Plata.jpg", "imagenes/metro-pba/La Plata 1.jpg", "imagenes/metro-pba/La Plata 2.jpg", "imagenes/metro-pba/La Plata 3.jpg"],
     desc: "Centro de distribución de la capital bonaerense, cubriendo GBA Sur y la costa atlántica."
   },
   {
@@ -193,7 +193,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -38.00, lng: -57.56,
     capacidad: "9.500 m²", piezasDia: "19.400", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/M del Plata.jpg","imagenes/metro-pba/M del Plata 1.jpg","imagenes/metro-pba/M del Plata 2.jpg"],
+    fotos: ["imagenes/metro-pba/M del Plata.jpg", "imagenes/metro-pba/M del Plata 1.jpg", "imagenes/metro-pba/M del Plata 2.jpg"],
     desc: "Planta de distribución integral para la Costa Atlántica y el sudeste de la Provincia de Buenos Aires."
   },
   {
@@ -201,7 +201,7 @@ const nodosData = [
     tipo: "Sorter", provincia: "Buenos Aires",
     lat: -34.69, lng: -58.52,
     capacidad: "32.000 m²", piezasDia: "85.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Mercado Central.jpg","imagenes/metro-pba/Mercado central 1.jpg","imagenes/metro-pba/Mercado Central 2.jpg","imagenes/metro-pba/Mercado Central 3.jpg","imagenes/metro-pba/Mercado Central 4.jpg"],
+    fotos: ["imagenes/metro-pba/Mercado Central.jpg", "imagenes/metro-pba/Mercado central 1.jpg", "imagenes/metro-pba/Mercado Central 2.jpg", "imagenes/metro-pba/Mercado Central 3.jpg", "imagenes/metro-pba/Mercado Central 4.jpg"],
     desc: "Gran hub logístico del GBA Oeste, adyacente al Mercado Central. Sorter de alta velocidad."
   },
   {
@@ -209,7 +209,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -34.65, lng: -59.43,
     capacidad: "7.200 m²", piezasDia: "11.000", operatividad: "L a S",
-    fotos: ["imagenes/metro-pba/Mercedes.jpg","imagenes/metro-pba/Mercedes 1.jpg","imagenes/metro-pba/Mercedes 2.jpg"],
+    fotos: ["imagenes/metro-pba/Mercedes.jpg", "imagenes/metro-pba/Mercedes 1.jpg", "imagenes/metro-pba/Mercedes 2.jpg"],
     desc: "Nodo de distribución del GBA Oeste e interior bonaerense."
   },
   {
@@ -217,7 +217,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -34.63, lng: -58.79,
     capacidad: "8.500 m²", piezasDia: "18.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Moreno .jpg","imagenes/metro-pba/Moreno 1.jpg","imagenes/metro-pba/Moreno 2.jpg","imagenes/metro-pba/Moreno 3.jpg"],
+    fotos: ["imagenes/metro-pba/Moreno .jpg", "imagenes/metro-pba/Moreno 1.jpg", "imagenes/metro-pba/Moreno 2.jpg", "imagenes/metro-pba/Moreno 3.jpg"],
     desc: "Centro logístico del corredor Oeste del GBA con alta densidad de distribución urbana."
   },
   {
@@ -225,7 +225,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -33.88, lng: -60.57,
     capacidad: "5.800 m²", piezasDia: "8.500", operatividad: "L a V",
-    fotos: ["imagenes/metro-pba/Pergamino.jpg","imagenes/metro-pba/Pergamino 1.jpg","imagenes/metro-pba/Pergamino 2.jpg"],
+    fotos: ["imagenes/metro-pba/Pergamino.jpg", "imagenes/metro-pba/Pergamino 1.jpg", "imagenes/metro-pba/Pergamino 2.jpg"],
     desc: "Nodo del norte bonaerense, articulando el agro con la cadena logística hacia AMBA."
   },
   {
@@ -233,7 +233,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -34.72, lng: -58.25,
     capacidad: "9.000 m²", piezasDia: "22.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Quilmes .jpg","imagenes/metro-pba/Quilmes 1.jpg","imagenes/metro-pba/Quilmes 2.jpg","imagenes/metro-pba/Quilmes 3.jpg","imagenes/metro-pba/Quilmes 4.jpg"],
+    fotos: ["imagenes/metro-pba/Quilmes .jpg", "imagenes/metro-pba/Quilmes 1.jpg", "imagenes/metro-pba/Quilmes 2.jpg", "imagenes/metro-pba/Quilmes 3.jpg", "imagenes/metro-pba/Quilmes 4.jpg"],
     desc: "Centro logístico del GBA Sur, cubriendo el corredor industrial del Riachuelo."
   },
   {
@@ -241,7 +241,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "La Pampa",
     lat: -36.62, lng: -64.29,
     capacidad: "5.400 m²", piezasDia: "7.600", operatividad: "L a V",
-    fotos: ["imagenes/metro-pba/Santa Rosa.jpg","imagenes/metro-pba/Santa Rosa 1.jpg","imagenes/metro-pba/Santa Rosa 3.jpg"],
+    fotos: ["imagenes/metro-pba/Santa Rosa.jpg", "imagenes/metro-pba/Santa Rosa 1.jpg", "imagenes/metro-pba/Santa Rosa 3.jpg"],
     desc: "Nodo logístico de La Pampa, distribuyendo al interior pampeano y articulando con Córdoba."
   },
   {
@@ -249,7 +249,7 @@ const nodosData = [
     tipo: "CLOG", provincia: "Buenos Aires",
     lat: -34.52, lng: -58.47,
     capacidad: "6.500 m²", piezasDia: "14.000", operatividad: "L a S",
-    fotos: ["imagenes/metro-pba/Vte. Lopez.jpg","imagenes/metro-pba/Vte. Lopez 1.jpg","imagenes/metro-pba/Vte. Lopez 2.jpg","imagenes/metro-pba/Vte. Lopez 3.jpg"],
+    fotos: ["imagenes/metro-pba/Vte. Lopez.jpg", "imagenes/metro-pba/Vte. Lopez 1.jpg", "imagenes/metro-pba/Vte. Lopez 2.jpg", "imagenes/metro-pba/Vte. Lopez 3.jpg"],
     desc: "Nodo logístico del corredor Norte del GBA, con acceso a Autopista Panamericana."
   },
 
@@ -488,7 +488,7 @@ async function cargarYConstruirMapa() {
     ajustarLabelsSegunZoom();
     renderizarNodos();
 
-  } catch(err) {
+  } catch (err) {
     console.error("Error al cargar mapa:", err);
     svg.innerHTML = `
       <text x="250" y="450" text-anchor="middle" fill="#002554" font-size="14" font-family="Plus Jakarta Sans, sans-serif">
@@ -558,7 +558,7 @@ function renderizarMapaCompleto(svg, geojson) {
         coords.forEach(c => { sumLng += c[0]; sumLat += c[1]; count++; });
         const pt = proyecto(sumLng / count, sumLat / count);
         cx = pt.x; cy = pt.y;
-      } catch(e) { return; }
+      } catch (e) { return; }
     }
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("x", cx.toFixed(1));
@@ -589,7 +589,6 @@ function renderizarMapaCompleto(svg, geojson) {
  */
 function calcularClusters(nodos) {
   const s = escala;
-
   // Umbral en píxeles de pantalla: nodos a menos de 56px en pantalla se agrupan
   const UMBRAL_PX = 56;
   const umbralSVG = UMBRAL_PX / s;
@@ -754,25 +753,25 @@ function _renderNodoSimple(nodo, parent, s) {
   const k = Math.pow(Math.max(s, 0.6), 0.35);
 
   // Dimensiones del puntito (nodo físico en el mapa)
-  const DOT_R   = 7.2 / k;
+  const DOT_R = 7.2 / k;
   const INNER_R = 3.2 / k;
-  const GLOW_R  = 12.0 / k;
-  const SW      = 1.8 / k;
+  const GLOW_R = 12.0 / k;
+  const SW = 1.8 / k;
 
   // Direcciones inteligentes calculadas para evitar solapamientos en áreas densas
   let dir = "right";
-  if (nodo.id === "vte_lopez")              dir = "top";
-  else if (nodo.id === "moreno")            dir = "left";
-  else if (nodo.id === "mercado_central")   dir = "bottom-left";
-  else if (nodo.id === "quilmes")           dir = "bottom-right";
-  else if (nodo.id === "barracas")          dir = "right";
-  else if (nodo.id === "rio_cuarto")        dir = "bottom";
-  else if (nodo.id === "villa_maria")       dir = "top";
-  else if (nodo.id === "santa_fe")          dir = "top";
-  else if (nodo.id === "rosario")           dir = "bottom";
-  else if (nodo.id === "resistencia")       dir = "top-left";
-  else if (nodo.id === "corrientes")        dir = "bottom-right";
-  else if (nodo.id === "trelew")            dir = "top";
+  if (nodo.id === "vte_lopez") dir = "top";
+  else if (nodo.id === "moreno") dir = "left";
+  else if (nodo.id === "mercado_central") dir = "bottom-left";
+  else if (nodo.id === "quilmes") dir = "bottom-right";
+  else if (nodo.id === "barracas") dir = "right";
+  else if (nodo.id === "rio_cuarto") dir = "bottom";
+  else if (nodo.id === "villa_maria") dir = "top";
+  else if (nodo.id === "santa_fe") dir = "top";
+  else if (nodo.id === "rosario") dir = "bottom";
+  else if (nodo.id === "resistencia") dir = "top-left";
+  else if (nodo.id === "corrientes") dir = "bottom-right";
+  else if (nodo.id === "trelew") dir = "top";
   else if (nodo.id === "comodoro_rivadavia") dir = "bottom";
 
   const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -904,20 +903,20 @@ function zoomHaciaCluster(cx, cy) {
   const rect = contenedor.getBoundingClientRect();
 
   const nuevaEscala = Math.min(escala * 2.5, 9);
-  panX   = rect.width  / 2 - cx * nuevaEscala;
-  panY   = rect.height / 2 - cy * nuevaEscala;
+  panX = rect.width / 2 - cx * nuevaEscala;
+  panY = rect.height / 2 - cy * nuevaEscala;
   escala = nuevaEscala;
 
   aplicarTransformacion(true);
 }
 
 function obtenerClaseTipo(tipo) {
-  switch(tipo) {
-    case "CLOG":     return "nodo-clog";
-    case "DP":       return "nodo-dp";
-    case "Sorter":   return "nodo-sorter";
+  switch (tipo) {
+    case "CLOG": return "nodo-clog";
+    case "DP": return "nodo-dp";
+    case "Sorter": return "nodo-sorter";
     case "Regional": return "nodo-regional";
-    default:         return "nodo-sucursal";
+    default: return "nodo-sucursal";
   }
 }
 
@@ -1051,12 +1050,12 @@ function ajustarLabelsSegunZoom() {
   if (!svg) return;
 
   const BASE_PROV = 6.4;
-  const opacity   = s >= 2.2 ? 0.10 : (s >= 1.6 ? 0.35 : 0.85);
+  const opacity = s >= 2.2 ? 0.10 : (s >= 1.6 ? 0.35 : 0.85);
 
   svg.querySelectorAll(".label-provincia").forEach(el => {
-    el.style.fontSize      = (BASE_PROV / s).toFixed(3) + "px";
+    el.style.fontSize = (BASE_PROV / s).toFixed(3) + "px";
     el.style.letterSpacing = (0.3 / s).toFixed(3) + "px";
-    el.style.opacity       = opacity;
+    el.style.opacity = opacity;
   });
 }
 
@@ -1080,8 +1079,8 @@ function zoomCentrado(factor) {
   aplicarTransformacion(true);
 }
 
-function zoomIn()    { zoomCentrado(1.3); }
-function zoomOut()   { zoomCentrado(1 / 1.3); }
+function zoomIn() { zoomCentrado(1.3); }
+function zoomOut() { zoomCentrado(1 / 1.3); }
 function zoomReset() {
   escala = 1;
   panX = 0;
@@ -1298,12 +1297,12 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
 }
 
 function formatearTipoBadge(tipo) {
-  switch(tipo) {
-    case "CLOG":     return "Centro Logístico (CLOG)";
-    case "DP":       return "Planta de Distribución (DP)";
-    case "Sorter":   return "Sorter Automatizado";
+  switch (tipo) {
+    case "CLOG": return "Centro Logístico (CLOG)";
+    case "DP": return "Planta de Distribución (DP)";
+    case "Sorter": return "Sorter Automatizado";
     case "Regional": return "Nodo Regional";
-    default:         return "Sucursal Logística";
+    default: return "Sucursal Logística";
   }
 }
 
