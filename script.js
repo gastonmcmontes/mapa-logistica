@@ -355,867 +355,412 @@ const redConexiones = [
 ];
 
 // =============================================================
-// 2. PROYECCIÓN MERCATOR CONFORME
+// 2. ESTADO GLOBAL Y CONFIGURACIÓN MAPA LEAFLET
 // =============================================================
-const VIEWBOX_W = 430;
-const VIEWBOX_H = 900;
-
-let proj = {
-  scale: 1,
-  minLngRad: 0,
-  maxMerc: 0,
-  offsetX: 0,
-  offsetY: 0,
-  toMerc: lat => {
-    const r = Math.max(-85, Math.min(85, lat)) * Math.PI / 180;
-    return Math.log(Math.tan(Math.PI / 4 + r / 2));
-  }
-};
-
-function calcularProyeccion(geojson, w = VIEWBOX_W, h = VIEWBOX_H, padding = 16) {
-  let minLng = Infinity, maxLng = -Infinity;
-  let minLat = Infinity, maxLat = -Infinity;
-
-  function scan(coord) {
-    if (!Array.isArray(coord)) return;
-    if (typeof coord[0] === "number" && typeof coord[1] === "number") {
-      const lng = coord[0], lat = coord[1];
-      if (lng < minLng) minLng = lng;
-      if (lng > maxLng) maxLng = lng;
-      if (lat < minLat) minLat = lat;
-      if (lat > maxLat) maxLat = lat;
-    } else {
-      coord.forEach(scan);
-    }
-  }
-
-  geojson.features.forEach(f => {
-    if (f.geometry && f.geometry.coordinates) scan(f.geometry.coordinates);
-  });
-
-  const minLngRad = minLng * Math.PI / 180;
-  const maxLngRad = maxLng * Math.PI / 180;
-  const maxMerc = proj.toMerc(maxLat);
-  const minMerc = proj.toMerc(minLat);
-
-  const deltaLng = maxLngRad - minLngRad;
-  const deltaMerc = maxMerc - minMerc;
-
-  const availW = w - 2 * padding;
-  const availH = h - 2 * padding;
-
-  const scale = Math.min(availW / deltaLng, availH / deltaMerc);
-  const offsetX = padding + (availW - deltaLng * scale) / 2;
-  const offsetY = padding + (availH - deltaMerc * scale) / 2;
-
-  proj.scale = scale;
-  proj.minLngRad = minLngRad;
-  proj.maxMerc = maxMerc;
-  proj.offsetX = offsetX;
-  proj.offsetY = offsetY;
-}
-
-function proyecto(lng, lat) {
-  const lngRad = lng * Math.PI / 180;
-  const merc = proj.toMerc(lat);
-  const x = (lngRad - proj.minLngRad) * proj.scale + proj.offsetX;
-  const y = (proj.maxMerc - merc) * proj.scale + proj.offsetY;
-  return { x, y };
-}
-
-function geoRingToPath(ring) {
-  return ring.map((pt, i) => {
-    const { x, y } = proyecto(pt[0], pt[1]);
-    return `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`;
-  }).join(" ") + " Z";
-}
-
-function geomToPathD(geometry) {
-  if (!geometry) return "";
-  const parts = [];
-  if (geometry.type === "Polygon") {
-    geometry.coordinates.forEach(ring => parts.push(geoRingToPath(ring)));
-  } else if (geometry.type === "MultiPolygon") {
-    geometry.coordinates.forEach(poly =>
-      poly.forEach(ring => parts.push(geoRingToPath(ring)))
-    );
-  }
-  return parts.join(" ");
-}
-
-// =============================================================
-// 3. ESTADO GLOBAL
-// =============================================================
-let geoData = null;
+let leafletMap = null;
 let nodoActivo = null;
 let mapaEstaExpandido = false;
+let geoData = null;
+let geojsonLayer = null;
+let markersLayerGroup = null;
+let clustersLayerGroup = null;
 
-// Zoom & Pan state
-let escala = 1;
-let panX = 0;
-let panY = 0;
-let estaArrastrando = false;
-let inicioX = 0, inicioY = 0;
-let huboMovimiento = false;
-
-// =============================================================
-// 4. INICIALIZACIÓN
-// =============================================================
-document.addEventListener("DOMContentLoaded", () => {
-  iniciarInteraccionPanZoom();
-  configurarBuscador();
-  cargarYConstruirMapa();
-});
-
-// =============================================================
-// 5. CARGA DEL MAPA DESDE GEOJSON
-// =============================================================
-async function cargarYConstruirMapa() {
-  const svg = document.getElementById("mapa-svg");
-
-  try {
-    if (typeof GEOJSON_ARGENTINA !== "undefined" && GEOJSON_ARGENTINA) {
-      geoData = GEOJSON_ARGENTINA;
-      renderizarMapaCompleto(svg, geoData);
-      ajustarLabelsSegunZoom();
-      renderizarNodos();
-      return;
-    }
-    const resp = await fetch("provincias.geojson");
-    if (!resp.ok) throw new Error("No se pudo cargar provincias.geojson");
-    geoData = await resp.json();
-    renderizarMapaCompleto(svg, geoData);
-    ajustarLabelsSegunZoom();
-    renderizarNodos();
-
-  } catch (err) {
-    console.error("Error al cargar mapa:", err);
-    svg.innerHTML = `
-      <text x="250" y="450" text-anchor="middle" fill="#002554" font-size="14" font-family="Gilroy, sans-serif">
-        Cargando Mapa Operativo Nacional...
-      </text>`;
-  }
+// Helper para buscar nodos por provincia
+function buscarNodosPorProvincia(prov) {
+  return nodosData.filter(n => n.provincia === prov);
 }
 
-
-
-// =============================================================
-// 6. RENDERIZADO DEL MAPA COMPLETO (PROVINCIAS + ETIQUETAS + NODOS)
-// =============================================================
-function renderizarMapaCompleto(svg, geojson) {
-  svg.innerHTML = "";
-  svg.setAttribute("viewBox", `0 0 ${VIEWBOX_W} ${VIEWBOX_H}`);
-
-  // Calcular proyección conforme sobre las 24 provincias
-  calcularProyeccion(geojson, VIEWBOX_W, VIEWBOX_H, 8);
-
-  // --- Capa 1: Provincias Argentinas ---
-  const gProvincias = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  gProvincias.id = "g-provincias";
-  svg.appendChild(gProvincias);
-
-  geojson.features.forEach(feature => {
-    const rawName = feature.properties.name || feature.properties.nombre || "";
-    const d = geomToPathD(feature.geometry);
-    if (!d) return;
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", d);
-    path.setAttribute("class", "provincia-svg");
-    path.dataset.nombre = rawName;
-    path.addEventListener("click", (e) => {
-      if (huboMovimiento) return;
-      e.stopPropagation();
-      if (path.classList.contains("seleccionada")) {
-        deseleccionarTodo();
-      } else {
-        resaltarProvincia(path);
-        seleccionarProvincia(rawName);
-      }
-    });
-    gProvincias.appendChild(path);
-  });
-
-  // --- Capa 2: Etiquetas de nombres de provincias ---
-  const gLabels = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  gLabels.id = "g-labels";
-  svg.appendChild(gLabels);
-
-function getProvFontSize(provName) {
-  const norm = provName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  if (norm.includes("ciudad") || norm.includes("caba")) return 8.0;
-  if (norm.includes("tucuman")) return 9.5;
-  if (norm.includes("misiones")) return 9.5;
-  if (norm.includes("buenos aires") || norm.includes("santa cruz") || norm.includes("chubut") || norm.includes("rio negro") || norm.includes("la pampa")) {
-    return 13.5;
-  }
-  if (norm.includes("cordoba") || norm.includes("mendoza") || norm.includes("santa fe") || norm.includes("salta") || norm.includes("santiago del estero") || norm.includes("chaco") || norm.includes("neuquen")) {
-    return 12.0;
-  }
-  return 10.8;
-}
-
-  geojson.features.forEach(feature => {
-    const rawName = feature.properties.name || feature.properties.nombre || "";
-    if (!rawName) return;
-    const bbox = feature.bbox;
-    let cx, cy;
-    if (bbox) {
-      const pt = proyecto((bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2);
-      cx = pt.x; cy = pt.y;
-    } else {
-      try {
-        const coords = feature.geometry.type === "Polygon"
-          ? feature.geometry.coordinates[0]
-          : feature.geometry.coordinates[0][0];
-        let sumLng = 0, sumLat = 0, count = 0;
-        coords.forEach(c => { sumLng += c[0]; sumLat += c[1]; count++; });
-        const pt = proyecto(sumLng / count, sumLat / count);
-        cx = pt.x; cy = pt.y;
-      } catch (e) { return; }
-    }
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    label.setAttribute("x", cx.toFixed(1));
-    label.setAttribute("y", cy.toFixed(1));
-    label.setAttribute("class", "label-provincia");
-    const baseSize = getProvFontSize(rawName);
-    label.setAttribute("data-base-size", baseSize.toFixed(1));
-    label.textContent = rawName.toUpperCase();
-    gLabels.appendChild(label);
-  });
-
-  // La capa de nodos se agrega por separado mediante renderizarNodos()
-}
-
-// =============================================================
-// SISTEMA DE CLUSTERING Y MARCADORES DE NODOS
-// =============================================================
-
-/**
- * Agrupa únicamente nodos con cercanía extrema (específicamente AMBA en vista general).
- * A escala general (s < 1.8), los 5 nodos del AMBA se agrupan en un badge elegante "5 AMBA".
- * Al hacer zoom (s >= 1.8), se abren individualmente con etiquetas inteligentes sin pisarse.
- * Los nodos del interior del país se mantienen siempre visibles individualmente.
- */
-/**
- * Agrupa nodos en círculos de cluster según cercanía visual en el nivel de zoom actual.
- * - En vista general (s = 1.0), los nodos muy cercanos se consolidan en círculos elegantes.
- * - A medida que se hace zoom, los clusters se disuelven de forma suave y dinámica.
- * - A zoom profundo (s >= 3.2), todos los nodos se muestran individuales y con anti-colisión.
- */
-/**
- * Obtiene el factor de escala real entre las unidades SVG y los píxeles de pantalla del contenedor.
- * Garantiza que las tarjetas, textos y clusters tengan un tamaño en pantalla óptimo y 100% legible.
- */
-function obtenerSvgScale() {
-  const contenedor = document.getElementById("mapa-contenedor");
-  if (!contenedor) return 0.667;
-  const rect = contenedor.getBoundingClientRect();
-  if (!rect.width || !rect.height) return 0.667;
-  return Math.min(rect.width / VIEWBOX_W, rect.height / VIEWBOX_H);
-}
-
-/**
- * Agrupa nodos en círculos de cluster según cercanía visual en el nivel de zoom actual.
- * - En vista general (s = 1.0), los nodos muy cercanos se consolidan en círculos elegantes.
- * - A medida que se hace zoom, los clusters se disuelven de forma suave y dinámica.
- * - A zoom profundo (s >= 3.0), todos los nodos se muestran individuales y con anti-colisión.
- */
-function calcularClusters(nodos) {
-  const s = escala;
-  const svgScale = obtenerSvgScale();
-  const UMBRAL_PX = 46;
-  const umbralSVG = UMBRAL_PX / (svgScale * s);
-
-  if (s >= 3.0) {
-    return nodos.map(n => {
-      const p = proyecto(n.lng, n.lat);
-      return { nodos: [n], cx: p.x, cy: p.y };
-    });
-  }
-
-  const visitados = new Set();
-  const clusters = [];
-
-  for (let i = 0; i < nodos.length; i++) {
-    if (visitados.has(nodos[i].id)) continue;
-
-    const n1 = nodos[i];
-    const p1 = proyecto(n1.lng, n1.lat);
-    const grupo = [n1];
-    visitados.add(n1.id);
-
-    let sumX = p1.x;
-    let sumY = p1.y;
-
-    for (let j = 0; j < nodos.length; j++) {
-      if (i === j || visitados.has(nodos[j].id)) continue;
-      const n2 = nodos[j];
-      const p2 = proyecto(n2.lng, n2.lat);
-
-      const dist = Math.hypot(p2.x - sumX / grupo.length, p2.y - sumY / grupo.length);
-      if (dist < umbralSVG) {
-        visitados.add(n2.id);
-        grupo.push(n2);
-        sumX += p2.x;
-        sumY += p2.y;
-      }
-    }
-
-    clusters.push({
-      nodos: grupo,
-      cx: sumX / grupo.length,
-      cy: sumY / grupo.length
-    });
-  }
-
-  return clusters;
-}
-
-/**
- * Renderiza la capa de nodos y badges según el nivel de zoom actual.
- * Aplica algoritmo de prevención de colisiones para que las tarjetas
- * nunca se pisen entre sí en ningún nivel de zoom.
- */
-function renderizarNodos() {
-  const svg = document.getElementById("mapa-svg");
-  if (!svg) return;
-
-  let gNodos = document.getElementById("g-nodos");
-  if (gNodos) {
-    gNodos.innerHTML = "";
-  } else {
-    gNodos = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    gNodos.id = "g-nodos";
-    svg.appendChild(gNodos);
-  }
-
-  const s = escala;
-  const clusters = calcularClusters(nodosData);
-
-  const nodosIndividuales = [];
-  clusters.forEach(cluster => {
-    if (cluster.nodos.length > 1) {
-      _renderCluster(cluster, gNodos, s);
-    } else {
-      nodosIndividuales.push(cluster.nodos[0]);
-    }
-  });
-
-  if (nodosIndividuales.length > 0) {
-    _renderNodosConLayoutDinamico(nodosIndividuales, gNodos, s);
-  }
-}
-
-/** Dibuja un cluster agrupado: Círculo moderno tipo cluster con el número de CLOGs */
-function _renderCluster(cluster, parent, s) {
-  const svgScale = obtenerSvgScale();
-  const toSVG = px => px / (svgScale * s);
-
-  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  g.setAttribute("class", "cluster-g");
-
-  const count = cluster.nodos.length;
-  // Radio del círculo calibrado en píxeles reales de pantalla (amplio, nítido y táctil)
-  const baseRPx = count >= 5 ? 19.5 : (count >= 3 ? 17.0 : 15.0);
-  const R = toSVG(baseRPx);
-
-  // 1. Halo suave exterior
-  const halo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  halo.setAttribute("cx", cluster.cx.toFixed(3));
-  halo.setAttribute("cy", cluster.cy.toFixed(3));
-  halo.setAttribute("r", toSVG(baseRPx + 5.0).toFixed(3));
-  halo.setAttribute("fill", "rgba(255, 210, 0, 0.28)");
-  halo.setAttribute("pointer-events", "none");
-
-  // 2. Círculo sólido principal (Azul institucional Correo con borde dorado)
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  circle.setAttribute("cx", cluster.cx.toFixed(3));
-  circle.setAttribute("cy", cluster.cy.toFixed(3));
-  circle.setAttribute("r", R.toFixed(3));
-  circle.setAttribute("fill", "#002554");
-  circle.setAttribute("stroke", "#FFD200");
-  circle.setAttribute("stroke-width", toSVG(2.2).toFixed(3));
-  circle.setAttribute("class", "cluster-circle-bg");
-
-  // 3. Número de nodos (grande, centrado, ultra legible: 14.5px - 16.5px en pantalla)
-  const fontSizePx = count >= 5 ? 16.5 : 14.5;
-  const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  txt.setAttribute("x", cluster.cx.toFixed(3));
-  txt.setAttribute("y", cluster.cy.toFixed(3));
-  txt.setAttribute("text-anchor", "middle");
-  txt.setAttribute("dominant-baseline", "central");
-  txt.setAttribute("fill", "#FFD200");
-  txt.setAttribute("font-family", "Gilroy, sans-serif");
-  txt.setAttribute("font-weight", "900");
-  txt.setAttribute("font-size", toSVG(fontSizePx).toFixed(3));
-  txt.setAttribute("class", "cluster-text");
-  txt.setAttribute("pointer-events", "none");
-  txt.textContent = count;
-
-  g.appendChild(halo);
-  g.appendChild(circle);
-  g.appendChild(txt);
-
-  // Click en el cluster: hace zoom suave centrado para abrir y desplegar los nodos con etiquetas
-  g.addEventListener("click", e => {
-    if (huboMovimiento) return;
-    e.stopPropagation();
-
-    const contenedor = document.getElementById("mapa-contenedor");
-    if (!contenedor) return;
-    const rect = contenedor.getBoundingClientRect();
-
-    const elemRect = g.getBoundingClientRect();
-    const screenX = elemRect.left + elemRect.width / 2 - rect.left;
-    const screenY = elemRect.top + elemRect.height / 2 - rect.top;
-
-    // Zoom hacia el cluster: si tiene muchos nodos salta a 3.8x, si tiene pocos salta a 2.4x
-    const targetScale = count >= 4 ? Math.max(escala * 2.2, 3.8) : Math.max(escala * 1.8, 2.4);
-
-    const mapX = (screenX - panX) / escala;
-    const mapY = (screenY - panY) / escala;
-
-    panX = rect.width / 2 - mapX * targetScale;
-    panY = rect.height / 2 - mapY * targetScale;
-    escala = Math.min(targetScale, 8.5);
-
-    aplicarTransformacion(true);
-  });
-
-  parent.appendChild(g);
-}
-
-// Direcciones preferidas según geografía natural
-const PREFERENCIAS_DIRECCION = {
-  vte_lopez: ["top", "top-right", "top-left", "right", "top-offset"],
-  moreno: ["left", "top-left", "bottom-left", "bottom", "left-offset"],
-  mercado_central: ["bottom-left", "bottom", "bottom-offset", "left"],
-  quilmes: ["bottom-right", "bottom", "right", "bottom-offset"],
-  barracas: ["right", "top-right", "bottom-right", "right-offset"],
-  la_plata: ["bottom-right", "bottom", "right", "bottom-offset"],
-  rosario: ["top", "top-left", "left", "right"],
-  pergamino: ["left", "bottom-left", "bottom", "top-left"],
-  mercedes: ["left", "top-left", "bottom-left", "top"],
-  santa_fe: ["top", "top-right", "right", "top-left"],
-  cordoba: ["top", "top-left", "left", "right"],
-  rio_cuarto: ["bottom", "bottom-left", "left", "bottom-right"],
-  villa_maria: ["right", "top-right", "top", "bottom-right"],
-  resistencia: ["top-left", "left", "top", "bottom-left"],
-  corrientes: ["bottom-right", "right", "bottom", "top-right"],
-  posadas: ["top-right", "right", "top", "bottom-right"],
-  salta: ["left", "top-left", "bottom-left", "top"],
-  tucuman: ["right", "top-right", "bottom-right", "bottom"],
-  santiago_estero: ["bottom", "bottom-right", "right", "bottom-left"],
-  san_juan: ["left", "bottom-left", "top-left", "bottom"],
-  mendoza: ["bottom-left", "left", "bottom", "top-left"],
-  san_luis: ["top", "top-right", "right", "left"],
-  santa_rosa: ["top", "top-right", "right", "left"],
-  mar_del_plata: ["right", "bottom-right", "top-right", "bottom"],
-  bahia_blanca: ["left", "bottom-left", "bottom", "top-left"],
-  neuquen: ["left", "top-left", "bottom-left", "bottom"],
-  bariloche: ["left", "bottom-left", "top-left", "bottom"],
-  trelew: ["right", "top-right", "bottom-right", "top"],
-  comodoro_rivadavia: ["bottom-right", "right", "bottom", "left"],
-  rio_gallegos: ["right", "top-right", "bottom-right", "bottom"],
-  ushuaia: ["bottom", "bottom-right", "right", "bottom-left"]
-};
-
-const TODAS_DIRECCIONES = [
-  "right", "left", "top", "bottom",
-  "top-right", "bottom-right", "top-left", "bottom-left",
-  "top-offset", "bottom-offset", "right-offset", "left-offset"
+// Bounding box inicial para Argentina continental (encuadre ceñido)
+const BND_ARGENTINA = [
+  [-55.1, -73.6],
+  [-21.8, -53.6]
 ];
 
-function calcularGeometriaPill(p, dir, pillW, pillH, DOT_R, gap) {
-  let pillX = p.x + DOT_R + gap;
-  let pillY = p.y - pillH / 2;
-  let textX = pillX + pillW / 2;
-  let textY = p.y;
-  let connector = null;
+// Nodos del AMBA para agrupamiento inteligente en vistas nacionales/lejanas
+const IDS_AMBA = ["barracas", "vicente_lopez", "moreno", "mercado_central", "quilmes", "mercedes", "la_plata"];
 
-  switch (dir) {
-    case "right":
-      pillX = p.x + DOT_R + gap;
-      pillY = p.y - pillH / 2;
-      textX = pillX + pillW / 2;
-      textY = p.y;
-      break;
-    case "left":
-      pillX = p.x - DOT_R - gap - pillW;
-      pillY = p.y - pillH / 2;
-      textX = pillX + pillW / 2;
-      textY = p.y;
-      break;
-    case "top":
-      pillX = p.x - pillW / 2;
-      pillY = p.y - DOT_R - gap - pillH;
-      textX = p.x;
-      textY = pillY + pillH / 2;
-      break;
-    case "bottom":
-      pillX = p.x - pillW / 2;
-      pillY = p.y + DOT_R + gap;
-      textX = p.x;
-      textY = pillY + pillH / 2;
-      break;
-    case "top-right":
-      pillX = p.x + DOT_R * 0.7 + gap;
-      pillY = p.y - DOT_R * 0.7 - gap - pillH;
-      textX = pillX + pillW / 2;
-      textY = pillY + pillH / 2;
-      break;
-    case "bottom-right":
-      pillX = p.x + DOT_R * 0.7 + gap;
-      pillY = p.y + DOT_R * 0.7 + gap;
-      textX = pillX + pillW / 2;
-      textY = pillY + pillH / 2;
-      break;
-    case "top-left":
-      pillX = p.x - DOT_R * 0.7 - gap - pillW;
-      pillY = p.y - DOT_R * 0.7 - gap - pillH;
-      textX = pillX + pillW / 2;
-      textY = pillY + pillH / 2;
-      break;
-    case "bottom-left":
-      pillX = p.x - DOT_R * 0.7 - gap - pillW;
-      pillY = p.y + DOT_R * 0.7 + gap;
-      textX = pillX + pillW / 2;
-      textY = pillY + pillH / 2;
-      break;
-    case "top-offset":
-      pillX = p.x - pillW / 2;
-      pillY = p.y - DOT_R - gap * 3 - pillH * 1.3;
-      textX = p.x;
-      textY = pillY + pillH / 2;
-      connector = { x1: p.x, y1: p.y - DOT_R, x2: p.x, y2: pillY + pillH };
-      break;
-    case "bottom-offset":
-      pillX = p.x - pillW / 2;
-      pillY = p.y + DOT_R + gap * 3 + pillH * 0.5;
-      textX = p.x;
-      textY = pillY + pillH / 2;
-      connector = { x1: p.x, y1: p.y + DOT_R, x2: p.x, y2: pillY };
-      break;
-    case "right-offset":
-      pillX = p.x + DOT_R + gap * 3;
-      pillY = p.y - pillH / 2;
-      textX = pillX + pillW / 2;
-      textY = p.y;
-      connector = { x1: p.x + DOT_R, y1: p.y, x2: pillX, y2: p.y };
-      break;
-    case "left-offset":
-      pillX = p.x - DOT_R - gap * 3 - pillW;
-      pillY = p.y - pillH / 2;
-      textX = pillX + pillW / 2;
-      textY = p.y;
-      connector = { x1: p.x - DOT_R, y1: p.y, x2: pillX + pillW, y2: p.y };
-      break;
-  }
+// =============================================================
+// 3. INICIALIZACIÓN DEL MAPA LEAFLET
+// =============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  inicializarMapaLeaflet();
+  configurarBuscador();
+});
 
-  return {
-    pillX, pillY, textX, textY, connector,
-    box: { x1: pillX, y1: pillY, x2: pillX + pillW, y2: pillY + pillH }
-  };
-}
+let mascaraExteriorLayer = null;
 
-function hayColision(box, cajasOcupadas, puntosOtros, DOT_R, pad) {
-  for (let i = 0; i < cajasOcupadas.length; i++) {
-    const b = cajasOcupadas[i];
-    if (!(box.x2 + pad < b.x1 || box.x1 - pad > b.x2 || box.y2 + pad < b.y1 || box.y1 - pad > b.y2)) {
-      return true;
-    }
-  }
-  for (let i = 0; i < puntosOtros.length; i++) {
-    const pt = puntosOtros[i];
-    if (!(box.x2 + pad < pt.x - DOT_R || box.x1 - pad > pt.x + DOT_R || box.y2 + pad < pt.y - DOT_R || box.y1 - pad > pt.y + DOT_R)) {
-      return true;
-    }
-  }
-  return false;
-}
+function inicializarMapaLeaflet() {
+  const container = document.getElementById("mapa-leaflet");
+  if (!container) return;
 
-/**
- * Renderiza nodos individuales asegurando que ninguna tarjeta se pise con otra.
- * Calibra el tamaño en píxeles de pantalla reales (12.5px fuente, 26px alto tarjeta),
- * garantizando lectura clara, nitidez y espacio de separación al hacer zoom.
- */
-function _renderNodosConLayoutDinamico(nodos, parent, s) {
-  const svgScale = obtenerSvgScale();
-  const toSVG = px => px / (svgScale * s);
-
-  // Dimensiones exactamente calibradas en PÍXELES DE PANTALLA para máxima legibilidad
-  const DOT_R = toSVG(7.5);       // Diámetro del punto: 15px en pantalla
-  const INNER_R = toSVG(3.4);     // Centro dorado: 6.8px en pantalla
-  const GLOW_R = toSVG(13.0);     // Halo suave: 26px en pantalla
-  const SW = toSVG(1.8);          // Borde blanco del punto: 1.8px
-  const gap = toSVG(5.5);         // Separación punto-tarjeta: 5.5px
-  const pillH = toSVG(25.5);      // Altura tarjeta: 25.5px en pantalla (100% legible y cómoda)
-  const fontSize = toSVG(12.0);   // Tipografía: 12px en pantalla (nítida y clara)
-  const charW = toSVG(7.2);       // Ancho medio por carácter
-  const pillPad = toSVG(18.0);    // Padding horizontal (9px cada lado)
-  const pillRadius = toSVG(5.5);  // Esquinas redondeadas
-  const pad = toSVG(3.0);         // Margen anti-colisión: 3px en pantalla
-
-  // Puntos de todos los nodos activos para evitar que una tarjeta tape el punto de otro nodo
-  const puntosTodos = nodos.map(n => ({ id: n.id, ...proyecto(n.lng, n.lat) }));
-
-  // Ordenar para dar prioridad de posicionamiento a nodos metropolitanos densos
-  const nodosOrdenados = [...nodos].sort((a, b) => {
-    const pA = PREFERENCIAS_DIRECCION[a.id] ? 0 : 1;
-    const pB = PREFERENCIAS_DIRECCION[b.id] ? 0 : 1;
-    return pA - pB;
+  // Crear mapa Leaflet sin controles de zoom por defecto (usamos los personalizados)
+  leafletMap = L.map("mapa-leaflet", {
+    zoomControl: false,
+    attributionControl: true,
+    minZoom: 4.4, // Evita alejar demasiado el mapa
+    maxZoom: 19,
+    bounceAtZoomLimits: true,
+    maxBounds: [
+      [-56.8, -75.5],
+      [-21.2, -52.0]
+    ],
+    maxBoundsViscosity: 0.95
   });
 
-  const cajasOcupadas = [];
+  // Ajustar vista inicial para abarcar Argentina con encuadre óptimo
+  leafletMap.fitBounds(BND_ARGENTINA, {
+    padding: [8, 8]
+  });
 
-  nodosOrdenados.forEach(nodo => {
-    const p = puntosTodos.find(pt => pt.id === nodo.id);
-    const puntosOtros = puntosTodos.filter(pt => pt.id !== nodo.id);
-
-    const pillW = nodo.nombre.length * charW + pillPad;
-
-    const preferencias = PREFERENCIAS_DIRECCION[nodo.id] || [];
-    const listaDirecciones = [
-      ...preferencias,
-      ...TODAS_DIRECCIONES.filter(d => !preferencias.includes(d))
-    ];
-
-    let elegida = null;
-    for (let i = 0; i < listaDirecciones.length; i++) {
-      const dir = listaDirecciones[i];
-      const geom = calcularGeometriaPill(p, dir, pillW, pillH, DOT_R, gap);
-      if (!hayColision(geom.box, cajasOcupadas, puntosOtros, DOT_R, pad)) {
-        elegida = geom;
-        break;
-      }
+  // Fijar el zoom mínimo exactamente a la vista inicial de Argentina para que NO se pueda alejar más
+  setTimeout(() => {
+    if (leafletMap) {
+      const zNacional = leafletMap.getZoom();
+      leafletMap.setMinZoom(zNacional);
+      actualizarEstadoBotonesZoom();
     }
+  }, 100);
 
-    let esHoverOnly = false;
-    if (!elegida) {
-      elegida = calcularGeometriaPill(p, listaDirecciones[0] || "top", pillW, pillH, DOT_R, gap);
-      esHoverOnly = true;
-    } else {
-      cajasOcupadas.push(elegida.box);
+  // Crear paneles z-index dedicados para mantener capas perfectamente ordenadas
+  leafletMap.createPane("mascaraPane");
+  leafletMap.getPane("mascaraPane").style.zIndex = 350;
+  leafletMap.getPane("mascaraPane").style.pointerEvents = "none";
+
+  leafletMap.createPane("provinciasPane");
+  leafletMap.getPane("provinciasPane").style.zIndex = 380;
+
+  // Capa Base: CartoDB Positron con API Key oficial (estética limpia y sobria para Correo Argentino, sin marcas de agua)
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=cb1_47km_1_a9a7e15ee94d196eec40bf56", {
+    maxZoom: 19,
+    subdomains: "abcd",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
+  }).addTo(leafletMap);
+
+  // Capas de marcadores y clusters
+  markersLayerGroup = L.layerGroup().addTo(leafletMap);
+  clustersLayerGroup = L.layerGroup().addTo(leafletMap);
+
+  // Capa GeoJSON de límites de provincias argentinas + máscara exterior
+  cargarCapaProvincias();
+
+  // Escuchar cambios de zoom para alternar entre vista clúster y vista detallada por calle/ciudad
+  leafletMap.on("zoomend", () => {
+    actualizarMarcadoresLeaflet();
+    actualizarEstadoBotonesZoom();
+  });
+
+  // Click en mapa vacío deselecciona
+  leafletMap.on("click", (e) => {
+    if (!e.originalEvent || !e.originalEvent._markerClick) {
+      deseleccionarTodo();
     }
+  });
 
-    // Construcción del elemento SVG
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    g.setAttribute("class", "marcador-g");
-    g.dataset.id = nodo.id;
+  // Renderizar marcadores iniciales
+  actualizarMarcadoresLeaflet();
 
-    // Línea conectora si la tarjeta fue desplazada para evitar colisión
-    if (elegida.connector && !esHoverOnly) {
-      const linea = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      linea.setAttribute("x1", elegida.connector.x1.toFixed(3));
-      linea.setAttribute("y1", elegida.connector.y1.toFixed(3));
-      linea.setAttribute("x2", elegida.connector.x2.toFixed(3));
-      linea.setAttribute("y2", elegida.connector.y2.toFixed(3));
-      linea.setAttribute("stroke-width", toSVG(1.4).toFixed(3));
-      linea.setAttribute("class", "label-connector");
-      g.appendChild(linea);
-    }
-
-    // Contenedor de la tarjeta (pill + texto)
-    const pillWrap = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    pillWrap.setAttribute("class", `label-pill-wrap ${esHoverOnly ? "label-pill-hover-only" : ""}`);
-
-    const pillBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    pillBg.setAttribute("x", elegida.pillX.toFixed(3));
-    pillBg.setAttribute("y", elegida.pillY.toFixed(3));
-    pillBg.setAttribute("width", pillW.toFixed(3));
-    pillBg.setAttribute("height", pillH.toFixed(3));
-    pillBg.setAttribute("rx", pillRadius.toFixed(3));
-    pillBg.setAttribute("ry", pillRadius.toFixed(3));
-    pillBg.setAttribute("fill", "#ffffff");
-    pillBg.setAttribute("stroke", "#c4d8ea");
-    pillBg.setAttribute("stroke-width", toSVG(1.2).toFixed(3));
-    pillBg.setAttribute("class", "label-pill-bg");
-
-    const labelTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    labelTxt.setAttribute("x", elegida.textX.toFixed(3));
-    labelTxt.setAttribute("y", elegida.textY.toFixed(3));
-    labelTxt.setAttribute("text-anchor", "middle");
-    labelTxt.setAttribute("dominant-baseline", "central");
-    labelTxt.setAttribute("fill", "#002554");
-    labelTxt.setAttribute("font-family", "Gilroy, sans-serif");
-    labelTxt.setAttribute("font-size", fontSize.toFixed(3));
-    labelTxt.setAttribute("font-weight", "800");
-    labelTxt.setAttribute("class", "label-pill-text");
-    labelTxt.setAttribute("pointer-events", "all");
-    labelTxt.setAttribute("cursor", "pointer");
-    labelTxt.textContent = nodo.nombre;
-
-    pillBg.setAttribute("pointer-events", "all");
-    pillBg.setAttribute("cursor", "pointer");
-    pillWrap.setAttribute("pointer-events", "all");
-    pillWrap.setAttribute("cursor", "pointer");
-
-    pillWrap.appendChild(pillBg);
-    pillWrap.appendChild(labelTxt);
-    g.appendChild(pillWrap);
-
-    // Puntito del CLOG (se dibuja encima para visibilidad total)
-    const halo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    halo.setAttribute("cx", p.x.toFixed(3));
-    halo.setAttribute("cy", p.y.toFixed(3));
-    halo.setAttribute("r", GLOW_R.toFixed(3));
-    halo.setAttribute("fill", "rgba(0, 37, 84, 0.16)");
-
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    circle.setAttribute("cx", p.x.toFixed(3));
-    circle.setAttribute("cy", p.y.toFixed(3));
-    circle.setAttribute("r", DOT_R.toFixed(3));
-    circle.setAttribute("fill", "#008a38");
-    circle.setAttribute("stroke", "#ffffff");
-    circle.setAttribute("stroke-width", SW.toFixed(3));
-    circle.setAttribute("class", "node-dot-core");
-    circle.setAttribute("cursor", "pointer");
-    circle.setAttribute("pointer-events", "all");
-
-    const centerDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    centerDot.setAttribute("cx", p.x.toFixed(3));
-    centerDot.setAttribute("cy", p.y.toFixed(3));
-    centerDot.setAttribute("r", INNER_R.toFixed(3));
-    centerDot.setAttribute("fill", "#FFD200");
-    centerDot.setAttribute("pointer-events", "none");
-
-    g.appendChild(halo);
-    g.appendChild(circle);
-    g.appendChild(centerDot);
-
-    // Función unificada para seleccionar este nodo y abrir su detalle
-    function seleccionarEsteNodo(e) {
-      if (e) {
-        e.stopPropagation();
-      }
-      document.querySelectorAll(".marcador-g").forEach(m => m.classList.remove("seleccionado"));
-      g.classList.add("seleccionado");
-      if (parent.lastElementChild !== g) {
-        parent.appendChild(g);
-      }
-      abrirDetalleNodo(nodo);
-    }
-
-    // Al pasar el mouse, traer al frente absoluto en el SVG (sin jitter)
-    g.addEventListener("mouseenter", () => {
-      if (!estaArrastrando && parent.lastElementChild !== g) {
-        parent.appendChild(g);
-      }
+  // Resize observer para mantener el mapa adaptado al viewport o redimensionamiento
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => {
+      if (leafletMap) leafletMap.invalidateSize();
     });
-
-    // Clic en la tarjeta completa (fondo o texto) o en el punto
-    g.addEventListener("click", e => {
-      if (huboMovimiento) return;
-      seleccionarEsteNodo(e);
-    });
-
-    pillWrap.addEventListener("click", e => {
-      if (huboMovimiento) return;
-      seleccionarEsteNodo(e);
-    });
-
-    parent.appendChild(g);
-  });
-}
-
-/** Zoom suave hacia el centroide de un cluster */
-function zoomHaciaCluster(cx, cy) {
-  const contenedor = document.getElementById("mapa-contenedor");
-  if (!contenedor) return;
-  const rect = contenedor.getBoundingClientRect();
-
-  const nuevaEscala = Math.min(escala * 2.5, 9);
-  panX = rect.width / 2 - cx * nuevaEscala;
-  panY = rect.height / 2 - cy * nuevaEscala;
-  escala = nuevaEscala;
-
-  aplicarTransformacion(true);
-}
-
-function obtenerClaseTipo(tipo) {
-  switch (tipo) {
-    case "CLOG": return "nodo-clog";
-    case "DP": return "nodo-dp";
-    case "Sorter": return "nodo-sorter";
-    case "Regional": return "nodo-regional";
-    default: return "nodo-sucursal";
-  }
-}
-
-function resaltarProvincia(pathEl) {
-  document.querySelectorAll(".provincia-svg").forEach(p => {
-    p.classList.remove("seleccionada");
-  });
-  if (pathEl) {
-    pathEl.classList.add("seleccionada");
-  }
-}
-
-/** Deselecciona cualquier provincia o nodo activo y cierra popups */
-function deseleccionarTodo() {
-  document.querySelectorAll(".provincia-svg.seleccionada").forEach(p => {
-    p.classList.remove("seleccionada");
-  });
-  document.querySelectorAll(".marcador-g.seleccionado").forEach(m => {
-    m.classList.remove("seleccionado");
-  });
-  cerrarPopupNodo();
-  const hint = document.querySelector(".mapa-hint-bottom span");
-  if (hint) {
-    hint.textContent = "Seleccioná un nodo en el mapa para ver su información.";
-  }
-}
-
-function normalizarTexto(txt) {
-  return (txt || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
-function buscarNodosPorProvincia(rawName) {
-  const norm = normalizarTexto(rawName);
-  return nodosData.filter(n => {
-    const np = normalizarTexto(n.provincia);
-    if (norm.includes("ciudad") || norm === "caba") {
-      return np.includes("ciudad") || np.includes("caba") || n.id === "barracas";
-    }
-    if (norm === "buenos aires") {
-      return np === "buenos aires";
-    }
-    return np === norm || np.includes(norm) || norm.includes(np);
-  });
-}
-
-function seleccionarProvincia(rawName) {
-  const nodos = buscarNodosPorProvincia(rawName);
-
-  if (nodos.length > 0) {
-    // Destacar en el mapa el/los marcadores correspondientes a esta provincia
-    document.querySelectorAll(".marcador-g").forEach(m => {
-      const match = nodos.some(n => n.id === m.dataset.id);
-      if (match) m.classList.add("seleccionado");
-      else m.classList.remove("seleccionado");
-    });
-
-    // Abrir ficha del nodo principal o primer nodo, sin saltar la pantalla a zonas vacías
-    const principal = nodos.find(n => n.id === "mercado_central" || n.id === "cordoba" || n.id === "rosario" || n.id === "trelew") || nodos[0];
-    abrirDetalleNodo(principal, nodos);
-
-    const hint = document.querySelector(".mapa-hint-bottom span");
-    if (hint) {
-      hint.textContent = `${rawName}: ${nodos.length} centro(s) logístico(s) operativo(s).`;
-    }
-  } else {
-    // Si la provincia no tiene CLOGs propios (ej. Formosa, Tierra del Fuego)
-    cerrarPopupNodo();
-    const hint = document.querySelector(".mapa-hint-bottom span");
-    if (hint) {
-      hint.textContent = `Provincia de ${rawName}: cobertura logística articulada mediante cabeceras regionales limítrofes.`;
-    }
+    ro.observe(container);
   }
 }
 
 // =============================================================
-// 7. EXPANDIR / HACER GRANDE EL MAPA (OCULTAR SIDEBAR)
+// 4. MÁSCARA EXTERIOR (SOLO ARGENTINA VISIBLE) Y CAPA DE PROVINCIAS
+// =============================================================
+function cargarCapaProvincias() {
+  const geojson = (typeof GEOJSON_ARGENTINA !== "undefined" && GEOJSON_ARGENTINA) ? GEOJSON_ARGENTINA : null;
+
+  if (geojson) {
+    aplicarMascaraYProvincias(geojson);
+  } else {
+    fetch("provincias.geojson")
+      .then(r => r.json())
+      .then(data => aplicarMascaraYProvincias(data))
+      .catch(err => console.warn("No se cargó provincias.geojson:", err));
+  }
+}
+
+function aplicarMascaraYProvincias(geojson) {
+  crearMascaraExterior(geojson);
+  dibujarProvincias(geojson);
+}
+
+function crearMascaraExterior(geojson) {
+  if (mascaraExteriorLayer && leafletMap) {
+    leafletMap.removeLayer(mascaraExteriorLayer);
+  }
+
+  // Anillo exterior gigantesco que cubre todo el hemisferio
+  const worldOuter = [
+    [-85.0511, -180],
+    [85.0511, -180],
+    [85.0511, 180],
+    [-85.0511, 180],
+    [-85.0511, -180]
+  ];
+
+  // Extraer todos los polígonos de Argentina como huecos (cutout holes)
+  const huecos = [];
+  geojson.features.forEach(f => {
+    if (!f.geometry || !f.geometry.coordinates) return;
+    if (f.geometry.type === "Polygon") {
+      const ring = f.geometry.coordinates[0].map(pt => [pt[1], pt[0]]);
+      huecos.push(ring);
+    } else if (f.geometry.type === "MultiPolygon") {
+      f.geometry.coordinates.forEach(poly => {
+        const ring = poly[0].map(pt => [pt[1], pt[0]]);
+        huecos.push(ring);
+      });
+    }
+  });
+
+  // Polígono invertido: tapa todos los países limítrofes y océanos con el color exacto del dashboard (#d0dcea)
+  // dejando visible ÚNICAMENTE la geografía y ciudades de Argentina
+  mascaraExteriorLayer = L.polygon([worldOuter, ...huecos], {
+    pane: "mascaraPane",
+    fillColor: "#d0dcea",
+    fillOpacity: 1.0,
+    stroke: true,
+    color: "#8ca8cb",
+    weight: 1.6,
+    interactive: false
+  }).addTo(leafletMap);
+}
+
+function dibujarProvincias(geojson) {
+  if (geojsonLayer && leafletMap) {
+    leafletMap.removeLayer(geojsonLayer);
+  }
+
+  geojsonLayer = L.geoJSON(geojson, {
+    pane: "provinciasPane",
+    style: {
+      fillColor: "#002554",
+      fillOpacity: 0.03,
+      color: "#6b8eb6",
+      weight: 1.2,
+      opacity: 0.65
+    },
+    onEachFeature: (feature, layer) => {
+      const nombre = feature.properties.name || feature.properties.nombre || "";
+      layer.on({
+        mouseover: (e) => {
+          const l = e.target;
+          l.setStyle({
+            fillColor: "#002554",
+            fillOpacity: 0.12,
+            color: "#002554",
+            weight: 1.8,
+            opacity: 0.9
+          });
+        },
+        mouseout: (e) => {
+          if (geojsonLayer) geojsonLayer.resetStyle(e.target);
+        },
+        click: (e) => {
+          if (e.originalEvent && e.originalEvent.target && e.originalEvent.target.blur) {
+            e.originalEvent.target.blur();
+          }
+          if (e.target && e.target._path && e.target._path.blur) {
+            e.target._path.blur();
+          }
+          if (leafletMap) {
+            leafletMap.fitBounds(e.target.getBounds(), { padding: [30, 30], maxZoom: 9 });
+          }
+        }
+      });
+      if (nombre) {
+        layer.bindTooltip(nombre, {
+          permanent: false,
+          direction: "center",
+          className: "provincia-tooltip"
+        });
+      }
+    }
+  }).addTo(leafletMap);
+}
+
+// =============================================================
+// 5. RENDERIZADO DINÁMICO DE MARCADORES Y CLUSTERS LEAFLET
+// =============================================================
+function actualizarMarcadoresLeaflet() {
+  if (!leafletMap || !markersLayerGroup || !clustersLayerGroup) return;
+
+  markersLayerGroup.clearLayers();
+  clustersLayerGroup.clearLayers();
+
+  const zoomActual = leafletMap.getZoom();
+
+  // Radio de agrupación en píxeles de pantalla según el nivel de zoom:
+  // A zoom bajo (nacional), agrupamos para evitar que cualquier etiqueta se pise.
+  // A zoom alto (ciudad/barrio), se desagrega completamente.
+  let radioPixels = 0;
+  if (zoomActual < 5.8) {
+    radioPixels = 56; // Vista nacional: agrupa nodos cercanos (AMBA, Centro, Cuyo, NOA)
+  } else if (zoomActual < 7.2) {
+    radioPixels = 42; // Vista regional: subdivide en sub-clusters
+  } else if (zoomActual < 8.8) {
+    radioPixels = 26; // Vista inter-urbana: solo nodos muy próximos (ej. AMBA)
+  } else {
+    radioPixels = 0;  // Vista urbana / calle: todos los 28 nodos separados
+  }
+
+  // Agrupación por proximidad en píxeles de pantalla
+  const clusters = [];
+  const asignados = new Set();
+
+  nodosData.forEach((nodo, i) => {
+    if (asignados.has(nodo.id)) return;
+
+    const clusterNodos = [nodo];
+    asignados.add(nodo.id);
+
+    if (radioPixels > 0) {
+      const pt1 = leafletMap.latLngToContainerPoint([nodo.lat, nodo.lng]);
+
+      nodosData.forEach((otro, j) => {
+        if (i === j || asignados.has(otro.id)) return;
+        const pt2 = leafletMap.latLngToContainerPoint([otro.lat, otro.lng]);
+        const dist = Math.hypot(pt1.x - pt2.x, pt1.y - pt2.y);
+        if (dist < radioPixels) {
+          clusterNodos.push(otro);
+          asignados.add(otro.id);
+        }
+      });
+    }
+
+    clusters.push(clusterNodos);
+  });
+
+  // Renderizar cada cluster o nodo individual
+  clusters.forEach(clusterNodos => {
+    if (clusterNodos.length > 1) {
+      // Centroide del cluster
+      const avgLat = clusterNodos.reduce((s, n) => s + n.lat, 0) / clusterNodos.length;
+      const avgLng = clusterNodos.reduce((s, n) => s + n.lng, 0) / clusterNodos.length;
+
+      const nombresList = clusterNodos.map(n => n.nombre).join(" · ");
+      const clusterIcon = L.divIcon({
+        className: "leaflet-cluster-icon",
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        html: `
+          <div class="clog-cluster-wrap" title="${clusterNodos.length} Nodos: ${nombresList}">
+            ${clusterNodos.length}
+          </div>
+        `
+      });
+
+      const clusterMarker = L.marker([avgLat, avgLng], { icon: clusterIcon, zIndexOffset: 250 });
+      clusterMarker.on("click", (e) => {
+        if (e.originalEvent) e.originalEvent._markerClick = true;
+        const bounds = L.latLngBounds(clusterNodos.map(n => [n.lat, n.lng]));
+        // Acercar suavemente hacia los nodos del cluster para desagruparlos
+        leafletMap.flyToBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: Math.max(leafletMap.getZoom() + 2, 8.5),
+          duration: 0.8
+        });
+      });
+      clustersLayerGroup.addLayer(clusterMarker);
+
+    } else {
+      // Nodo individual
+      const nodo = clusterNodos[0];
+      const estaSel = nodoActivo && nodoActivo.id === nodo.id;
+
+      const markerIcon = L.divIcon({
+        className: "leaflet-clog-icon",
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+        html: `
+          <div class="clog-marker-wrap ${estaSel ? "seleccionado" : ""}" id="marker-${nodo.id}" data-id="${nodo.id}">
+            <div class="clog-marker-dot"></div>
+            <div class="clog-marker-pill">${nodo.nombre}</div>
+          </div>
+        `
+      });
+
+      const m = L.marker([nodo.lat, nodo.lng], { icon: markerIcon, zIndexOffset: estaSel ? 500 : 100 });
+      m.on("click", (e) => {
+        if (e.originalEvent) e.originalEvent._markerClick = true;
+        seleccionarEsteNodo(nodo);
+      });
+
+      markersLayerGroup.addLayer(m);
+    }
+  });
+}
+
+function seleccionarEsteNodo(nodo) {
+  nodoActivo = nodo;
+
+  // Actualizar clases de los elementos en el DOM
+  document.querySelectorAll(".clog-marker-wrap").forEach(el => {
+    if (el.getAttribute("data-id") === nodo.id) {
+      el.classList.add("seleccionado");
+    } else {
+      el.classList.remove("seleccionado");
+    }
+  });
+
+  // Si estamos en un zoom muy bajo y clickean en el nodo, acercar ligeramente
+  if (leafletMap && leafletMap.getZoom() < 8) {
+    leafletMap.flyTo([nodo.lat, nodo.lng], 10, { duration: 0.6 });
+  }
+
+  abrirDetalleNodo(nodo);
+}
+
+function deseleccionarTodo() {
+  nodoActivo = null;
+  cerrarPopupNodo();
+  document.querySelectorAll(".clog-marker-wrap.seleccionado").forEach(el => el.classList.remove("seleccionado"));
+}
+
+// =============================================================
+// 6. CONTROLES DE ZOOM FLOTANTES (+, -, ↺, Centrar)
+// =============================================================
+function zoomIn() {
+  if (leafletMap) leafletMap.zoomIn();
+}
+
+function zoomOut() {
+  if (leafletMap && leafletMap.getZoom() > leafletMap.getMinZoom()) {
+    leafletMap.zoomOut();
+  }
+}
+
+function zoomReset() {
+  if (leafletMap) {
+    leafletMap.flyToBounds(BND_ARGENTINA, {
+      padding: [8, 8],
+      duration: 0.8
+    });
+  }
+}
+
+function actualizarEstadoBotonesZoom() {
+  const btnOut = document.getElementById("btn-zoom-out");
+  if (!btnOut || !leafletMap) return;
+  const atMin = leafletMap.getZoom() <= (leafletMap.getMinZoom() || 4.4);
+  if (atMin) {
+    btnOut.style.opacity = "0.38";
+    btnOut.style.cursor = "not-allowed";
+    btnOut.setAttribute("disabled", "true");
+  } else {
+    btnOut.style.opacity = "1";
+    btnOut.style.cursor = "pointer";
+    btnOut.removeAttribute("disabled");
+  }
+}
+
+// =============================================================
+// 7. EXPANDIR / CONTRAER MAPA
 // =============================================================
 function toggleExpandirMapa() {
   expandirMapa(!mapaEstaExpandido);
@@ -1223,323 +768,78 @@ function toggleExpandirMapa() {
 
 function expandirMapa(expandir) {
   mapaEstaExpandido = expandir;
-  const dashboard = document.getElementById("dashboard-principal");
+  const colSidebar = document.getElementById("columna-sidebar");
+  const colMapa = document.getElementById("columna-mapa");
+  const banner = document.getElementById("banner-mapa-ampliado");
+  const btnToggle = document.getElementById("btn-toggle-expand");
   const expandText = document.getElementById("expand-text");
   const expandIcon = document.getElementById("expand-icon");
+  const dashPrincipal = document.getElementById("dashboard-principal");
 
-  if (mapaEstaExpandido) {
-    dashboard.classList.add("mapa-expandido");
+  if (expandir) {
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('activo'));
+    const linkMapa = document.querySelector('.sidebar-link[onclick*="mapa"]');
+    if (linkMapa) linkMapa.classList.add('activo');
+    if (dashPrincipal) dashPrincipal.classList.add("mapa-expandido");
+    if (colSidebar) colSidebar.classList.add("sidebar-oculto");
+    if (colMapa) colMapa.classList.add("mapa-pantalla-completa");
+    if (banner) banner.classList.add("visible");
+    if (btnToggle) btnToggle.classList.add("expandido");
     if (expandText) expandText.textContent = "Contraer mapa";
     if (expandIcon) expandIcon.textContent = "✕";
-
-    // Scroll suave hacia el mapa si está arriba
-    const mapaEl = document.getElementById("columna-mapa");
-    if (mapaEl) {
-      mapaEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
   } else {
-    dashboard.classList.remove("mapa-expandido");
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('activo'));
+    const linkInicio = document.querySelector('.sidebar-link[onclick*="inicio"]');
+    if (linkInicio) linkInicio.classList.add('activo');
+    if (dashPrincipal) dashPrincipal.classList.remove("mapa-expandido");
+    if (colSidebar) colSidebar.classList.remove("sidebar-oculto");
+    if (colMapa) colMapa.classList.remove("mapa-pantalla-completa");
+    if (banner) banner.classList.remove("visible");
+    if (btnToggle) btnToggle.classList.remove("expandido");
     if (expandText) expandText.textContent = "Ampliar mapa";
     if (expandIcon) expandIcon.textContent = "⛶";
   }
 
-  // Actualizar pan y escala visual de nodos tras transición de dimensiones
-  setTimeout(() => {
-    const contenedor = document.getElementById("mapa-contenedor");
-    if (contenedor) {
-      limitarPan(contenedor.getBoundingClientRect());
-      aplicarTransformacion(false);
+  // Notificar a Leaflet mientras dura la transición CSS para un reflow fluido y reajustar minZoom
+  let repeticiones = 0;
+  const timer = setInterval(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize();
+      const zOpt = leafletMap.getBoundsZoom(BND_ARGENTINA, false, [8, 8]);
+      leafletMap.setMinZoom(zOpt);
+      actualizarEstadoBotonesZoom();
     }
-  }, 220);
+    repeticiones++;
+    if (repeticiones > 10) clearInterval(timer);
+  }, 50);
 }
 
 // =============================================================
-// 8. INTERACCIÓN DE PAN (MOVER) Y ZOOM (CON RATÓN Y TOUCH)
+// 8. CENTRADO EN REGIONES
 // =============================================================
-const MIN_ESCALA = 1.0;
-const MAX_ESCALA = 9.0;
-
-function limitarPan(rect) {
-  if (!rect) return;
-  if (escala <= MIN_ESCALA) {
-    panX = 0;
-    panY = 0;
-    return;
+function centrarEnRegion(region) {
+  if (!leafletMap) return;
+  switch (region) {
+    case "amba":
+      leafletMap.flyTo([-34.63, -58.55], 10.5, { duration: 0.9 });
+      break;
+    case "centro":
+      leafletMap.flyTo([-32.0, -63.5], 7, { duration: 0.9 });
+      break;
+    case "norte":
+      leafletMap.flyTo([-26.8, -65.2], 6.5, { duration: 0.9 });
+      break;
+    case "cuyo":
+      leafletMap.flyTo([-33.2, -68.8], 7, { duration: 0.9 });
+      break;
+    case "patagonia":
+      leafletMap.flyTo([-46.0, -68.5], 5.5, { duration: 0.9 });
+      break;
+    case "nacional":
+    default:
+      zoomReset();
+      break;
   }
-  // Permitir desplazamiento cómodo cuando hay zoom, pero sin perder el país de vista
-  const margenX = rect.width * 0.35;
-  const margenY = rect.height * 0.35;
-  const minPanX = rect.width * (1 - escala) - margenX;
-  const maxPanX = margenX;
-  const minPanY = rect.height * (1 - escala) - margenY;
-  const maxPanY = margenY;
-
-  panX = Math.max(minPanX, Math.min(maxPanX, panX));
-  panY = Math.max(minPanY, Math.min(maxPanY, panY));
-}
-
-function actualizarBotonesZoom() {
-  const btnZoomOut = document.getElementById("btn-zoom-out");
-  const btnZoomIn = document.getElementById("btn-zoom-in");
-  const btnZoomReset = document.getElementById("btn-zoom-reset");
-
-  const alMinimo = escala <= MIN_ESCALA + 0.001;
-  const alMaximo = escala >= MAX_ESCALA - 0.001;
-
-  if (btnZoomOut) {
-    btnZoomOut.disabled = alMinimo;
-    btnZoomOut.classList.toggle("btn-ctrl-disabled", alMinimo);
-    btnZoomOut.title = alMinimo ? "Zoom mínimo alcanzado (vista general)" : "Alejar (−)";
-  }
-  if (btnZoomReset) {
-    const enReset = alMinimo && Math.abs(panX) < 1 && Math.abs(panY) < 1;
-    btnZoomReset.disabled = enReset;
-    btnZoomReset.classList.toggle("btn-ctrl-disabled", enReset);
-    btnZoomReset.title = enReset ? "Vista general ya restablecida" : "Restablecer vista general (↺)";
-  }
-  if (btnZoomIn) {
-    btnZoomIn.disabled = alMaximo;
-    btnZoomIn.classList.toggle("btn-ctrl-disabled", alMaximo);
-    btnZoomIn.title = alMaximo ? "Zoom máximo alcanzado" : "Acercar (+)";
-  }
-}
-
-function aplicarTransformacion(conAnimacion = false) {
-  const wrap = document.getElementById("mapa-wrap");
-  if (!wrap) return;
-
-  if (conAnimacion) {
-    wrap.style.transition = "transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)";
-  } else {
-    wrap.style.transition = "none";
-  }
-  wrap.style.transform = `translate(${panX.toFixed(2)}px, ${panY.toFixed(2)}px) scale(${escala.toFixed(4)})`;
-
-  // Actualizar etiquetas de provincias y re-renderizar nodos/clusters en tiempo real
-  ajustarLabelsSegunZoom();
-  renderizarNodos();
-  actualizarBotonesZoom();
-}
-
-/**
- * Ajusta tamaño y opacidad de las etiquetas provinciales según el nivel de zoom.
- * Al hacer zoom en los nodos (escala >= 2.0), las provincias se atenúan para no competir con los nombres de los nodos.
- */
-function ajustarLabelsSegunZoom() {
-  const s = escala;
-  const svg = document.getElementById("mapa-svg");
-  if (!svg) return;
-
-  const opacity = s >= 2.6 ? 0.20 : (s >= 1.8 ? 0.50 : 0.90);
-
-  svg.querySelectorAll(".label-provincia").forEach(el => {
-    const base = parseFloat(el.getAttribute("data-base-size")) || 11.5;
-    el.style.fontSize = (base / s).toFixed(2) + "px";
-    el.style.letterSpacing = (0.7 / s).toFixed(2) + "px";
-    el.style.opacity = opacity;
-  });
-}
-
-
-function zoomCentrado(factor) {
-  const contenedor = document.getElementById("mapa-contenedor");
-  if (!contenedor) return;
-
-  const rect = contenedor.getBoundingClientRect();
-  const mouseX = rect.width / 2;
-  const mouseY = rect.height / 2;
-
-  const mapX = (mouseX - panX) / escala;
-  const mapY = (mouseY - panY) / escala;
-
-  let nuevaEscala = Math.min(Math.max(escala * factor, MIN_ESCALA), MAX_ESCALA);
-
-  if (nuevaEscala <= MIN_ESCALA) {
-    nuevaEscala = MIN_ESCALA;
-    panX = 0;
-    panY = 0;
-  } else {
-    panX = mouseX - mapX * nuevaEscala;
-    panY = mouseY - mapY * nuevaEscala;
-    limitarPan(rect);
-  }
-  escala = nuevaEscala;
-
-  aplicarTransformacion(true);
-}
-
-function zoomIn() { zoomCentrado(1.3); }
-function zoomOut() { zoomCentrado(1 / 1.3); }
-function zoomReset() {
-  escala = MIN_ESCALA;
-  panX = 0;
-  panY = 0;
-  aplicarTransformacion(true);
-}
-
-function iniciarInteraccionPanZoom() {
-  const contenedor = document.getElementById("mapa-contenedor");
-  if (!contenedor) return;
-
-  // 1. Rueda del ratón (Wheel Zoom hacia el cursor)
-  contenedor.addEventListener("wheel", e => {
-    e.preventDefault();
-    const rect = contenedor.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const mapX = (mouseX - panX) / escala;
-    const mapY = (mouseY - panY) / escala;
-
-    const factor = e.deltaY < 0 ? 1.15 : (1 / 1.15);
-    let nuevaEscala = Math.min(Math.max(escala * factor, MIN_ESCALA), MAX_ESCALA);
-
-    if (nuevaEscala <= MIN_ESCALA) {
-      nuevaEscala = MIN_ESCALA;
-      panX = 0;
-      panY = 0;
-    } else {
-      panX = mouseX - mapX * nuevaEscala;
-      panY = mouseY - mapY * nuevaEscala;
-      limitarPan(rect);
-    }
-    escala = nuevaEscala;
-
-    aplicarTransformacion(false);
-  }, { passive: false });
-
-  // 2. Arrastre con el ratón (Pan / Drag)
-  let posMouseDownX = 0, posMouseDownY = 0;
-  contenedor.addEventListener("mousedown", e => {
-    if (e.button !== 0) return; // Solo clic izquierdo
-    estaArrastrando = true;
-    huboMovimiento = false;
-    inicioX = e.clientX - panX;
-    inicioY = e.clientY - panY;
-    posMouseDownX = e.clientX;
-    posMouseDownY = e.clientY;
-    contenedor.classList.add("arrastrando");
-  });
-
-  window.addEventListener("mousemove", e => {
-    if (!estaArrastrando) return;
-    const dx = Math.abs(e.clientX - posMouseDownX);
-    const dy = Math.abs(e.clientY - posMouseDownY);
-    if (dx > 6 || dy > 6) {
-      huboMovimiento = true;
-    }
-    if (escala <= MIN_ESCALA) {
-      panX = 0;
-      panY = 0;
-    } else {
-      panX = e.clientX - inicioX;
-      panY = e.clientY - inicioY;
-      limitarPan(contenedor.getBoundingClientRect());
-    }
-    aplicarTransformacion(false);
-  });
-
-  window.addEventListener("mouseup", () => {
-    if (estaArrastrando) {
-      estaArrastrando = false;
-      contenedor.classList.remove("arrastrando");
-      setTimeout(() => { huboMovimiento = false; }, 40);
-    }
-  });
-
-  // Al hacer clic en el mapa:
-  contenedor.addEventListener("click", e => {
-    if (huboMovimiento) return;
-
-    // Si hizo clic en controles o leyenda, ignorar
-    if (e.target.closest(".btn-ctrl-mapa") || e.target.closest(".mapa-leyenda")) {
-      return;
-    }
-
-    // Si hizo clic en un nodo, cluster o provincia, ellos manejan su evento
-    if (e.target.closest(".marcador-g") || e.target.closest(".label-pill-wrap") || e.target.closest(".cluster-g") || e.target.closest(".provincia-svg")) {
-      return;
-    }
-
-    // Si hizo clic en un lugar vacío del mapa (océano / fondo):
-    // Desaparece el foco amarillo de la provincia y se deselecciona todo
-    deseleccionarTodo();
-
-    if (!mapaEstaExpandido) {
-      expandirMapa(true);
-    }
-  });
-
-  // 3. Touch Drag y Pinch-to-zoom
-  let distInicialToque = 0;
-  let escalaInicialToque = 1;
-  let centroInicialToque = { x: 0, y: 0 };
-
-  contenedor.addEventListener("touchstart", e => {
-    if (e.touches.length === 1) {
-      estaArrastrando = true;
-      huboMovimiento = false;
-      inicioX = e.touches[0].clientX - panX;
-      inicioY = e.touches[0].clientY - panY;
-    } else if (e.touches.length === 2) {
-      estaArrastrando = false;
-      huboMovimiento = true;
-      const t1 = e.touches[0], t2 = e.touches[1];
-      distInicialToque = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      escalaInicialToque = escala;
-      const rect = contenedor.getBoundingClientRect();
-      centroInicialToque = {
-        x: (t1.clientX + t2.clientX) / 2 - rect.left,
-        y: (t1.clientY + t2.clientY) / 2 - rect.top
-      };
-    }
-  }, { passive: false });
-
-  contenedor.addEventListener("touchmove", e => {
-    e.preventDefault();
-    if (e.touches.length === 1 && estaArrastrando) {
-      huboMovimiento = true;
-      if (escala <= MIN_ESCALA) {
-        panX = 0;
-        panY = 0;
-      } else {
-        panX = e.touches[0].clientX - inicioX;
-        panY = e.touches[0].clientY - inicioY;
-        limitarPan(contenedor.getBoundingClientRect());
-      }
-      aplicarTransformacion(false);
-    } else if (e.touches.length === 2 && distInicialToque > 0) {
-      huboMovimiento = true;
-      const t1 = e.touches[0], t2 = e.touches[1];
-      const distActual = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      const factor = distActual / distInicialToque;
-      const mouseX = centroInicialToque.x;
-      const mouseY = centroInicialToque.y;
-      const mapX = (mouseX - panX) / escala;
-      const mapY = (mouseY - panY) / escala;
-
-      let nuevaEscala = Math.min(Math.max(escalaInicialToque * factor, MIN_ESCALA), MAX_ESCALA);
-      if (nuevaEscala <= MIN_ESCALA) {
-        nuevaEscala = MIN_ESCALA;
-        panX = 0;
-        panY = 0;
-      } else {
-        panX = mouseX - mapX * nuevaEscala;
-        panY = mouseY - mapY * nuevaEscala;
-        limitarPan(contenedor.getBoundingClientRect());
-      }
-      escala = nuevaEscala;
-      aplicarTransformacion(false);
-    }
-  }, { passive: false });
-
-  contenedor.addEventListener("touchend", () => {
-    estaArrastrando = false;
-    distInicialToque = 0;
-    setTimeout(() => { huboMovimiento = false; }, 60);
-  });
-
-  actualizarBotonesZoom();
 }
 
 // =============================================================
@@ -1762,15 +1062,6 @@ function seleccionarNavSidebar(el, seccion) {
   } else if (seccion === "mapa") {
     expandirMapa(true);
     if (crumb) crumb.textContent = "Mapeo Nacional";
-  } else if (seccion === "clog") {
-    filtrarTipoNodo("CLOG");
-    if (crumb) crumb.textContent = "Centros Logísticos";
-  } else if (seccion === "sorters") {
-    filtrarTipoNodo("Sorter");
-    if (crumb) crumb.textContent = "Sorters";
-  } else if (seccion === "transporte") {
-    filtrarTipoNodo("Transporte");
-    if (crumb) crumb.textContent = "Transporte";
   } else if (seccion === "indicadores") {
     expandirMapa(false);
     const sec = document.querySelector(".card-seccion");
@@ -1791,3 +1082,51 @@ function toggleSidebarMenu() {
   const sidebar = document.getElementById("sidebar-izq");
   if (sidebar) sidebar.classList.toggle("sidebar-abierto");
 }
+
+// =============================================================
+// CUSTOM SELECT — Vista dropdown
+// =============================================================
+(function () {
+  const wrap = document.getElementById("custom-vista-wrap");
+  const btn  = document.getElementById("custom-vista-btn");
+  const list = document.getElementById("custom-vista-list");
+  const label = document.getElementById("custom-vista-label");
+  if (!wrap || !btn || !list) return;
+
+  btn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    const isOpen = wrap.classList.toggle("open");
+    btn.setAttribute("aria-expanded", isOpen);
+  });
+
+  list.addEventListener("click", function (e) {
+    const option = e.target.closest(".custom-select-option");
+    if (!option) return;
+
+    // Actualizar selección
+    list.querySelectorAll(".custom-select-option").forEach(el => el.classList.remove("selected"));
+    option.classList.add("selected");
+    label.textContent = option.textContent.replace("✓ ", "");
+
+    // Cerrar
+    wrap.classList.remove("open");
+    btn.setAttribute("aria-expanded", "false");
+  });
+
+  // Cerrar al hacer clic fuera
+  document.addEventListener("click", function (e) {
+    if (!wrap.contains(e.target)) {
+      wrap.classList.remove("open");
+      btn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  // Cerrar con Escape
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && wrap.classList.contains("open")) {
+      wrap.classList.remove("open");
+      btn.setAttribute("aria-expanded", "false");
+      btn.focus();
+    }
+  });
+})();
