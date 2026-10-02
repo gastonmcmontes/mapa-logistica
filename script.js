@@ -861,6 +861,10 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
 
   // Renderizar tira interactiva de miniaturas de fotos del nodo
   const strip = document.getElementById("popup-galeria-strip");
+  const arrowPrev = document.getElementById("popup-arrow-prev");
+  const arrowNext = document.getElementById("popup-arrow-next");
+  const counter = document.getElementById("popup-foto-counter");
+
   if (strip) {
     strip.innerHTML = "";
     if (fotos.length > 1) {
@@ -872,9 +876,7 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
         thumb.onclick = (e) => {
           e.stopPropagation();
           fotoActualIdx = idx;
-          imgEl.src = f;
-          strip.querySelectorAll(".popup-thumb").forEach(t => t.classList.remove("activa"));
-          thumb.classList.add("activa");
+          actualizarFotoPopup(fotos);
         };
         strip.appendChild(thumb);
       });
@@ -883,6 +885,11 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
       strip.style.display = "none";
     }
   }
+
+  // Mostrar/ocultar flechas y contador según cantidad de fotos
+  if (arrowPrev) arrowPrev.style.display = fotos.length > 1 ? "flex" : "none";
+  if (arrowNext) arrowNext.style.display = fotos.length > 1 ? "flex" : "none";
+  if (counter) counter.textContent = fotos.length > 1 ? `1 / ${fotos.length}` : "";
 
   // Selector de nodos si la provincia tiene múltiples nodos
   const pillsCont = document.getElementById("popup-nodos-pills");
@@ -934,6 +941,47 @@ function cerrarPopupNodoOverlay(e) {
   if (e.target.id === "popup-nodo") {
     deseleccionarTodo();
   }
+}
+
+// Actualiza la imagen principal del popup, el thumbnail activo y el contador
+function actualizarFotoPopup(fotos) {
+  const imgEl = document.getElementById("popup-img");
+  const strip = document.getElementById("popup-galeria-strip");
+  const counter = document.getElementById("popup-foto-counter");
+
+  if (imgEl) {
+    imgEl.style.opacity = "0";
+    imgEl.style.transition = "opacity 0.18s ease";
+    setTimeout(() => {
+      imgEl.src = fotos[fotoActualIdx];
+      imgEl.style.opacity = "1";
+    }, 100);
+  }
+
+  if (strip) {
+    strip.querySelectorAll(".popup-thumb").forEach((t, i) => {
+      t.classList.toggle("activa", i === fotoActualIdx);
+      if (i === fotoActualIdx) t.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    });
+  }
+
+  if (counter) counter.textContent = `${fotoActualIdx + 1} / ${fotos.length}`;
+}
+
+function popupFotoAnterior(e) {
+  if (e) e.stopPropagation();
+  if (!nodoActivo) return;
+  const fotos = nodoActivo.fotos || ["imagenes/placeholder.jpg"];
+  fotoActualIdx = (fotoActualIdx - 1 + fotos.length) % fotos.length;
+  actualizarFotoPopup(fotos);
+}
+
+function popupFotoSiguiente(e) {
+  if (e) e.stopPropagation();
+  if (!nodoActivo) return;
+  const fotos = nodoActivo.fotos || ["imagenes/placeholder.jpg"];
+  fotoActualIdx = (fotoActualIdx + 1) % fotos.length;
+  actualizarFotoPopup(fotos);
 }
 
 // =============================================================

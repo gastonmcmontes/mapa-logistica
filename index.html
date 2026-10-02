@@ -459,6 +459,11 @@
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>Ampliar foto</span>
+        <!-- Flechas de navegación entre fotos del nodo -->
+        <button id="popup-arrow-prev" class="popup-nav-arrow popup-arrow-prev" onclick="popupFotoAnterior(event)" title="Foto anterior">&#8249;</button>
+        <button id="popup-arrow-next" class="popup-nav-arrow popup-arrow-next" onclick="popupFotoSiguiente(event)" title="Foto siguiente">&#8250;</button>
+        <!-- Contador de foto -->
+        <span id="popup-foto-counter" class="popup-foto-counter"></span>
       </div>
 
       <!-- Tira interactiva de miniaturas de fotos del nodo -->
