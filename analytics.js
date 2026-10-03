@@ -576,17 +576,27 @@ document.addEventListener("DOMContentLoaded", () => {
           indexAxis: "x",
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 4,
+              right: 10,
+              left: 4,
+              bottom: 4
+            }
+          },
           plugins: {
             legend: {
+              display: true,
               position: "top",
               align: "end",
+              maxHeight: 90,
               labels: {
                 usePointStyle: true,
                 pointStyle: "rectRounded",
                 boxWidth: 10,
                 boxHeight: 10,
-                padding: 16,
-                font: { family: "Plus Jakarta Sans, sans-serif", size: 11.5, weight: "700" },
+                padding: 12,
+                font: { family: "Plus Jakarta Sans, sans-serif", size: 11, weight: "700" },
                 color: "#334155"
               }
             },
@@ -610,6 +620,16 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       });
+
+      // Asegurar renderizado correcto y completo de la leyenda tras carga de fuentes/layout
+      requestAnimationFrame(() => {
+        chartOptimizacion.resize();
+        chartOptimizacion.update("none");
+      });
+      setTimeout(() => {
+        chartOptimizacion.resize();
+        chartOptimizacion.update("none");
+      }, 100);
     }
 
     // ---------------------------------------------------------
@@ -1050,6 +1070,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 3. Reajustar gráficos Chart.js en la vista visible
       setTimeout(() => {
+        if (chartOptimizacion) {
+          chartOptimizacion.resize();
+          chartOptimizacion.update("none");
+        }
         window.dispatchEvent(new Event("resize"));
       }, 50);
     });
@@ -1073,4 +1097,14 @@ document.addEventListener("DOMContentLoaded", () => {
   inicializarGraficos();
   renderTabla();
   renderTablaTransporte();
+
+  // Asegurar renderizado nítido de etiquetas y leyendas al completar carga de tipografía
+  if (document.fonts) {
+    document.fonts.ready.then(() => {
+      if (chartOptimizacion) {
+        chartOptimizacion.resize();
+        chartOptimizacion.update("none");
+      }
+    });
+  }
 });

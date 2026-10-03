@@ -1234,3 +1234,20 @@ function toggleSidebarMenu() {
     }
   });
 })();
+
+// Soporte para navegación con hash (#mapa, #indicadores) desde otras páginas
+window.addEventListener("DOMContentLoaded", () => {
+  const hash = window.location.hash;
+  if (hash === "#mapa") {
+    setTimeout(() => {
+      const mapaBtn = document.querySelector('.sidebar-link[onclick*="mapa"]');
+      if (mapaBtn) seleccionarNavSidebar(mapaBtn, 'mapa');
+    }, 150);
+  } else if (hash === "#indicadores") {
+    setTimeout(() => {
+      const indBtn = document.querySelector('.sidebar-link[onclick*="indicadores"]');
+      if (indBtn) seleccionarNavSidebar(indBtn, 'indicadores');
+    }, 150);
+  }
+});
+

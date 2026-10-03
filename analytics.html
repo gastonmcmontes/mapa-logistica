@@ -33,8 +33,17 @@
 
     <!-- Menú de navegación vertical -->
     <nav class="sidebar-nav">
-      <!-- 1. Inicio / Mapa -->
-      <a href="index.html" class="sidebar-link" title="Mapa Nacional">
+      <!-- 1. Inicio -->
+      <a href="index.html" class="sidebar-link" title="Inicio / Panel General">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span>Inicio</span>
+      </a>
+
+      <!-- 2. Mapeo Nacional -->
+      <a href="index.html#mapa" class="sidebar-link" title="Mapa Nacional">
         <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
           <line x1="8" y1="2" x2="8" y2="18"></line>
@@ -43,8 +52,8 @@
         <span>Mapeo Nacional</span>
       </a>
 
-      <!-- 2. Indicadores en Mapa -->
-      <a href="index.html#dashboard-principal" class="sidebar-link" title="Indicadores Operativos">
+      <!-- 3. Indicadores en Mapa -->
+      <a href="index.html#indicadores" class="sidebar-link" title="Indicadores Operativos">
         <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="20" x2="18" y2="10"></line>
           <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -53,7 +62,7 @@
         <span>Indicadores</span>
       </a>
 
-      <!-- 3. Analytics & Estadísticas (Activo) -->
+      <!-- 4. Analytics & Estadísticas (Activo) -->
       <a href="analytics.html" class="sidebar-link activo" title="Analytics y Gráficos">
         <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
@@ -502,7 +511,7 @@
               <p class="opt-card-sub">Comparativa de dotación operativa vs requerimientos calculados en las 26 plantas auditadas.</p>
             </div>
           </div>
-          <div class="opt-chart-canvas-box" style="height: 270px; position: relative;">
+          <div class="opt-chart-canvas-box" style="height: 285px; position: relative;">
             <canvas id="chart-optimizacion-regional"></canvas>
           </div>
         </div>
