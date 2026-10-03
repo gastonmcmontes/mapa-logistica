@@ -516,7 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---------------------------------------------------------
-    // Gráfico 7: Optimización Regional (Sheet 6)
+    // Gráfico 7: Optimización Regional (Sheet 6 - Imagen 2 Full-Width)
     // ---------------------------------------------------------
     const ctxOptReg = document.getElementById("chart-optimizacion-regional")?.getContext("2d");
     if (ctxOptReg) {
@@ -526,78 +526,125 @@ document.addEventListener("DOMContentLoaded", () => {
           labels: ["Patagonia / SUR", "CUYO / NOA", "CENTRO / NEA", "PBA / LA PAMPA"],
           datasets: [
             {
-              label: "Auxiliares Operativos Actuales",
+              label: "Auxiliares operativos actuales",
               data: [105, 212, 224, 107],
-              backgroundColor: COLOR_AZUL_MID,
-              borderRadius: 4
+              backgroundColor: "#002554",
+              borderRadius: 5,
+              barPercentage: 0.72,
+              categoryPercentage: 0.65
             },
             {
-              label: "Personal Necesario (Operación)",
+              label: "Personal necesario (operación)",
               data: [89, 150, 178, 81],
-              backgroundColor: COLOR_GREEN,
-              borderRadius: 4
+              backgroundColor: "#10b981",
+              borderRadius: 5,
+              barPercentage: 0.72,
+              categoryPercentage: 0.65
             },
             {
-              label: "Personal a Reubicar (Excedente)",
+              label: "Personal a reubicar (excedente)",
               data: [16, 62, 46, 26],
-              backgroundColor: COLOR_RED,
-              borderRadius: 4
+              backgroundColor: "#ef4444",
+              borderRadius: 5,
+              barPercentage: 0.72,
+              categoryPercentage: 0.65
             }
           ]
         },
+        plugins: [
+          {
+            id: "barValueLabels",
+            afterDatasetsDraw(chart) {
+              const { ctx } = chart;
+              ctx.save();
+              ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "bottom";
+              chart.data.datasets.forEach((dataset, i) => {
+                const meta = chart.getDatasetMeta(i);
+                meta.data.forEach((bar, index) => {
+                  const val = dataset.data[index];
+                  ctx.fillStyle = dataset.backgroundColor;
+                  ctx.fillText(val, bar.x, bar.y - 4);
+                });
+              });
+              ctx.restore();
+            }
+          }
+        ],
         options: {
-          indexAxis: "y",
+          indexAxis: "x",
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: "top", labels: { boxWidth: 12 } },
+            legend: {
+              position: "top",
+              align: "end",
+              labels: {
+                usePointStyle: true,
+                pointStyle: "rectRounded",
+                boxWidth: 10,
+                boxHeight: 10,
+                padding: 16,
+                font: { family: "Plus Jakarta Sans, sans-serif", size: 11.5, weight: "700" },
+                color: "#334155"
+              }
+            },
             tooltip: {
               callbacks: {
-                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.x} personas`
+                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} personas`
               }
             }
           },
           scales: {
-            x: { beginAtZero: true, grid: { color: "#edf2f7" } },
-            y: { grid: { display: false } }
+            y: {
+              beginAtZero: true,
+              max: 260,
+              grid: { color: "#f1f5f9" },
+              ticks: { stepSize: 50, font: { size: 11, family: "Plus Jakarta Sans, sans-serif" }, color: "#64748b" }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 12, weight: "800", family: "Plus Jakarta Sans, sans-serif" }, color: "#0f172a" }
+            }
           }
         }
       });
     }
 
     // ---------------------------------------------------------
-    // Gráfico 8: Puestos Operativos vs Reubicación (Sheet 6)
+    // Gráfico 8: Puestos Operativos vs Reubicación (Doughnut - Imagen 1)
     // ---------------------------------------------------------
     const ctxPuestos = document.getElementById("chart-puestos-operativos")?.getContext("2d");
     if (ctxPuestos) {
       chartPuestos = new Chart(ctxPuestos, {
         type: "doughnut",
         data: {
-          labels: ["Manipulación Paquetes", "Expedición / Transporte", "Personal a Reubicar"],
+          labels: ["Manipulación de paquetes", "Expedición / Transporte", "Personal a reubicar (otros)"],
           datasets: [{
-            data: [331, 167, 150],
-            backgroundColor: ["#0284c7", "#f59e0b", "#ef4444"],
-            borderWidth: 2,
-            borderColor: "#ffffff"
+            data: [78, 42, 30],
+            backgroundColor: ["#004b99", "#f59e0b", "#ef4444"],
+            borderWidth: 3,
+            borderColor: "#ffffff",
+            hoverOffset: 4
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: "bottom", labels: { boxWidth: 12, padding: 12 } },
+            legend: { display: false },
             tooltip: {
               callbacks: {
                 label: ctx => {
                   const val = ctx.parsed;
-                  const total = 648;
-                  const pct = ((val / total) * 100).toFixed(1);
-                  return ` ${ctx.label}: ${val} pers. (${pct}%)`;
+                  const pct = Math.round((val / 150) * 100);
+                  return ` ${ctx.label}: ${val} personas (${pct}%)`;
                 }
               }
             }
           },
-          cutout: "60%"
+          cutout: "68%"
         }
       });
     }
@@ -1005,6 +1052,19 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         window.dispatchEvent(new Event("resize"));
       }, 50);
+    });
+  });
+
+  // 9. Interacción con filas de tabla regional del resumen ejecutivo
+  document.querySelectorAll(".opt-table-compact tbody tr").forEach((tr, idx) => {
+    tr.style.cursor = "pointer";
+    tr.addEventListener("click", () => {
+      const regKeys = ["patagonia", "cuyo", "centro", "pba"];
+      const key = regKeys[idx];
+      if (key) {
+        const targetOpt = list?.querySelector(`.custom-select-option[data-value="${key}"]`);
+        if (targetOpt) targetOpt.click();
+      }
     });
   });
 
