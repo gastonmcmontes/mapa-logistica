@@ -649,17 +649,51 @@ document.addEventListener("DOMContentLoaded", () => {
             hoverOffset: 4
           }]
         },
+        plugins: [
+          {
+            id: "centerTextDoughnut",
+            beforeDraw(chart) {
+              const { ctx } = chart;
+              const meta = chart.getDatasetMeta(0);
+              if (!meta || !meta.data || !meta.data.length) return;
+
+              const x = meta.data[0].x;
+              const y = meta.data[0].y;
+
+              ctx.save();
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+
+              // 150
+              ctx.font = "800 24px 'Plus Jakarta Sans', sans-serif";
+              ctx.fillStyle = "#0f172a";
+              ctx.fillText("150", x, y - 8);
+
+              // personas
+              ctx.font = "600 11.5px 'Plus Jakarta Sans', sans-serif";
+              ctx.fillStyle = "#64748b";
+              ctx.fillText("personas", x, y + 13);
+
+              ctx.restore();
+            }
+          }
+        ],
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
             tooltip: {
+              backgroundColor: "rgba(0, 37, 84, 0.96)",
+              titleFont: { family: "Plus Jakarta Sans, sans-serif", size: 12.5, weight: "800" },
+              bodyFont: { family: "Plus Jakarta Sans, sans-serif", size: 12, weight: "600" },
+              padding: 10,
+              cornerRadius: 8,
               callbacks: {
                 label: ctx => {
                   const val = ctx.parsed;
                   const pct = Math.round((val / 150) * 100);
-                  return ` ${ctx.label}: ${val} personas (${pct}%)`;
+                  return ` ${val} personas (${pct}%)`;
                 }
               }
             }
