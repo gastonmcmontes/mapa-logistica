@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics & Estadísticas Logísticas — Correo Argentino</title>
+  <meta name="description"
+    content="Tablero de control ejecutivo y análisis estadístico de la red de plantas logísticas de Correo Argentino. Gráficos interactivos de volúmenes, dotación, superficie y procesos operativos.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="analytics.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- =====================================================
+       SIDEBAR IZQUIERDO (CORREO ARGENTINO)
+       ===================================================== -->
+  <aside id="sidebar-izq" class="sidebar-izq">
+
+    <!-- Bloque superior amarillo con Logo oficial -->
+    <div class="sidebar-brand">
+      <a href="index.html" class="sidebar-brand-link" title="Correo Argentino">
+        <img src="imagenes/correo_argentino_logo.png" alt="Correo Argentino" class="sidebar-logo-img">
+      </a>
+    </div>
+
+    <!-- Menú de navegación vertical -->
+    <nav class="sidebar-nav">
+      <!-- 1. Inicio / Mapa -->
+      <a href="index.html" class="sidebar-link" title="Mapa Nacional">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+          <line x1="8" y1="2" x2="8" y2="18"></line>
+          <line x1="16" y1="6" x2="16" y2="22"></line>
+        </svg>
+        <span>Mapeo Nacional</span>
+      </a>
+
+      <!-- 2. Indicadores en Mapa -->
+      <a href="index.html#dashboard-principal" class="sidebar-link" title="Indicadores Operativos">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <span>Indicadores</span>
+      </a>
+
+      <!-- 3. Analytics & Estadísticas (Activo) -->
+      <a href="analytics.html" class="sidebar-link activo" title="Analytics y Gráficos">
+        <svg class="sidebar-ico" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+          <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+        </svg>
+        <span>Analytics</span>
+      </a>
+    </nav>
+
+    <!-- Pie del sidebar con marca de agua y slogan -->
+    <div class="sidebar-footer">
+      <div class="sidebar-watermark">
+        <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 32C25 52 75 52 90 32C75 42 25 42 10 32Z" fill="#083a75" />
+          <path d="M22 18C38 34 62 34 78 18C62 26 38 26 22 18Z" fill="#083a75" />
+        </svg>
+      </div>
+      <div class="sidebar-footer-text">
+        <h3>Correo<br>Argentino</h3>
+        <p>Conectando todo el país</p>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- =====================================================
+       CONTENIDO PRINCIPAL (DERECHA DEL SIDEBAR)
+       ===================================================== -->
+  <div id="main-wrapper" class="main-wrapper">
+
+    <!-- Header superior del Dashboard -->
+    <header class="dashboard-header-bar">
+      <div class="header-titles">
+        <h1 class="header-main-title">ANALYTICS & ESTADÍSTICAS LOGÍSTICAS</h1>
+        <p class="header-main-sub">Tablero de control ejecutivo con métricas de rendimiento, volúmenes y dotación de las 36 plantas oficiales.</p>
+      </div>
+
+      <div class="toolbar-right">
+        <a href="index.html" class="btn-analytics btn-secondary-ca">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            <line x1="8" y1="2" x2="8" y2="18"></line>
+            <line x1="16" y1="6" x2="16" y2="22"></line>
+          </svg>
+          Ver Mapa Nacional
+        </a>
+        <button id="btn-exportar-csv" class="btn-analytics btn-amarillo-ca" title="Descargar datos en formato CSV">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Exportar CSV
+        </button>
+      </div>
+    </header>
+
+    <!-- Tablero de Analytics -->
+    <main class="analytics-dashboard">
+
+      <!-- Barra de Filtro de Región -->
+      <div class="analytics-toolbar">
+        <div class="toolbar-left">
+          <span class="toolbar-lbl">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            Filtrar por región operativa
+          </span>
+
+          <div class="custom-select-wrap" id="custom-vista-wrap">
+            <button class="custom-select-btn" id="custom-vista-btn" aria-haspopup="listbox" aria-expanded="false">
+              <span id="custom-vista-label">Nacional (36 plantas)</span>
+              <svg class="custom-select-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <ul class="custom-select-list" id="custom-vista-list" role="listbox">
+              <li class="custom-select-option selected" data-value="nacional" role="option">Nacional (36 plantas)</li>
+              <li class="custom-select-option" data-value="amba" role="option">Metropolitana / AMBA (6 plantas)</li>
+              <li class="custom-select-option" data-value="pba" role="option">PBA / La Pampa (5 plantas)</li>
+              <li class="custom-select-option" data-value="centro" role="option">Centro / NEA (9 plantas)</li>
+              <li class="custom-select-option" data-value="cuyo" role="option">Cuyo / NOA (9 plantas)</li>
+              <li class="custom-select-option" data-value="patagonia" role="option">Patagonia / Sur (7 plantas)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="toolbar-right">
+          <span style="font-size: 12.5px; color: #64748b; font-weight: 600;">
+            Fuente: Excel Oficial Correo Argentino
+          </span>
+        </div>
+      </div>
+
+      <!-- Barra de Navegación por Pestañas (Sin salto de scroll) -->
+      <nav class="section-anchor-nav" aria-label="Navegación de secciones">
+        <button type="button" class="analytics-tab active" data-tab="indicadores">
+          <svg class="tab-icon tab-icon-yellow" viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+            <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
+          </svg>
+          <span>Indicadores Globales</span>
+        </button>
+        <button type="button" class="analytics-tab" data-tab="optimizacion">
+          <svg class="tab-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+          </svg>
+          <span>Optimización de Personal</span>
+        </button>
+        <button type="button" class="analytics-tab" data-tab="ingresos">
+          <svg class="tab-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+          <span>Envíos Maquinables vs No Maquinables</span>
+        </button>
+        <button type="button" class="analytics-tab" data-tab="transporte">
+          <svg class="tab-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+          <span>Red de Transporte (310 Rutas)</span>
+        </button>
+        <button type="button" class="analytics-tab" data-tab="ranking">
+          <svg class="tab-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <polyline points="7 17 12 12 17 17"></polyline>
+          </svg>
+          <span>Rankings Operativos</span>
+        </button>
+        <button type="button" class="analytics-tab" data-tab="plantas">
+          <svg class="tab-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+            <path d="M3 3v8h8V3H3zm6 6H5V5h4v4zm-6 4v8h8v-8H3zm6 6H5v-4h4v4zm4-16v8h8V3h-8zm6 6h-4V5h4v4zm-6 4v8h8v-8h-8zm6 6h-4v-4h4v4z"/>
+          </svg>
+          <span>Listado de 36 Plantas</span>
+        </button>
+      </nav>
+
+      <!-- Grid de 6 Tarjetas de KPIs Analíticos con Borde Izquierdo y Sparkline -->
+      <section class="analytics-kpis-grid" id="sec-kpis">
+        <!-- 1. Volumen Diario Total -->
+        <div class="akpi-card card-volumen">
+          <div class="akpi-top">
+            <span class="akpi-title">VOLUMEN TOTAL DIARIO</span>
+            <svg class="akpi-naked-icon icon-yellow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+          </div>
+          <div class="akpi-val" id="akpi-volumen">528.234</div>
+          <div class="akpi-sub" id="akpi-volumen-sub">30.156.849 Vta · 60.373.985 Jur.</div>
+          <!-- Sparkline de tendencia dinámico en la base de la tarjeta -->
+          <svg class="akpi-sparkline" viewBox="0 0 140 28" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkline-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.02"/>
+              </linearGradient>
+            </defs>
+            <path id="sparkline-area" d="M 0,26 C 18,26 30,19 45,22 C 60,25 75,28 90,20 C 105,12 120,25 140,10 L 140,28 L 0,28 Z" fill="url(#sparkline-grad)"/>
+            <path id="sparkline-path" d="M 0,26 C 18,26 30,19 45,22 C 60,25 75,28 90,20 C 105,12 120,25 140,10" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- 2. Plantas Operativas -->
+        <div class="akpi-card card-plantas">
+          <div class="akpi-top">
+            <span class="akpi-title">PLANTAS LOGÍSTICAS</span>
+            <svg class="akpi-naked-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+            </svg>
+          </div>
+          <div class="akpi-val" id="akpi-plantas">36</div>
+          <div class="akpi-sub" id="akpi-plantas-sub">19 CLOG · 1 Sorter · 4 CDP · 12 CTP</div>
+        </div>
+
+        <!-- 3. Dotación Operativa -->
+        <div class="akpi-card card-dotacion">
+          <div class="akpi-top">
+            <span class="akpi-title">DOTACIÓN DE PERSONAL</span>
+            <svg class="akpi-naked-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+          </div>
+          <div class="akpi-val" id="akpi-dotacion">1.431</div>
+          <div class="akpi-sub" id="akpi-dotacion-sub">1.125 aux. operativos</div>
+        </div>
+
+        <!-- 4. Superficie Operativa -->
+        <div class="akpi-card card-superficie">
+          <div class="akpi-top">
+            <span class="akpi-title">SUPERFICIE LOGÍSTICA</span>
+            <svg class="akpi-naked-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <polyline points="9 11 12 14 17 8"></polyline>
+            </svg>
+          </div>
+          <div class="akpi-val" id="akpi-superficie">73.196 m²</div>
+          <div class="akpi-sub" id="akpi-superficie-sub">Promedio 2.033 m² / planta</div>
+        </div>
+
+        <!-- 5. Turno de Mayor Dotación -->
+        <div class="akpi-card card-turno">
+          <div class="akpi-top">
+            <span class="akpi-title">TURNO CON MÁS DOTACIÓN</span>
+            <svg class="akpi-naked-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="akpi-val" id="akpi-turno">Turno Mañana</div>
+          <div class="akpi-sub" id="akpi-turno-sub">493 pers. (34%)</div>
+        </div>
+
+        <!-- 6. Envíos por Persona -->
+        <div class="akpi-card card-rendimiento">
+          <div class="akpi-top">
+            <span class="akpi-title">RENDIMIENTO OPERATIVO</span>
+            <svg class="akpi-naked-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+              <polyline points="17 6 23 6 23 12"></polyline>
+            </svg>
+          </div>
+          <div class="akpi-val" id="akpi-productividad">369 env/p</div>
+          <div class="akpi-sub" id="akpi-productividad-sub">Capacidad media por operario</div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECCIÓN 1: RESUMEN EJECUTIVO Y PERSONAL A REUBICAR (SHEET 6)
+           ===================================================== -->
+      <section class="analytics-section-block banner-ejecutivo" id="sec-optimizacion" data-tab-section="optimizacion">
+        <div class="banner-ejecutivo-top">
+          <div>
+            <div class="banner-subhead">Auditoría Operativa Federal · 4 Regiones Logísticas</div>
+            <h2 class="banner-title">Optimización de Dotación y Recursos a Reubicar</h2>
+            <p class="banner-desc">
+              Cálculo de personal necesario para manipulación de paquetes y transporte versus la dotación de auxiliares operativos actual en las plantas logísticas.
+            </p>
+          </div>
+        </div>
+
+        <!-- 4 Stats Clave Nacionales -->
+        <div class="banner-grid-stats">
+          <div class="banner-stat-box">
+            <span class="bstat-num">648</span>
+            <span class="bstat-lbl">Auxiliares Relevados</span>
+            <span class="bstat-sub">En 26 plantas auditadas</span>
+          </div>
+          <div class="banner-stat-box" style="border-color:#ef4444; background:rgba(239,68,68,0.12);">
+            <span class="bstat-num" style="color:#fca5a5;">150</span>
+            <span class="bstat-lbl" style="color:#ffffff;">Personal a Reubicar</span>
+            <span class="bstat-sub" style="color:#fecaca;">23.1% del total analizado</span>
+          </div>
+          <div class="banner-stat-box">
+            <span class="bstat-num">$2.831 M</span>
+            <span class="bstat-lbl">Costo Empresa Anual Promedio</span>
+            <span class="bstat-sub">$3.197 M con +10 años antig.</span>
+          </div>
+          <div class="banner-stat-box">
+            <span class="bstat-num">$235.9 M</span>
+            <span class="bstat-lbl">Costo Empresa Mensual</span>
+            <span class="bstat-sub">$266.4 M con +10 años antig.</span>
+          </div>
+        </div>
+
+        <!-- Desglose por las 4 Regiones del Excel -->
+        <div class="regiones-opt-grid">
+          <!-- SUR -->
+          <div class="region-opt-card">
+            <div class="region-opt-header">
+              <span class="region-opt-name">Patagonia / SUR</span>
+              <span class="region-opt-pct">15.2% a reubicar</span>
+            </div>
+            <div class="region-opt-row"><span>Auxiliares operativos:</span><strong>105</strong></div>
+            <div class="region-opt-row"><span>Personal a reubicar:</span><strong style="color:#dc2626;">16 personas</strong></div>
+            <div class="region-opt-row"><span>Costo empresa mensual:</span><strong>$235.9M</strong></div>
+          </div>
+
+          <!-- CUYO NOA -->
+          <div class="region-opt-card destacada">
+            <div class="region-opt-header">
+              <span class="region-opt-name">CUYO / NOA</span>
+              <span class="region-opt-pct" style="background:#fee2e2; color:#b91c1c;">29.2% a reubicar</span>
+            </div>
+            <div class="region-opt-row"><span>Auxiliares operativos:</span><strong>212</strong></div>
+            <div class="region-opt-row"><span>Personal a reubicar:</span><strong style="color:#dc2626;">62 personas</strong></div>
+            <div class="region-opt-row"><span>Mayor excedente:</span><strong>Mendoza (16), Tucumán (12)</strong></div>
+          </div>
+
+          <!-- CENTRO NEA -->
+          <div class="region-opt-card">
+            <div class="region-opt-header">
+              <span class="region-opt-name">CENTRO / NEA</span>
+              <span class="region-opt-pct">20.5% a reubicar</span>
+            </div>
+            <div class="region-opt-row"><span>Auxiliares operativos:</span><strong>224</strong></div>
+            <div class="region-opt-row"><span>Personal a reubicar:</span><strong style="color:#dc2626;">46 personas</strong></div>
+            <div class="region-opt-row"><span>Mayor excedente:</span><strong>Santa Fe (33)</strong></div>
+          </div>
+
+          <!-- PBA -->
+          <div class="region-opt-card">
+            <div class="region-opt-header">
+              <span class="region-opt-name">PBA / LA PAMPA</span>
+              <span class="region-opt-pct">24.3% a reubicar</span>
+            </div>
+            <div class="region-opt-row"><span>Auxiliares operativos:</span><strong>107</strong></div>
+            <div class="region-opt-row"><span>Personal a reubicar:</span><strong style="color:#dc2626;">26 personas</strong></div>
+            <div class="region-opt-row"><span>Mayor excedente:</span><strong>La Plata (18), Bahía Blanca (6)</strong></div>
+          </div>
+        </div>
+
+        <!-- 2 Gráficos de Optimización y Puestos -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-top: 6px;">
+          <div style="background:#ffffff; border-radius:10px; padding:16px; color:#102a43;">
+            <h4 style="margin:0 0 4px 0; font-size:14.5px; font-weight:800; color:#002554;">Auxiliares Actuales vs Personal a Reubicar por Región</h4>
+            <p style="margin:0 0 12px 0; font-size:12px; color:#627d98;">Comparativa regional de dotación operativa vs requerimientos calculados.</p>
+            <div style="height:220px; position:relative;">
+              <canvas id="chart-optimizacion-regional"></canvas>
+            </div>
+          </div>
+
+          <div style="background:#ffffff; border-radius:10px; padding:16px; color:#102a43;">
+            <h4 style="margin:0 0 4px 0; font-size:14.5px; font-weight:800; color:#002554;">Distribución de Recursos: Puestos Necesarios vs Reubicación</h4>
+            <p style="margin:0 0 12px 0; font-size:12px; color:#627d98;">Manipulación de paquetes vs Transporte vs Excedente a reubicar.</p>
+            <div style="height:220px; position:relative;">
+              <canvas id="chart-puestos-operativos"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECCIÓN 2: DETALLE INGRESO DE ENVÍOS (MAQUINABLES VS NO MAQUINABLES)
+           ===================================================== -->
+      <section class="analytics-section-block chart-card" id="sec-ingresos" data-tab-section="ingresos" style="padding:22px;">
+        <div class="chart-card-header" style="margin-bottom:18px;">
+          <div class="chart-card-titles">
+            <div class="chart-card-icon" style="background:#e0f2fe; color:#0284c7;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M20 7l-8-4-8 4 8 4 8-4zm-8 6l-8-4v8l8 4V13zm2 .9l6-3V19l-6 3V13.9z"/>
+              </svg>
+            </div>
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3 class="chart-card-h3">Detalle Ingreso de Envíos: Maquinable vs No Maquinable</h3>
+                <span class="chart-badge-tag">Clasificación Mecánica</span>
+              </div>
+              <p class="chart-card-sub">Envíos entrantes clasificados por aptitud técnica para sorter / mecanización vs manipulación manual / irregular y última milla.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; border-left:4px solid #0284c7;">
+            <span style="font-size:12px; font-weight:700; color:#0369a1; text-transform:uppercase;">Envíos Maquinables (Sorter)</span>
+            <div style="font-size:24px; font-weight:800; color:#0f172a; margin:4px 0;" id="kpi-ingreso-maq">70% Promedio</div>
+            <span style="font-size:12px; color:#64748b;">Aptos para clasificación mecánica automatizada de alta velocidad.</span>
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; border-left:4px solid #f59e0b;">
+            <span style="font-size:12px; font-weight:700; color:#b45309; text-transform:uppercase;">Envíos No Maquinables (Manual)</span>
+            <div style="font-size:24px; font-weight:800; color:#0f172a; margin:4px 0;" id="kpi-ingreso-nomaq">30% Promedio</div>
+            <span style="font-size:12px; color:#64748b;">Bultos irregulares, sobredimensionados o con tratamiento manual.</span>
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; border-left:4px solid #10b981;">
+            <span style="font-size:12px; font-weight:700; color:#047857; text-transform:uppercase;">Flujo Última Milla</span>
+            <div style="font-size:24px; font-weight:800; color:#0f172a; margin:4px 0;" id="kpi-ingreso-um">+700.000 / mes</div>
+            <span style="font-size:12px; color:#64748b;">Envíos asignados a reparto domiciliario y distribución local.</span>
+          </div>
+        </div>
+
+        <div style="height:280px; position:relative;">
+          <canvas id="chart-ingresos-maquinables"></canvas>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECCIÓN 3: RED FEDERAL DE TRANSPORTE (310 LÍNEAS DE SERVICIO)
+           ===================================================== -->
+      <section class="analytics-section-block table-card" id="sec-transporte" data-tab-section="transporte">
+        <div class="table-header-bar">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3 style="font-size: 18px; font-weight: 800; color: #002554; margin: 0;">Red de Transporte Interjurisdiccional</h3>
+              <span class="chart-badge-tag" style="background:#e0f2fe; color:#0369a1;">310 Rutas Oficiales</span>
+            </div>
+            <p style="font-size: 12.5px; color: #627d98; margin: 2px 0 0 0;" id="transporte-count-label">Frecuencias, horarios de operación, distancias y capacidades de bodega</p>
+          </div>
+
+          <div class="table-search-wrap">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="transporte-search" class="table-search-input" placeholder="Buscar ruta, línea (ej: ADIC 01, BUE) o código de planta...">
+          </div>
+        </div>
+
+        <div class="transporte-filters-bar">
+          <div class="transporte-pills-wrap" id="transporte-filtros-servicio">
+            <button class="trans-chip activo" data-servicio="TODOS">Todos los Servicios</button>
+            <button class="trans-chip" data-servicio="ADIC">ADIC (Adicionales)</button>
+            <button class="trans-chip" data-servicio="LTC">LTC (Troncales)</button>
+            <button class="trans-chip" data-servicio="BUE">BUE (Conexión Buenos Aires)</button>
+            <button class="trans-chip" data-servicio="ATP">ATP (Postal)</button>
+            <button class="trans-chip" data-servicio="LTN">LTN (Nocturnos)</button>
+          </div>
+          <span style="font-size:12px; color:#64748b; font-weight:600;" id="transporte-filter-info">Mostrando 310 líneas</span>
+        </div>
+
+        <div class="table-responsive" style="max-height: 440px; overflow-y: auto;">
+          <table class="analytics-table">
+            <thead>
+              <tr>
+                <th>LÍNEA</th>
+                <th>PLANTA / COD</th>
+                <th>REGIÓN</th>
+                <th>TIPO SERVICIO</th>
+                <th>FRECUENCIA</th>
+                <th>LLEGADA</th>
+                <th>SALIDA</th>
+                <th>OPERACIÓN</th>
+                <th>DISTANCIA</th>
+                <th>CAPACIDAD BODEGA</th>
+              </tr>
+            </thead>
+            <tbody id="transporte-table-body">
+              <!-- Filas renderizadas dinámicamente por analytics.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECCIÓN 4: RANKINGS OPERATIVOS
+           ===================================================== -->
+      <section class="analytics-section-block charts-grid-row" id="sec-ranking" data-tab-section="ranking">
+        <!-- Gráfico 1: Top 10 Plantas por Volumen -->
+        <div class="chart-card col-8">
+          <div class="chart-card-header">
+            <div class="chart-card-titles">
+              <div class="chart-card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="chart-card-h3">Top 10 Plantas con Mayor Volumen Operativo Diario</h3>
+                <p class="chart-card-sub">Envíos diarios totales (Venta + Jurisdicción) ordenados de mayor a menor.</p>
+              </div>
+            </div>
+            <span class="chart-badge-tag">Ranking Oficial</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-top-volumen"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfico 2: Cuota de Volumen por Región -->
+        <div class="chart-card col-4">
+          <div class="chart-card-header">
+            <div class="chart-card-titles">
+              <div class="chart-card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2 0v8.99H22c-.47-4.74-4.24-8.52-9-8.99zm0 11.01V22c4.76-.46 8.53-4.25 9-8.99H13z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="chart-card-h3">Cuota de Envíos por Región</h3>
+                <p class="chart-card-sub">Participación porcentual en el volumen total.</p>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-cuota-region"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECCIÓN 5: INDICADORES MACRO (COMPOSICIÓN Y SUPERFICIE)
+           ===================================================== -->
+      <section class="analytics-section-block charts-grid-row" id="sec-composicion" data-tab-section="indicadores">
+        <!-- Gráfico 3: Venta vs Jurisdicción -->
+        <div class="chart-card col-6">
+          <div class="chart-card-header">
+            <div class="chart-card-titles">
+              <div class="chart-card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="chart-card-h3">Composición de Carga por Región (Venta vs Jurisdicción)</h3>
+                <p class="chart-card-sub">Desglose de envíos de origen comercial vs transferencias jurisdiccionales.</p>
+              </div>
+            </div>
+            <span class="chart-badge-tag">Apilado (Stacked)</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-composicion-envios"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfico 4: Superficie vs Dotación -->
+        <div class="chart-card col-6">
+          <div class="chart-card-header">
+            <div class="chart-card-titles">
+              <div class="chart-card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="chart-card-h3">Superficie Logística (m²) vs Fuerza Laboral</h3>
+                <p class="chart-card-sub">Relación entre espacio físico operativo y dotación asignada por región.</p>
+              </div>
+            </div>
+            <span class="chart-badge-tag">Doble Eje</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-superficie-dotacion"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECCIÓN 6: INDICADORES MACRO (TURNOS Y PROCESOS)
+           ===================================================== -->
+      <section class="analytics-section-block charts-grid-row" id="sec-turnos" data-tab-section="indicadores">
+        <!-- Gráfico 5: Turnos -->
+        <div class="chart-card col-6">
+          <div class="chart-card-header">
+            <div class="chart-card-titles">
+              <div class="chart-card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.59L8.71 12.3a1 1 0 0 1 1.41-1.41L12 12.76l4.29-4.3a1 1 0 0 1 1.41 1.41z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="chart-card-h3">Distribución de Personal por Turnos de Trabajo</h3>
+                <p class="chart-card-sub">Cantidad de agentes asignados por franja: Noche, Mañana y Tarde.</p>
+              </div>
+            </div>
+            <span class="chart-badge-tag">Turnos Reales</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-distribucion-turnos"></canvas>
+          </div>
+        </div>
+
+        <!-- Gráfico 6: Procesos -->
+        <div class="chart-card col-6">
+          <div class="chart-card-header">
+            <div class="chart-card-titles">
+              <div class="chart-card-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="chart-card-h3">Procesos Operativos Implementados</h3>
+                <p class="chart-card-sub">Cantidad de plantas que ejecutan CDP, CTP, Pta a Pta y Clasificación.</p>
+              </div>
+            </div>
+            <span class="chart-badge-tag">Capacidad Operativa</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="chart-procesos-tipos"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECCIÓN 7: LISTADO DE 36 PLANTAS
+           ===================================================== -->
+      <section class="analytics-section-block table-card" id="sec-plantas" data-tab-section="plantas">
+        <div class="table-header-bar">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 800; color: #002554; margin: 0;">Detalle Comparativo de Plantas</h3>
+            <p style="font-size: 12.5px; color: #627d98; margin: 2px 0 0 0;" id="table-count-label">Mostrando 36 de 36 plantas</p>
+          </div>
+
+          <div class="table-search-wrap">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="table-search" class="table-search-input" placeholder="Buscar por planta, código o provincia...">
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="analytics-table">
+            <thead>
+              <tr>
+                <th data-sort="cod">CÓDIGO</th>
+                <th data-sort="nombre">PLANTA LOGÍSTICA</th>
+                <th data-sort="tipo">TIPO</th>
+                <th data-sort="provincia">PROVINCIA / REGIÓN</th>
+                <th data-sort="volumenTotalNum" class="sorted-desc">ENVÍOS / DÍA</th>
+                <th data-sort="capacidadM2">SUPERFICIE</th>
+                <th data-sort="dotacionTotal">DOTACIÓN</th>
+                <th data-sort="responsables">JEFE DE PLANTA</th>
+              </tr>
+            </thead>
+            <tbody id="analytics-table-body">
+              <!-- Filas generadas dinámicamente por analytics.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer-info">
+          <span>* Datos auditados y extraídos directamente de las planillas oficiales de Correo Argentino.</span>
+          <span>Click en cualquier cabecera para ordenar ascendente o descendente.</span>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Scripts oficiales (100% compatibles offline y sin CORS) -->
+  <script src="chart.umd.min.js"></script>
+  <script src="nodos-data.js"></script>
+  <script src="analytics.js"></script>
+</body>
+
+</html>

@@ -7,352 +7,18 @@
 // 1. DATASET DE NODOS LOGÍSTICOS
 // Tipos: 'CLOG' | 'DP' | 'Sorter' | 'Regional' | 'Sucursal'
 // =============================================================
-const nodosData = [
+// =============================================================
+// 1. DATASET OFICIAL DE NODOS LOGÍSTICOS (CORREO ARGENTINO)
+// Origen de datos: data/Analisis plantas Logisticas act..xlsx (Sheet 'plantas' + 'Resumen')
+// =============================================================
+const nodosData = (typeof NODOS_DATA_OFICIAL !== "undefined" && Array.isArray(NODOS_DATA_OFICIAL))
+  ? NODOS_DATA_OFICIAL
+  : [];
 
-  // ====================================================
-  // REGIÓN CUYO / NOA
-  // ====================================================
-  {
-    id: "tucuman", nombre: "Tucumán", nombreCompleto: "CLOG Tucumán",
-    tipo: "CLOG", provincia: "Tucumán",
-    lat: -26.81, lng: -65.22,
-    capacidad: "12.400 m²", piezasDia: "34.000", operatividad: "24 / 7",
-    fotos: ["imagenes/cuyo-noa/Tucuman.jpg", "imagenes/cuyo-noa/Tucunan 1.jpg", "imagenes/cuyo-noa/Tucuman 2.jpg"],
-    desc: "Hub principal del Noroeste Argentino (NOA), con conexión directa a Salta, Jujuy, Catamarca y Santiago del Estero."
-  },
-  {
-    id: "mendoza", nombre: "Mendoza", nombreCompleto: "CLOG Mendoza",
-    tipo: "CLOG", provincia: "Mendoza",
-    lat: -32.89, lng: -68.84,
-    capacidad: "14.200 m²", piezasDia: "29.000", operatividad: "24 / 7",
-    fotos: ["imagenes/cuyo-noa/mendoza.jpg", "imagenes/cuyo-noa/mendoza 1.jpg", "imagenes/cuyo-noa/mendoza 2.jpg", "imagenes/cuyo-noa/Mendoza 3.jpg"],
-    desc: "Cabecera logística de la Región Cuyo y punto de conexión bioceánico con el paso Cristo Redentor."
-  },
-  {
-    id: "salta", nombre: "Salta", nombreCompleto: "CLOG Salta",
-    tipo: "CLOG", provincia: "Salta",
-    lat: -24.78, lng: -65.41,
-    capacidad: "10.800 m²", piezasDia: "13.800", operatividad: "24 / 7",
-    fotos: ["imagenes/cuyo-noa/Salta.jpg", "imagenes/cuyo-noa/Salta 1.jpg", "imagenes/cuyo-noa/Salta 2.jpg", "imagenes/cuyo-noa/Salta 3.jpg"],
-    desc: "Nodo logístico regional del norte argentino, conectando Jujuy, Formosa y el corredor hacia Bolivia."
-  },
-  {
-    id: "san_juan", nombre: "San Juan", nombreCompleto: "CLOG San Juan",
-    tipo: "CLOG", provincia: "San Juan",
-    lat: -31.54, lng: -68.54,
-    capacidad: "8.500 m²", piezasDia: "11.400", operatividad: "L a S",
-    fotos: ["imagenes/cuyo-noa/San Juan.jpg", "imagenes/cuyo-noa/San juan 1.jpg", "imagenes/cuyo-noa/San juan 2.jpg"],
-    desc: "Centro de distribución regional para la provincia de San Juan y zonas precordilleranas."
-  },
-  {
-    id: "san_luis", nombre: "San Luis", nombreCompleto: "CLOG San Luis",
-    tipo: "CLOG", provincia: "San Luis",
-    lat: -33.30, lng: -66.34,
-    capacidad: "7.800 m²", piezasDia: "9.200", operatividad: "L a S",
-    fotos: ["imagenes/cuyo-noa/San Luis.jpg", "imagenes/cuyo-noa/San Luis 1.jpg", "imagenes/cuyo-noa/San luis 2.jpg", "imagenes/cuyo-noa/San luis 3.jpg"],
-    desc: "Nodo operativo de San Luis, articulando con Mendoza y Córdoba."
-  },
-  {
-    id: "jujuy", nombre: "Jujuy", nombreCompleto: "CLOG Jujuy",
-    tipo: "CLOG", provincia: "Jujuy",
-    lat: -24.19, lng: -65.30,
-    capacidad: "6.500 m²", piezasDia: "7.100", operatividad: "L a V",
-    fotos: ["imagenes/cuyo-noa/Jujuy.jpg", "imagenes/cuyo-noa/Jujuy 1.jpg", "imagenes/cuyo-noa/Jujuy 2.jpg"],
-    desc: "Centro logístico en la Puna juyeña con cobertura de la Quebrada de Humahuaca y puntos de frontera."
-  },
-  {
-    id: "catamarca", nombre: "Catamarca", nombreCompleto: "CLOG Catamarca",
-    tipo: "CLOG", provincia: "Catamarca",
-    lat: -28.47, lng: -65.78,
-    capacidad: "5.200 m²", piezasDia: "5.900", operatividad: "L a V",
-    fotos: ["imagenes/cuyo-noa/Catamarca.jpg", "imagenes/cuyo-noa/Catamarca 1.jpg", "imagenes/cuyo-noa/Catamarca 2.jpg"],
-    desc: "Nodo logístico provincial que cubre minería y agro en el oeste catamarqueño."
-  },
-  {
-    id: "la_rioja", nombre: "La Rioja", nombreCompleto: "CLOG La Rioja",
-    tipo: "CLOG", provincia: "La Rioja",
-    lat: -29.41, lng: -66.86,
-    capacidad: "4.800 m²", piezasDia: "5.400", operatividad: "L a V",
-    fotos: ["imagenes/cuyo-noa/La Rioja.jpg", "imagenes/cuyo-noa/La Rioja 1.jpg", "imagenes/cuyo-noa/La Rioja 2.jpg"],
-    desc: "Centro de operaciones provincial de La Rioja, distribución hacia valles y zonas rurales."
-  },
-  {
-    id: "santiago_estero", nombre: "Santiago del Estero", nombreCompleto: "CLOG Santiago del Estero",
-    tipo: "CLOG", provincia: "Santiago del Estero",
-    lat: -27.78, lng: -64.27,
-    capacidad: "6.200 m²", piezasDia: "9.800", operatividad: "L a S",
-    fotos: ["imagenes/cuyo-noa/Santiago del Estero.jpg", "imagenes/cuyo-noa/Santiago del Estero 1.jpg", "imagenes/cuyo-noa/Santiago del Estero 2.jpg"],
-    desc: "Nodo estratégico del Chaco Santiagueño, distribuye hacia el interior y conecta NOA con NEA."
-  },
-
-  // ====================================================
-  // REGIÓN CENTRO / NEA
-  // ====================================================
-  {
-    id: "cordoba", nombre: "Córdoba", nombreCompleto: "CLOG Córdoba",
-    tipo: "CLOG", provincia: "Córdoba",
-    lat: -31.42, lng: -64.18,
-    capacidad: "18.500 m²", piezasDia: "48.500", operatividad: "24 / 7",
-    fotos: ["imagenes/centro-nea/Cordoba frente.jpg", "imagenes/centro-nea/Cordoba 1.jpg", "imagenes/centro-nea/Cordoba 2.jpg"],
-    desc: "Nodo neurálgico del Corredor Central. Distribuye hacia Cuyo, NOA y conecta con Buenos Aires y Rosario."
-  },
-  {
-    id: "rosario", nombre: "Rosario", nombreCompleto: "CLOG Rosario",
-    tipo: "CLOG", provincia: "Santa Fe",
-    lat: -32.95, lng: -60.66,
-    capacidad: "16.800 m²", piezasDia: "41.200", operatividad: "24 / 7",
-    fotos: ["imagenes/centro-nea/Rosario Frente.jpg", "imagenes/centro-nea/Rosario 1.jpg", "imagenes/centro-nea/Rosario 2.jpg"],
-    desc: "Plataforma multimodal en el eje fluvial e industrial de Santa Fe y Entre Ríos."
-  },
-  {
-    id: "santa_fe", nombre: "Santa Fe", nombreCompleto: "CLOG Santa Fe",
-    tipo: "CLOG", provincia: "Santa Fe",
-    lat: -31.63, lng: -60.70,
-    capacidad: "9.000 m²", piezasDia: "16.200", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Santa Fe Frente 2.jpg", "imagenes/centro-nea/Santa Fe 1.jpg", "imagenes/centro-nea/Santa fe 2.jpg", "imagenes/centro-nea/Santa Fe 3.jpg", "imagenes/centro-nea/Santa Fe 4.jpg"],
-    desc: "Nodo logístico de la capital provincial de Santa Fe, con distribución al litoral."
-  },
-  {
-    id: "parana", nombre: "Paraná", nombreCompleto: "CLOG Paraná",
-    tipo: "CLOG", provincia: "Entre Ríos",
-    lat: -31.74, lng: -60.52,
-    capacidad: "8.500 m²", piezasDia: "10.800", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Parana Frente.jpg", "imagenes/centro-nea/Parana 1.jpg", "imagenes/centro-nea/Parana 2.jpg", "imagenes/centro-nea/Parana frente nave 2.jpg"],
-    desc: "Centro operativo de Entre Ríos, articulando el litoral mesopotámico con Córdoba y AMBA."
-  },
-  {
-    id: "rio_cuarto", nombre: "Río Cuarto", nombreCompleto: "CLOG Río Cuarto",
-    tipo: "CLOG", provincia: "Córdoba",
-    lat: -33.13, lng: -64.35,
-    capacidad: "7.500 m²", piezasDia: "8.500", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Rio Cuarto Frente.jpg", "imagenes/centro-nea/Rio Cuarto 1.jpg", "imagenes/centro-nea/Rio cuarto 2.jpg", "imagenes/centro-nea/Rio cuarto 3.jpg"],
-    desc: "Nodo logístico del sur de Córdoba, con distribución hacia La Pampa y San Luis."
-  },
-  {
-    id: "villa_maria", nombre: "Villa María", nombreCompleto: "CLOG Villa María",
-    tipo: "CLOG", provincia: "Córdoba",
-    lat: -32.41, lng: -63.24,
-    capacidad: "6.800 m²", piezasDia: "12.000", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Villa Maria Frente.jpg", "imagenes/centro-nea/Villa Maria 2.jpg", "imagenes/centro-nea/Villa Maria 3.jpg", "imagenes/centro-nea/Villa Maria 4.jpg"],
-    desc: "Nodo estratégico del centro cordobés, articulando el corredor nacional hacia AMBA."
-  },
-  {
-    id: "corrientes", nombre: "Corrientes", nombreCompleto: "CLOG Corrientes",
-    tipo: "CLOG", provincia: "Corrientes",
-    lat: -27.47, lng: -58.83,
-    capacidad: "7.200 m²", piezasDia: "12.000", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Corrientes Frente.jpg", "imagenes/centro-nea/Corrientes 1.jpg", "imagenes/centro-nea/Corrientes 2.jpg", "imagenes/centro-nea/Corrientes 3.jpg"],
-    desc: "Centro logístico del NEA, conectando el litoral mesopotámico con Chaco y Misiones."
-  },
-  {
-    id: "resistencia", nombre: "Resistencia", nombreCompleto: "CLOG Resistencia",
-    tipo: "CLOG", provincia: "Chaco",
-    lat: -27.46, lng: -58.99,
-    capacidad: "6.800 m²", piezasDia: "12.500", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Resistencia frente.jpg", "imagenes/centro-nea/Resistencia 1.jpg", "imagenes/centro-nea/Resistencia 2.jpg", "imagenes/centro-nea/Resistencia 3.jpg"],
-    desc: "Nodo logístico de la capital del Chaco, con distribución hacia Formosa y el interior."
-  },
-  {
-    id: "posadas", nombre: "Posadas", nombreCompleto: "CLOG Posadas",
-    tipo: "CLOG", provincia: "Misiones",
-    lat: -27.36, lng: -55.90,
-    capacidad: "6.400 m²", piezasDia: "11.000", operatividad: "L a S",
-    fotos: ["imagenes/centro-nea/Posadas Frente.jpg", "imagenes/centro-nea/Posadas 1.jpg", "imagenes/centro-nea/Posadas 2.jpg", "imagenes/centro-nea/Posadas 3.jpg"],
-    desc: "Nodo logístico de Misiones, puerta de distribución hacia la Selva Misionera y frontera con Brasil."
-  },
-
-  // ====================================================
-  // REGIÓN METRO / BUENOS AIRES / LA PAMPA
-  // ====================================================
-  {
-    id: "bahia_blanca", nombre: "Bahía Blanca", nombreCompleto: "CLOG Bahía Blanca",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -38.72, lng: -62.27,
-    capacidad: "11.000 m²", piezasDia: "22.800", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Bahia Blanca.jpg", "imagenes/metro-pba/Bahia Blanca 1.jpg"],
-    desc: "Puerta logística hacia la Patagonia y nodo de articulación con el sur bonaerense."
-  },
-  {
-    id: "barracas", nombre: "Barracas", nombreCompleto: "CLOG Barracas",
-    tipo: "CLOG", provincia: "Ciudad Autónoma de Buenos Aires",
-    lat: -34.64, lng: -58.38,
-    capacidad: "18.000 m²", piezasDia: "55.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Barracas.jpg", "imagenes/metro-pba/Barracas 1.jpg", "imagenes/metro-pba/Barracas 2.jpg", "imagenes/metro-pba/Barracas 3.jpg"],
-    desc: "Centro logístico urbano en CABA, especializado en última milla para Capital Federal y GBA."
-  },
-  {
-    id: "la_plata", nombre: "La Plata", nombreCompleto: "CLOG La Plata",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -34.92, lng: -57.95,
-    capacidad: "9.500 m²", piezasDia: "14.500", operatividad: "L a S",
-    fotos: ["imagenes/metro-pba/La Plata.jpg", "imagenes/metro-pba/La Plata 1.jpg", "imagenes/metro-pba/La Plata 2.jpg", "imagenes/metro-pba/La Plata 3.jpg"],
-    desc: "Centro de distribución de la capital bonaerense, cubriendo GBA Sur y la costa atlántica."
-  },
-  {
-    id: "mar_del_plata", nombre: "Mar del Plata", nombreCompleto: "CLOG Mar del Plata",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -38.00, lng: -57.56,
-    capacidad: "9.500 m²", piezasDia: "19.400", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/M del Plata.jpg", "imagenes/metro-pba/M del Plata 1.jpg", "imagenes/metro-pba/M del Plata 2.jpg"],
-    desc: "Planta de distribución integral para la Costa Atlántica y el sudeste de la Provincia de Buenos Aires."
-  },
-  {
-    id: "mercado_central", nombre: "Mercado Central", nombreCompleto: "Hub Mercado Central (Sorter)",
-    tipo: "Sorter", provincia: "Buenos Aires",
-    lat: -34.69, lng: -58.52,
-    capacidad: "32.000 m²", piezasDia: "85.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Mercado Central.jpg", "imagenes/metro-pba/Mercado central 1.jpg", "imagenes/metro-pba/Mercado Central 2.jpg", "imagenes/metro-pba/Mercado Central 3.jpg", "imagenes/metro-pba/Mercado Central 4.jpg"],
-    desc: "Gran hub logístico del GBA Oeste, adyacente al Mercado Central. Sorter de alta velocidad."
-  },
-  {
-    id: "mercedes", nombre: "Mercedes", nombreCompleto: "CLOG Mercedes",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -34.65, lng: -59.43,
-    capacidad: "7.200 m²", piezasDia: "11.000", operatividad: "L a S",
-    fotos: ["imagenes/metro-pba/Mercedes.jpg", "imagenes/metro-pba/Mercedes 1.jpg", "imagenes/metro-pba/Mercedes 2.jpg"],
-    desc: "Nodo de distribución del GBA Oeste e interior bonaerense."
-  },
-  {
-    id: "moreno", nombre: "Moreno", nombreCompleto: "CLOG Moreno",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -34.63, lng: -58.79,
-    capacidad: "8.500 m²", piezasDia: "18.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Moreno .jpg", "imagenes/metro-pba/Moreno 1.jpg", "imagenes/metro-pba/Moreno 2.jpg", "imagenes/metro-pba/Moreno 3.jpg"],
-    desc: "Centro logístico del corredor Oeste del GBA con alta densidad de distribución urbana."
-  },
-  {
-    id: "pergamino", nombre: "Pergamino", nombreCompleto: "CLOG Pergamino",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -33.88, lng: -60.57,
-    capacidad: "5.800 m²", piezasDia: "8.500", operatividad: "L a V",
-    fotos: ["imagenes/metro-pba/Pergamino.jpg", "imagenes/metro-pba/Pergamino 1.jpg", "imagenes/metro-pba/Pergamino 2.jpg"],
-    desc: "Nodo del norte bonaerense, articulando el agro con la cadena logística hacia AMBA."
-  },
-  {
-    id: "quilmes", nombre: "Quilmes", nombreCompleto: "CLOG Quilmes",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -34.72, lng: -58.25,
-    capacidad: "9.000 m²", piezasDia: "22.000", operatividad: "24 / 7",
-    fotos: ["imagenes/metro-pba/Quilmes .jpg", "imagenes/metro-pba/Quilmes 1.jpg", "imagenes/metro-pba/Quilmes 2.jpg", "imagenes/metro-pba/Quilmes 3.jpg", "imagenes/metro-pba/Quilmes 4.jpg"],
-    desc: "Centro logístico del GBA Sur, cubriendo el corredor industrial del Riachuelo."
-  },
-  {
-    id: "santa_rosa", nombre: "Santa Rosa", nombreCompleto: "CLOG Santa Rosa",
-    tipo: "CLOG", provincia: "La Pampa",
-    lat: -36.62, lng: -64.29,
-    capacidad: "5.400 m²", piezasDia: "7.600", operatividad: "L a V",
-    fotos: ["imagenes/metro-pba/Santa Rosa.jpg", "imagenes/metro-pba/Santa Rosa 1.jpg", "imagenes/metro-pba/Santa Rosa 3.jpg"],
-    desc: "Nodo logístico de La Pampa, distribuyendo al interior pampeano y articulando con Córdoba."
-  },
-  {
-    id: "vte_lopez", nombre: "Vicente López", nombreCompleto: "CLOG Vicente López",
-    tipo: "CLOG", provincia: "Buenos Aires",
-    lat: -34.52, lng: -58.47,
-    capacidad: "6.500 m²", piezasDia: "14.000", operatividad: "L a S",
-    fotos: ["imagenes/metro-pba/Vte. Lopez.jpg", "imagenes/metro-pba/Vte. Lopez 1.jpg", "imagenes/metro-pba/Vte. Lopez 2.jpg", "imagenes/metro-pba/Vte. Lopez 3.jpg"],
-    desc: "Nodo logístico del corredor Norte del GBA, con acceso a Autopista Panamericana."
-  },
-
-  // ====================================================
-  // REGIÓN SUR / PATAGONIA
-  // ====================================================
-  {
-    id: "bariloche", nombre: "Bariloche", nombreCompleto: "CLOG Bariloche",
-    tipo: "CLOG", provincia: "Río Negro",
-    lat: -41.13, lng: -71.31,
-    capacidad: "4.500 m²", piezasDia: "8.200", operatividad: "L a S",
-    fotos: [
-      "imagenes/sur/BARILOCHE_1.jpg",
-      "imagenes/sur/BARILOCHE_2.jpg",
-      "imagenes/sur/BARILOCHE_3.jpg",
-      "imagenes/sur/BARILOCHE_4.jpg"
-    ],
-    desc: "Centro logístico andino patagónico, cabecera de distribución para la zona lacustre y cordillerana de Río Negro."
-  },
-  {
-    id: "comodoro_rivadavia", nombre: "Comodoro Rivadavia", nombreCompleto: "CLOG Comodoro Rivadavia",
-    tipo: "CLOG", provincia: "Chubut",
-    lat: -45.87, lng: -67.50,
-    capacidad: "6.000 m²", piezasDia: "9.500", operatividad: "24 / 7",
-    fotos: [
-      "imagenes/sur/COMODORO_RIVADAVIA_1.jpg",
-      "imagenes/sur/COMODORO_RIVADAVIA_2.jpg",
-      "imagenes/sur/COMODORO_RIVADAVIA_3.jpg",
-      "imagenes/sur/COMODORO_RIVADAVIA_4.jpg",
-      "imagenes/sur/COMODORO_RIVADAVIA_5.jpg",
-      "imagenes/sur/COMODORO_RIVADAVIA_6.jpg"
-    ],
-    desc: "Hub logístico del Golfo San Jorge y la Patagonia Central, articulando Chubut con el norte santacruceño."
-  },
-  {
-    id: "neuquen", nombre: "Neuquén", nombreCompleto: "CLOG Neuquén",
-    tipo: "CLOG", provincia: "Neuquén",
-    lat: -38.95, lng: -69.25,
-    capacidad: "7.800 m²", piezasDia: "15.000", operatividad: "24 / 7",
-    fotos: [
-      "imagenes/sur/NEUQUEN_1.jpg",
-      "imagenes/sur/NEUQUEN_2.jpg",
-      "imagenes/sur/NEUQUEN_3.jpg",
-      "imagenes/sur/NEUQUEN_4.jpg",
-      "imagenes/sur/NEUQUEN_5.jpg",
-      "imagenes/sur/NEUQUEN_6.jpg"
-    ],
-    desc: "Cabecera logística del Alto Valle, soporte operativo integral para el polo de desarrollo de Vaca Muerta."
-  },
-  {
-    id: "rio_gallegos", nombre: "Río Gallegos", nombreCompleto: "CLOG Río Gallegos",
-    tipo: "CLOG", provincia: "Santa Cruz",
-    lat: -51.62, lng: -69.22,
-    capacidad: "4.000 m²", piezasDia: "6.400", operatividad: "L a S",
-    fotos: [
-      "imagenes/sur/RIO_GALLEGOS_1.jpg",
-      "imagenes/sur/RIO_GALLEGOS_2.jpg",
-      "imagenes/sur/RIO_GALLEGOS_3.jpg",
-      "imagenes/sur/RIO_GALLEGOS_4.jpg"
-    ],
-    desc: "Nodo logístico austral en Santa Cruz, articulación continental con Tierra del Fuego y pasos fronterizos."
-  },
-  {
-    id: "trelew", nombre: "Trelew", nombreCompleto: "CLOG Trelew",
-    tipo: "CLOG", provincia: "Chubut",
-    lat: -43.25, lng: -65.31,
-    capacidad: "5.500 m²", piezasDia: "6.500", operatividad: "L a S",
-    fotos: [
-      "imagenes/sur/TRELEW_1.jpg",
-      "imagenes/sur/TRELEW_2.jpg",
-      "imagenes/sur/TRELEW_3.jpg",
-      "imagenes/sur/TRELEW_4.jpg",
-      "imagenes/sur/TRELEW_5.jpg"
-    ],
-    desc: "Centro de distribución del valle inferior del Río Chubut y costa atlántica patagónica."
-  }
-];
-
-// Rutas de conexión logística entre nodos principales
-const redConexiones = [
-  ["tucuman", "salta"],
-  ["tucuman", "cordoba"],
-  ["cordoba", "rosario"],
-  ["cordoba", "mendoza"],
-  ["cordoba", "rio_cuarto"],
-  ["mendoza", "san_juan"],
-  ["mendoza", "san_luis"],
-  ["rosario", "mercado_central"],
-  ["mercado_central", "quilmes"],
-  ["mercado_central", "vte_lopez"],
-  ["mercado_central", "mar_del_plata"],
-  ["mercado_central", "bahia_blanca"],
-  ["bahia_blanca", "neuquen"],
-  ["bahia_blanca", "trelew"],
-  ["trelew", "comodoro_rivadavia"],
-  ["comodoro_rivadavia", "rio_gallegos"],
-  ["neuquen", "bariloche"],
-  ["rosario", "santa_fe"],
-  ["santa_fe", "resistencia"],
-  ["resistencia", "corrientes"],
-  ["corrientes", "posadas"],
-  ["parana", "santa_fe"]
-];
+// Red federal de conexiones logísticas troncales
+const redConexiones = (typeof RED_CONEXIONES_OFICIAL !== "undefined" && Array.isArray(RED_CONEXIONES_OFICIAL))
+  ? RED_CONEXIONES_OFICIAL
+  : [];
 
 // =============================================================
 // 2. ESTADO GLOBAL Y CONFIGURACIÓN MAPA LEAFLET
@@ -377,7 +43,7 @@ const BND_ARGENTINA = [
 ];
 
 // Nodos del AMBA para agrupamiento inteligente en vistas nacionales/lejanas
-const IDS_AMBA = ["barracas", "vicente_lopez", "moreno", "mercado_central", "quilmes", "mercedes", "la_plata"];
+const IDS_AMBA = ["dp2", "dp3", "dp4", "dp5", "dp6", "c14", "mer"];
 
 // =============================================================
 // 3. INICIALIZACIÓN DEL MAPA LEAFLET
@@ -385,6 +51,7 @@ const IDS_AMBA = ["barracas", "vicente_lopez", "moreno", "mercado_central", "qui
 document.addEventListener("DOMContentLoaded", () => {
   inicializarMapaLeaflet();
   configurarBuscador();
+  actualizarKPIs("nacional");
 });
 
 let mascaraExteriorLayer = null;
@@ -596,24 +263,33 @@ function actualizarMarcadoresLeaflet() {
   const zoomActual = leafletMap.getZoom();
 
   // Radio de agrupación en píxeles de pantalla según el nivel de zoom:
-  // A zoom bajo (nacional), agrupamos para evitar que cualquier etiqueta se pise.
-  // A zoom alto (ciudad/barrio), se desagrega completamente.
   let radioPixels = 0;
   if (zoomActual < 5.8) {
-    radioPixels = 56; // Vista nacional: agrupa nodos cercanos (AMBA, Centro, Cuyo, NOA)
+    radioPixels = 54; // Vista nacional: agrupa nodos cercanos (AMBA, Centro, Cuyo, NOA)
   } else if (zoomActual < 7.2) {
-    radioPixels = 42; // Vista regional: subdivide en sub-clusters
+    radioPixels = 38; // Vista regional: subdivide en sub-clusters
   } else if (zoomActual < 8.8) {
-    radioPixels = 26; // Vista inter-urbana: solo nodos muy próximos (ej. AMBA)
+    radioPixels = 24; // Vista inter-urbana: solo nodos muy próximos (ej. AMBA)
   } else {
-    radioPixels = 0;  // Vista urbana / calle: todos los 28 nodos separados
+    radioPixels = 0;  // Vista urbana / calle: todas las 36 plantas separadas
   }
+
+  // Filtrado según tipo si hay filtro activo (CLOG, CDP, CTP, Sorter)
+  const listaNodos = tipoFiltroActivo
+    ? nodosData.filter(n => {
+        if (tipoFiltroActivo === "CLOG") return n.tipo === "CLOG";
+        if (tipoFiltroActivo === "CDP") return n.tipo === "CDP" || n.tipo === "DP";
+        if (tipoFiltroActivo === "CTP") return n.tipo === "CTP";
+        if (tipoFiltroActivo === "Sorter") return n.tipo === "Sorter";
+        return true;
+      })
+    : nodosData;
 
   // Agrupación por proximidad en píxeles de pantalla
   const clusters = [];
   const asignados = new Set();
 
-  nodosData.forEach((nodo, i) => {
+  listaNodos.forEach((nodo, i) => {
     if (asignados.has(nodo.id)) return;
 
     const clusterNodos = [nodo];
@@ -622,7 +298,7 @@ function actualizarMarcadoresLeaflet() {
     if (radioPixels > 0) {
       const pt1 = leafletMap.latLngToContainerPoint([nodo.lat, nodo.lng]);
 
-      nodosData.forEach((otro, j) => {
+      listaNodos.forEach((otro, j) => {
         if (i === j || asignados.has(otro.id)) return;
         const pt2 = leafletMap.latLngToContainerPoint([otro.lat, otro.lng]);
         const dist = Math.hypot(pt1.x - pt2.x, pt1.y - pt2.y);
@@ -643,13 +319,13 @@ function actualizarMarcadoresLeaflet() {
       const avgLat = clusterNodos.reduce((s, n) => s + n.lat, 0) / clusterNodos.length;
       const avgLng = clusterNodos.reduce((s, n) => s + n.lng, 0) / clusterNodos.length;
 
-      const nombresList = clusterNodos.map(n => n.nombre).join(" · ");
+      const nombresList = clusterNodos.map(n => `[${n.cod}] ${n.nombre}`).join(" · ");
       const clusterIcon = L.divIcon({
         className: "leaflet-cluster-icon",
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
         html: `
-          <div class="clog-cluster-wrap" title="${clusterNodos.length} Nodos: ${nombresList}">
+          <div class="clog-cluster-wrap" title="${clusterNodos.length} Plantas: ${nombresList}">
             ${clusterNodos.length}
           </div>
         `
@@ -678,9 +354,12 @@ function actualizarMarcadoresLeaflet() {
         iconSize: [16, 16],
         iconAnchor: [8, 8],
         html: `
-          <div class="clog-marker-wrap ${estaSel ? "seleccionado" : ""}" id="marker-${nodo.id}" data-id="${nodo.id}">
+          <div class="clog-marker-wrap tipo-${nodo.tipo.toLowerCase()} ${estaSel ? "seleccionado" : ""}" id="marker-${nodo.id}" data-id="${nodo.id}">
             <div class="clog-marker-dot"></div>
-            <div class="clog-marker-pill">${nodo.nombre}</div>
+            <div class="clog-marker-pill">
+              <span class="pill-name">${nodo.nombre}</span>
+              <span class="pill-cod">${nodo.cod}</span>
+            </div>
           </div>
         `
       });
@@ -819,27 +498,89 @@ function expandirMapa(expandir) {
 // =============================================================
 function centrarEnRegion(region) {
   if (!leafletMap) return;
-  switch (region) {
-    case "amba":
-      leafletMap.flyTo([-34.63, -58.55], 10.5, { duration: 0.9 });
-      break;
-    case "centro":
-      leafletMap.flyTo([-32.0, -63.5], 7, { duration: 0.9 });
-      break;
-    case "norte":
-      leafletMap.flyTo([-26.8, -65.2], 6.5, { duration: 0.9 });
-      break;
-    case "cuyo":
-      leafletMap.flyTo([-33.2, -68.8], 7, { duration: 0.9 });
-      break;
-    case "patagonia":
-      leafletMap.flyTo([-46.0, -68.5], 5.5, { duration: 0.9 });
-      break;
-    case "nacional":
-    default:
-      zoomReset();
-      break;
+  if (!region || region === "nacional") {
+    zoomReset();
+    return;
   }
+  const nodosRegion = nodosData.filter(n => n.regionKey === region);
+  if (nodosRegion.length > 0) {
+    const bounds = L.latLngBounds(nodosRegion.map(n => [n.lat, n.lng]));
+    leafletMap.flyToBounds(bounds, {
+      padding: [45, 45],
+      maxZoom: region === "amba" ? 11 : (region === "pba" ? 8 : 7.5),
+      duration: 0.85
+    });
+  } else {
+    zoomReset();
+  }
+}
+
+// =============================================================
+// KPI CALCULATION AND AGGREGATION FROM EXCEL DATASET
+// =============================================================
+function actualizarKPIs(regionKey = "nacional") {
+  let filtrados = nodosData;
+  if (regionKey && regionKey !== "nacional") {
+    filtrados = nodosData.filter(n => n.regionKey === regionKey);
+  }
+
+  const cantNodos = filtrados.length;
+  const totPiezas = filtrados.reduce((s, n) => s + (n.volumenTotalNum || 0), 0);
+  const totVenta = filtrados.reduce((s, n) => s + (parseNumero(n.volumenVenta) || 0), 0);
+  const totJuris = filtrados.reduce((s, n) => s + (parseNumero(n.volumenJurisdiccion) || 0), 0);
+  const totDotacion = filtrados.reduce((s, n) => s + (n.dotacionTotal || 0), 0);
+  const totAuxiliares = filtrados.reduce((s, n) => s + (n.dotacionAuxiliares || 0), 0);
+  const totM2 = filtrados.reduce((s, n) => s + (n.capacidadM2 || 0), 0);
+
+  const cantClog = filtrados.filter(n => n.tipo === "CLOG").length;
+  const cantCtp = filtrados.filter(n => n.tipo === "CTP").length;
+  const cantCdp = filtrados.filter(n => n.tipo === "CDP").length;
+  const cantSorter = filtrados.filter(n => n.tipo === "Sorter").length;
+
+  const elPiezas = document.getElementById("kpi-piezas");
+  const elPiezasSub = document.getElementById("kpi-piezas-sub");
+  const elNodos = document.getElementById("kpi-nodos");
+  const elNodosSub = document.getElementById("kpi-nodos-sub");
+  const elDotacion = document.getElementById("kpi-dotacion");
+  const elDotacionSub = document.getElementById("kpi-dotacion-sub");
+  const elSuperficie = document.getElementById("kpi-superficie");
+  const elSuperficieSub = document.getElementById("kpi-superficie-sub");
+  const elSorters = document.getElementById("kpi-sorters");
+  const elSortersSub = document.getElementById("kpi-sorters-sub");
+  const elVehiculos = document.getElementById("kpi-vehiculos");
+  const elVehiculosSub = document.getElementById("kpi-vehiculos-sub");
+
+  if (elPiezas) elPiezas.textContent = totPiezas > 0 ? totPiezas.toLocaleString("es-AR") : "S/D";
+  if (elPiezasSub) {
+    if (totVenta > 0 && totJuris > 0) {
+      elPiezasSub.textContent = `${Math.round(totVenta / 1000)}k Venta + ${Math.round(totJuris / 1000)}k Jurisdicción`;
+    } else {
+      elPiezasSub.textContent = "Volumen operativo verificado";
+    }
+  }
+  if (elNodos) elNodos.textContent = cantNodos.toString();
+  if (elNodosSub) {
+    elNodosSub.textContent = regionKey === "nacional" ? "100% Cobertura Federal" : `Región: ${filtrados[0]?.region || regionKey}`;
+  }
+  if (elDotacion) elDotacion.textContent = totDotacion.toLocaleString("es-AR");
+  if (elDotacionSub) elDotacionSub.textContent = `${totAuxiliares.toLocaleString("es-AR")} auxiliares operativos`;
+  if (elSuperficie) elSuperficie.textContent = `${totM2.toLocaleString("es-AR")} m²`;
+  if (elSuperficieSub) elSuperficieSub.textContent = "Almacenaje y naves";
+  if (elSorters) elSorters.textContent = `${cantClog} CLOGs`;
+  if (elSortersSub) elSortersSub.textContent = `${cantCtp} CTP · ${cantCdp} CDP · ${cantSorter} Sorter`;
+  if (elVehiculos) elVehiculos.textContent = regionKey === "nacional" ? "36 Rutas" : `${cantNodos * 2} Rutas`;
+  if (elVehiculosSub) elVehiculosSub.textContent = "Red interconectada";
+}
+
+function parseNumero(v) {
+  if (!v) return 0;
+  if (typeof v === "number") return v;
+  const clean = v.toString().replace(/\./g, "").replace(",", ".").trim();
+  if (clean.includes(" a ")) {
+    const parts = clean.split(" a ");
+    return (parseFloat(parts[0]) + parseFloat(parts[1])) / 2 || 0;
+  }
+  return parseFloat(clean) || 0;
 }
 
 // =============================================================
@@ -849,17 +590,34 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   nodoActivo = nodo;
 
   const popup = document.getElementById("popup-nodo");
-  document.getElementById("popup-nombre").textContent = nodo.nombreCompleto || nodo.nombre;
-  document.getElementById("popup-ubicacion").textContent = `${nodo.provincia} · Red Logística Nacional`;
-  document.getElementById("popup-badge-tipo").textContent = formatearTipoBadge(nodo.tipo);
+  if (!popup) return;
+
+  // Header info
+  const elNombre = document.getElementById("popup-nombre");
+  if (elNombre) elNombre.textContent = nodo.nombreCompleto || nodo.nombre;
+
+  const elCodPill = document.getElementById("popup-cod-pill");
+  if (elCodPill) elCodPill.textContent = nodo.cod || "";
+
+  const elBadgeCod = document.getElementById("popup-badge-cod");
+  if (elBadgeCod) elBadgeCod.textContent = nodo.cod || "";
+
+  const elUbicacion = document.getElementById("popup-ubicacion");
+  if (elUbicacion) elUbicacion.textContent = `${nodo.provincia} · ${nodo.region}`;
+
+  const elDomicilio = document.getElementById("popup-domicilio");
+  if (elDomicilio) elDomicilio.textContent = nodo.domicilio || "Dirección operativa central";
+
+  const elBadgeTipo = document.getElementById("popup-badge-tipo");
+  if (elBadgeTipo) elBadgeTipo.textContent = formatearTipoBadge(nodo.tipo);
 
   // Foto del nodo (o fallback a placeholder)
   const imgEl = document.getElementById("popup-img");
   const fotos = (nodo.fotos && nodo.fotos.length > 0) ? nodo.fotos : ["imagenes/placeholder.jpg"];
   fotoActualIdx = 0;
-  imgEl.src = fotos[0];
+  if (imgEl) imgEl.src = fotos[0];
 
-  // Renderizar tira interactiva de miniaturas de fotos del nodo
+  // Tira de miniaturas
   const strip = document.getElementById("popup-galeria-strip");
   const arrowPrev = document.getElementById("popup-arrow-prev");
   const arrowNext = document.getElementById("popup-arrow-next");
@@ -886,7 +644,6 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
     }
   }
 
-  // Mostrar/ocultar flechas y contador según cantidad de fotos
   if (arrowPrev) arrowPrev.style.display = fotos.length > 1 ? "flex" : "none";
   if (arrowNext) arrowNext.style.display = fotos.length > 1 ? "flex" : "none";
   if (counter) counter.textContent = fotos.length > 1 ? `1 / ${fotos.length}` : "";
@@ -900,7 +657,7 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
       hermanos.forEach(h => {
         const btn = document.createElement("button");
         btn.className = `popup-nodo-pill-btn ${h.id === nodo.id ? "activa" : ""}`;
-        btn.textContent = h.nombre;
+        btn.textContent = `${h.cod ? `[${h.cod}] ` : ""}${h.nombre}`;
         btn.onclick = (e) => {
           e.stopPropagation();
           abrirDetalleNodo(h, hermanos);
@@ -913,12 +670,171 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
     }
   }
 
-  // Estadísticas del nodo
-  document.getElementById("popup-capacidad").textContent = nodo.capacidad || "8.500 m²";
-  document.getElementById("popup-piezas").textContent = nodo.piezasDia || "15.000";
-  document.getElementById("popup-estado").textContent = nodo.operatividad || "24 / 7";
-  document.getElementById("popup-desc").textContent = nodo.desc || `Nodo operativo de Correo Argentino en la provincia de ${nodo.provincia}, preparado para cross-docking y clasificación de paquetería postal y comercial.`;
-  document.getElementById("popup-cant-fotos").textContent = fotos.length;
+  // 4 Stats Principales
+  const elCap = document.getElementById("popup-capacidad");
+  if (elCap) elCap.textContent = nodo.capacidad || "S/D";
+
+  const elPiezas = document.getElementById("popup-piezas");
+  if (elPiezas) elPiezas.textContent = nodo.piezasDia || "S/D";
+
+  const elPiezasLbl = document.getElementById("popup-piezas-lbl");
+  if (elPiezasLbl) {
+    const vVta = nodo.volumenVenta ? `${nodo.volumenVenta} Venta` : "";
+    const vJur = nodo.volumenJurisdiccion ? `${nodo.volumenJurisdiccion} Jurisdicción` : "";
+    elPiezasLbl.textContent = (vVta && vJur) ? `${vVta} · ${vJur}` : "Envíos diarios totales";
+  }
+
+  const elDot = document.getElementById("popup-dotacion");
+  if (elDot) elDot.textContent = nodo.dotacionTotal ? `${nodo.dotacionTotal} pers.` : "S/D";
+
+  const elDotLbl = document.getElementById("popup-dotacion-lbl");
+  if (elDotLbl) {
+    elDotLbl.textContent = nodo.dotacionAuxiliares ? `${nodo.dotacionAuxiliares} auxiliares` : "Dotación operativa";
+  }
+
+  const elEstado = document.getElementById("popup-estado");
+  if (elEstado) elEstado.textContent = nodo.operatividad || "24 / 7";
+
+  // Turnos Reales del Excel
+  const tNoche = nodo.turnos?.noche;
+  const tManana = nodo.turnos?.manana;
+  const tTarde = nodo.turnos?.tarde;
+
+  const elNocheF = document.getElementById("turno-noche-franja");
+  const elNocheD = document.getElementById("turno-noche-dot");
+  if (elNocheF) elNocheF.textContent = (tNoche?.franja && tNoche.franja.toLowerCase() !== "no hay" && tNoche.franja.toLowerCase() !== "no" && tNoche.franja.toLowerCase() !== "no tiene") ? tNoche.franja : "Sin turno noche";
+  if (elNocheD) elNocheD.textContent = `${tNoche?.jerarquico || "0"} jerárq. · ${tNoche?.auxiliares || "0"} aux.`;
+
+  const elMananaF = document.getElementById("turno-manana-franja");
+  const elMananaD = document.getElementById("turno-manana-dot");
+  if (elMananaF) elMananaF.textContent = (tManana?.franja && tManana.franja.toLowerCase() !== "no hay" && tManana.franja.toLowerCase() !== "no") ? tManana.franja : "Sin turno mañana";
+  if (elMananaD) elMananaD.textContent = `${tManana?.jerarquico || "0"} jerárq. · ${tManana?.auxiliares || "0"} aux.`;
+
+  const elTardeF = document.getElementById("turno-tarde-franja");
+  const elTardeD = document.getElementById("turno-tarde-dot");
+  if (elTardeF) elTardeF.textContent = (tTarde?.franja && tTarde.franja.toLowerCase() !== "no hay" && tTarde.franja.toLowerCase() !== "no" && tTarde.franja !== "0") ? tTarde.franja : "Sin turno tarde";
+  if (elTardeD) elTardeD.textContent = `${tTarde?.jerarquico || "0"} jerárq. · ${tTarde?.auxiliares || "0"} aux.`;
+
+  // Procesos
+  function updateProcBadge(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const activo = val && val !== "0" && val !== "no" && val.toLowerCase() !== "no hay";
+    el.classList.toggle("inactivo", !activo);
+    if (activo && val !== "si" && val !== "1") {
+      el.title = `Dotación / puestos asignados: ${val}`;
+    }
+  }
+  updateProcBadge("proc-cdp", nodo.procesos?.cdp);
+  updateProcBadge("proc-ctp", nodo.procesos?.ctp);
+  updateProcBadge("proc-ptapta", nodo.procesos?.ptaPta);
+  updateProcBadge("proc-clasif", nodo.procesos?.clasificacion);
+
+  // Responsables e Inmueble
+  const elJefePlanta = document.getElementById("popup-jefe-planta");
+  if (elJefePlanta) elJefePlanta.textContent = nodo.responsables?.jefePlanta || "No especificado";
+
+  const elJefeNodo = document.getElementById("popup-jefe-nodo");
+  if (elJefeNodo) elJefeNodo.textContent = nodo.responsables?.jefeNodo || "No especificado";
+
+  const elInmueble = document.getElementById("popup-inmueble");
+  if (elInmueble) {
+    elInmueble.textContent = nodo.inmueble?.alquilada ? `Alquilada (${nodo.inmueble.alquilada})` : "Inmueble Operativo / Propio";
+  }
+
+  const elAlmacen = document.getElementById("popup-almacenamiento");
+  if (elAlmacen) {
+    const detalles = [nodo.inmueble?.almacenamiento, nodo.inmueble?.racks, nodo.inmueble?.seguridad].filter(Boolean);
+    elAlmacen.textContent = detalles.length > 0 ? detalles.join(" · ") : "Estándar operativo";
+  }
+
+  // 1. Ingreso de envíos (Maquinable vs No Maquinable vs Última Milla)
+  const secIngresos = document.getElementById("popup-ingresos-section");
+  if (secIngresos) {
+    const ing = nodo.ingresoEnvios;
+    if (ing && (ing.impoMensual > 0 || ing.ingresoMensualUltimaMilla > 0)) {
+      const elMaq = document.getElementById("pop-ing-maq");
+      const elMaqSub = document.getElementById("pop-ing-maq-sub");
+      const elNoMaq = document.getElementById("pop-ing-nomaq");
+      const elNoMaqSub = document.getElementById("pop-ing-nomaq-sub");
+      const elUm = document.getElementById("pop-ing-um");
+      const elUmSub = document.getElementById("pop-ing-um-sub");
+
+      if (elMaq) elMaq.textContent = `${(ing.impoMensualMaquinable || 0).toLocaleString("es-AR")} m.`;
+      if (elMaqSub) elMaqSub.textContent = `${ing.pctMaquinable || 0}% · ${(ing.diarioMaquinable || 0).toLocaleString("es-AR")} día`;
+
+      if (elNoMaq) elNoMaq.textContent = `${(ing.impoMensualNoMaquinable || 0).toLocaleString("es-AR")} m.`;
+      if (elNoMaqSub) elNoMaqSub.textContent = `${ing.pctNoMaquinable || 0}% · ${(ing.diarioNoMaquinable || 0).toLocaleString("es-AR")} día`;
+
+      if (elUm) elUm.textContent = `${(ing.ingresoMensualUltimaMilla || 0).toLocaleString("es-AR")} m.`;
+      if (elUmSub) elUmSub.textContent = `${(ing.diarioUltimaMilla || 0).toLocaleString("es-AR")} día`;
+
+      secIngresos.style.display = "block";
+    } else {
+      secIngresos.style.display = "none";
+    }
+  }
+
+  // 2. Optimización y Personal Necesario (Sheet 6)
+  const secOpt = document.getElementById("popup-optimizacion-section");
+  if (secOpt) {
+    const opt = nodo.optimizacion;
+    if (opt && typeof opt.aReubicar !== "undefined") {
+      const elPaq = document.getElementById("pop-opt-paquetes");
+      const elTr = document.getElementById("pop-opt-transporte");
+      const elReub = document.getElementById("pop-opt-reubicar");
+
+      if (elPaq) elPaq.textContent = `${opt.manipularPaquetes || 0} pers.`;
+      if (elTr) elTr.textContent = `${opt.transporte || 0} pers.`;
+      if (elReub) {
+        elReub.textContent = opt.aReubicar > 0 
+          ? `${opt.aReubicar} pers.` 
+          : (opt.aReubicar < 0 ? `${Math.abs(opt.aReubicar)} faltante` : "0 (Dotación justa)");
+      }
+
+      secOpt.style.display = "block";
+    } else {
+      secOpt.style.display = "none";
+    }
+  }
+
+  // 3. Líneas de Transporte Conectadas
+  const secTrans = document.getElementById("popup-transportes-section");
+  if (secTrans) {
+    const rutas = nodo.transportes || [];
+    if (rutas.length > 0) {
+      const elCant = document.getElementById("pop-trans-cant");
+      const elList = document.getElementById("popup-transportes-list");
+      if (elCant) elCant.textContent = rutas.length;
+      if (elList) {
+        elList.innerHTML = rutas.slice(0, 15).map(r => `
+          <div class="popup-tr-chip">
+            <div>
+              <strong>${r.linea}</strong>
+              <span style="font-size:11px;color:#64748b;margin-left:6px;">${r.frecuencia || "LUN A VIE"}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:11px;color:#002554;font-weight:700;">${r.horarioLlegada || "-"}</span>
+              <span class="tr-badge">${r.tipoServicio || "TR"}</span>
+            </div>
+          </div>
+        `).join("");
+        if (rutas.length > 15) {
+          elList.innerHTML += `<div style="font-size:11.5px;color:#64748b;text-align:center;padding-top:4px;">+ ${rutas.length - 15} líneas adicionales en analytics</div>`;
+        }
+      }
+      secTrans.style.display = "block";
+    } else {
+      secTrans.style.display = "none";
+    }
+  }
+
+  // Descripción
+  const elDesc = document.getElementById("popup-desc");
+  if (elDesc) elDesc.textContent = nodo.desc || `Nodo operativo oficial de Correo Argentino en la provincia de ${nodo.provincia}.`;
+
+  const elCantFotos = document.getElementById("popup-cant-fotos");
+  if (elCantFotos) elCantFotos.textContent = fotos.length;
 
   popup.classList.add("visible");
 }
@@ -926,10 +842,10 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
 function formatearTipoBadge(tipo) {
   switch (tipo) {
     case "CLOG": return "Centro Logístico (CLOG)";
-    case "DP": return "Planta de Distribución (DP)";
-    case "Sorter": return "Sorter Automatizado";
-    case "Regional": return "Nodo Regional";
-    default: return "Sucursal Logística";
+    case "CDP": return "Centro de Paquetería (CDP)";
+    case "CTP": return "Centro de Tratamiento (CTP)";
+    case "Sorter": return "Hub Sorter Automatizado";
+    default: return "Planta Operativa";
   }
 }
 
@@ -1042,41 +958,185 @@ document.addEventListener("keydown", e => {
 });
 
 // =============================================================
-// 11. ACCESO RÁPIDO & FILTROS POR TIPO DE NODO
+// 11. FILTRO INTERACTIVO POR TIPO DE PLANTA EN EL MAPA
 // =============================================================
-function filtrarTipoNodo(tipo) {
-  // Al hacer click en "Centros Logísticos" o "Sorters", expandimos el mapa y destacamos esos nodos
-  expandirMapa(true);
+let tipoFiltroActivo = null;
 
-  document.querySelectorAll(".marcador-g").forEach(el => {
-    // Si queremos filtrar visualmente, podemos resaltar o parpadear
-    el.style.opacity = "1";
+function filtrarTipoNodo(tipo) {
+  if (!tipo || tipo === "TODAS" || tipoFiltroActivo === tipo) {
+    tipoFiltroActivo = null; // Muestra todas
+  } else {
+    tipoFiltroActivo = tipo;
+  }
+
+  // 1. Actualizar clases visuales de los botones de filtro
+  document.querySelectorAll(".btn-filtro-tipo").forEach(btn => {
+    const btnTipo = btn.getAttribute("data-tipo");
+    if (!tipoFiltroActivo && btnTipo === "TODAS") {
+      btn.classList.add("activo");
+    } else if (tipoFiltroActivo && btnTipo === tipoFiltroActivo) {
+      btn.classList.add("activo");
+    } else {
+      btn.classList.remove("activo");
+    }
   });
+
+  // 2. Actualizar badge de estado
+  const statusEl = document.getElementById("filtro-tipo-status");
+  if (statusEl) {
+    if (!tipoFiltroActivo) {
+      statusEl.textContent = `Mostrando todas (${nodosData.length} plantas)`;
+    } else {
+      const cant = nodosData.filter(n => {
+        if (tipoFiltroActivo === "CLOG") return n.tipo === "CLOG";
+        if (tipoFiltroActivo === "CDP") return n.tipo === "CDP" || n.tipo === "DP";
+        if (tipoFiltroActivo === "CTP") return n.tipo === "CTP";
+        if (tipoFiltroActivo === "Sorter") return n.tipo === "Sorter";
+        return true;
+      }).length;
+      statusEl.textContent = `Filtrando: ${cant} plantas tipo ${tipoFiltroActivo}`;
+    }
+  }
+
+  // 3. Renderizar marcadores filtrados en el mapa
+  actualizarMarcadoresLeaflet();
+
+  // 4. Centrar y encuadrar el mapa en los nodos resultantes
+  if (tipoFiltroActivo && leafletMap) {
+    const matches = nodosData.filter(n => {
+      if (tipoFiltroActivo === "CLOG") return n.tipo === "CLOG";
+      if (tipoFiltroActivo === "CDP") return n.tipo === "CDP" || n.tipo === "DP";
+      if (tipoFiltroActivo === "CTP") return n.tipo === "CTP";
+      if (tipoFiltroActivo === "Sorter") return n.tipo === "Sorter";
+      return true;
+    });
+
+    if (matches.length > 0) {
+      if (matches.length === 1) {
+        leafletMap.flyTo([matches[0].lat, matches[0].lng], 11, { duration: 0.85 });
+      } else {
+        const bounds = L.latLngBounds(matches.map(n => [n.lat, n.lng]));
+        leafletMap.flyToBounds(bounds, { padding: [45, 45], maxZoom: 9, duration: 0.85 });
+      }
+    }
+  } else if (leafletMap) {
+    zoomReset();
+  }
 }
 
-// Buscador en Topbar
+// Descarga directa del dataset oficial en formato CSV
+function descargarCSVOficial() {
+  if (typeof NODOS_DATA_OFICIAL === "undefined" || !NODOS_DATA_OFICIAL.length) return;
+  let csv = "Codigo,Planta,Tipo,Provincia,Region,Volumen_Diario,Superficie_m2,Dotacion_Total,Auxiliares,Jefe_Planta,Jefe_Nodo\n";
+  NODOS_DATA_OFICIAL.forEach(p => {
+    const row = [
+      `"${p.cod}"`,
+      `"${p.nombreCompleto || p.nombre}"`,
+      `"${p.tipo}"`,
+      `"${p.provincia}"`,
+      `"${p.region}"`,
+      p.volumenTotalNum || 0,
+      p.capacidadM2 || 0,
+      p.dotacionTotal || 0,
+      p.dotacionAuxiliares || 0,
+      `"${p.responsables?.jefePlanta || ''}"`,
+      `"${p.responsables?.jefeNodo || ''}"`
+    ];
+    csv += row.join(",") + "\n";
+  });
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "correo_argentino_plantas_dataset.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// =============================================================
+// BUSCADOR GLOBAL INTERACTIVO
+// =============================================================
 function configurarBuscador() {
   const input = document.getElementById("global-search");
+  const dropdown = document.getElementById("search-results-dropdown");
+  const clearBtn = document.getElementById("search-clear-btn");
   if (!input) return;
 
-  input.addEventListener("input", e => {
-    const q = e.target.value.toLowerCase().trim();
-    if (!q) return;
+  function filtrarResultados(q) {
+    if (!q) {
+      if (dropdown) dropdown.classList.remove("visible");
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+    if (clearBtn) clearBtn.style.display = "flex";
 
-    // Buscar coincidencia en nodos
-    const match = nodosData.find(n => n.nombre.toLowerCase().includes(q) || n.provincia.toLowerCase().includes(q));
-    if (match) {
-      const p = proyecto(match.lng, match.lat);
-      const contenedor = document.getElementById("mapa-contenedor");
-      if (contenedor) {
-        const rect = contenedor.getBoundingClientRect();
-        escala = 2.2;
-        panX = rect.width / 2 - p.x * escala;
-        panY = rect.height / 2 - p.y * escala;
-        aplicarTransformacion(true);
+    const matches = nodosData.filter(n => {
+      const txt = `${n.cod} ${n.nombre} ${n.nombreCompleto} ${n.provincia} ${n.ubicacion} ${n.domicilio}`.toLowerCase();
+      return txt.includes(q);
+    });
+
+    if (dropdown) {
+      if (matches.length === 0) {
+        dropdown.innerHTML = `<div style="padding:12px 14px; font-size:12.5px; color:#8fa4bd; text-align:center;">No se encontraron plantas para "${q}"</div>`;
+      } else {
+        dropdown.innerHTML = matches.slice(0, 8).map(m => `
+          <div class="search-result-item" onclick="seleccionarPlantaDesdeBuscador('${m.id}')">
+            <div class="sres-left">
+              <span class="sres-name">${m.nombreCompleto || m.nombre}</span>
+              <span class="sres-sub">${m.provincia} · ${m.ubicacion || ''}</span>
+            </div>
+            <span class="sres-cod">${m.cod}</span>
+          </div>
+        `).join("");
+      }
+      dropdown.classList.add("visible");
+    }
+  }
+
+  input.addEventListener("input", e => {
+    filtrarResultados(e.target.value.toLowerCase().trim());
+  });
+
+  input.addEventListener("focus", e => {
+    if (e.target.value.trim()) {
+      filtrarResultados(e.target.value.toLowerCase().trim());
+    }
+  });
+
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".header-search-wrap") && dropdown) {
+      dropdown.classList.remove("visible");
+    }
+  });
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      limpiarBuscador();
+    } else if (e.key === "Enter") {
+      const q = input.value.toLowerCase().trim();
+      const match = nodosData.find(n => `${n.cod} ${n.nombre} ${n.nombreCompleto} ${n.provincia}`.toLowerCase().includes(q));
+      if (match) {
+        seleccionarPlantaDesdeBuscador(match.id);
       }
     }
   });
+}
+
+function limpiarBuscador() {
+  const input = document.getElementById("global-search");
+  const dropdown = document.getElementById("search-results-dropdown");
+  const clearBtn = document.getElementById("search-clear-btn");
+  if (input) input.value = "";
+  if (dropdown) dropdown.classList.remove("visible");
+  if (clearBtn) clearBtn.style.display = "none";
+}
+
+function seleccionarPlantaDesdeBuscador(id) {
+  const nodo = nodosData.find(n => n.id === id);
+  if (!nodo) return;
+  limpiarBuscador();
+  seleccionarEsteNodo(nodo);
 }
 
 // =============================================================
@@ -1087,9 +1147,8 @@ window.addEventListener("resize", () => {
   clearTimeout(timerResize);
   timerResize = setTimeout(() => {
     const contenedor = document.getElementById("mapa-contenedor");
-    if (contenedor) {
-      limitarPan(contenedor.getBoundingClientRect());
-      aplicarTransformacion(false);
+    if (contenedor && leafletMap) {
+      leafletMap.invalidateSize();
     }
   }, 120);
 });
@@ -1115,11 +1174,8 @@ function seleccionarNavSidebar(el, seccion) {
     const sec = document.querySelector(".card-seccion");
     if (sec) sec.scrollIntoView({ behavior: "smooth" });
     if (crumb) crumb.textContent = "Indicadores Operativos";
-  } else if (seccion === "documentacion") {
-    if (crumb) crumb.textContent = "Documentación";
   }
 
-  // Cerrar sidebar en tablets/móviles tras seleccionar
   const sidebar = document.getElementById("sidebar-izq");
   if (sidebar && window.innerWidth <= 992) {
     sidebar.classList.remove("sidebar-abierto");
@@ -1132,7 +1188,7 @@ function toggleSidebarMenu() {
 }
 
 // =============================================================
-// CUSTOM SELECT — Vista dropdown
+// CUSTOM SELECT — Vista dropdown con filtro de región
 // =============================================================
 (function () {
   const wrap = document.getElementById("custom-vista-wrap");
@@ -1151,17 +1207,18 @@ function toggleSidebarMenu() {
     const option = e.target.closest(".custom-select-option");
     if (!option) return;
 
-    // Actualizar selección
     list.querySelectorAll(".custom-select-option").forEach(el => el.classList.remove("selected"));
     option.classList.add("selected");
     label.textContent = option.textContent.replace("✓ ", "");
 
-    // Cerrar
+    const val = option.getAttribute("data-value");
+    actualizarKPIs(val);
+    centrarEnRegion(val);
+
     wrap.classList.remove("open");
     btn.setAttribute("aria-expanded", "false");
   });
 
-  // Cerrar al hacer clic fuera
   document.addEventListener("click", function (e) {
     if (!wrap.contains(e.target)) {
       wrap.classList.remove("open");
@@ -1169,7 +1226,6 @@ function toggleSidebarMenu() {
     }
   });
 
-  // Cerrar con Escape
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && wrap.classList.contains("open")) {
       wrap.classList.remove("open");
