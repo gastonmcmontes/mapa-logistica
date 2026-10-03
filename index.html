@@ -75,21 +75,6 @@
         <span>Analytics</span>
       </a>
     </nav>
-
-    <!-- Pie del sidebar con marca de agua y slogan -->
-    <div class="sidebar-footer">
-      <div class="sidebar-watermark">
-        <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 32C25 52 75 52 90 32C75 42 25 42 10 32Z" fill="#083a75" />
-          <path d="M22 18C38 34 62 34 78 18C62 26 38 26 22 18Z" fill="#083a75" />
-        </svg>
-      </div>
-      <div class="sidebar-footer-text">
-        <h3>Correo<br>Argentino</h3>
-        <p>Conectando todo el país</p>
-      </div>
-    </div>
-
   </aside>
 
   <!-- =====================================================
@@ -146,7 +131,7 @@
               <path
                 d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z" />
             </svg>
-            <h2>Mapa Operativo Nacional</h2>
+            <h2>Centros Logísticos</h2>
           </div>
 
           <!-- Botón de expandir / contraer -->
@@ -186,13 +171,9 @@
             </button>
           </div>
 
-          <!-- Leyenda del mapa con los 4 tipos oficiales de plantas -->
+          <!-- Leyenda del mapa con solo Centros Logísticos -->
           <div class="mapa-leyenda">
-            <div class="leyenda-titulo">Tipos de Centros</div>
-            <div class="leyenda-fila"><span class="leyenda-dot dot-clog"></span> CLOG · Centro Logístico</div>
-            <div class="leyenda-fila"><span class="leyenda-dot dot-ctp"></span> CTP · Tratamiento Postal</div>
-            <div class="leyenda-fila"><span class="leyenda-dot dot-cdp"></span> CDP · Paquetería</div>
-            <div class="leyenda-fila"><span class="leyenda-dot dot-sorter"></span> Sorter Automatizado</div>
+            <div class="leyenda-fila"><span class="leyenda-dot dot-clog"></span> Centros Logísticos</div>
           </div>
 
           <!-- Compás / Rosa de los vientos (abajo a la izquierda) -->
@@ -511,7 +492,7 @@
           </div>
         </div>
 
-        <!-- 4 Stats Principales del Excel -->
+        <!-- 3 Stats Principales del Excel -->
         <div class="popup-stats-grid">
           <div class="pstat">
             <span class="pstat-val" id="popup-capacidad">18.500 m²</span>
@@ -519,15 +500,12 @@
           </div>
           <div class="pstat">
             <span class="pstat-val" id="popup-piezas">42.000</span>
-            <span class="pstat-lbl" id="popup-piezas-lbl">Envíos / día</span>
+            <span class="pstat-lbl" id="popup-piezas-lbl">Promedio diario</span>
+            <span class="pstat-sub" id="popup-piezas-sub">Envíos / día</span>
           </div>
           <div class="pstat">
             <span class="pstat-val" id="popup-dotacion">53</span>
             <span class="pstat-lbl" id="popup-dotacion-lbl">Dotación total</span>
-          </div>
-          <div class="pstat">
-            <span class="pstat-val" id="popup-estado">24 / 7</span>
-            <span class="pstat-lbl">Operatividad</span>
           </div>
         </div>
 
@@ -546,7 +524,7 @@
                 <span class="turno-franja" id="turno-noche-franja">-</span>
               </div>
               <div class="turno-body">
-                <span class="turno-dot" id="turno-noche-dot">0 jerárquicos · 0 auxiliares</span>
+                <span class="turno-dot" id="turno-noche-dot">0 personas</span>
               </div>
             </div>
             <div class="turno-box">
@@ -555,7 +533,7 @@
                 <span class="turno-franja" id="turno-manana-franja">-</span>
               </div>
               <div class="turno-body">
-                <span class="turno-dot" id="turno-manana-dot">0 jerárquicos · 0 auxiliares</span>
+                <span class="turno-dot" id="turno-manana-dot">0 personas</span>
               </div>
             </div>
             <div class="turno-box">
@@ -564,7 +542,7 @@
                 <span class="turno-franja" id="turno-tarde-franja">-</span>
               </div>
               <div class="turno-body">
-                <span class="turno-dot" id="turno-tarde-dot">0 jerárquicos · 0 auxiliares</span>
+                <span class="turno-dot" id="turno-tarde-dot">0 personas</span>
               </div>
             </div>
           </div>
@@ -615,7 +593,7 @@
           <div class="popup-ingresos-grid">
             <div class="pstat-subcard">
               <span class="pstat-subcard-val" id="pop-ing-maq">-</span>
-              <span class="pstat-subcard-lbl">Maquinable (Sorter)</span>
+              <span class="pstat-subcard-lbl">Maquinable</span>
               <span class="pstat-subcard-sub" id="pop-ing-maq-sub">-</span>
             </div>
             <div class="pstat-subcard">
@@ -625,35 +603,12 @@
             </div>
             <div class="pstat-subcard">
               <span class="pstat-subcard-val" id="pop-ing-um">-</span>
-              <span class="pstat-subcard-lbl">Última Milla</span>
+              <span class="pstat-subcard-lbl">Promedio diario última milla</span>
               <span class="pstat-subcard-sub" id="pop-ing-um-sub">-</span>
             </div>
           </div>
         </div>
 
-        <!-- Optimización de Dotación y Recursos a Reubicar -->
-        <div class="popup-section-card" id="popup-optimizacion-section" style="display:none;">
-          <h4 class="popup-sec-title">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-            </svg>
-            Optimización y Personal Necesario
-          </h4>
-          <div class="popup-opt-grid">
-            <div class="opt-box">
-              <span class="opt-box-lbl">Manipular Paquetes</span>
-              <span class="opt-box-val" id="pop-opt-paquetes">-</span>
-            </div>
-            <div class="opt-box">
-              <span class="opt-box-lbl">Expedición Transporte</span>
-              <span class="opt-box-val" id="pop-opt-transporte">-</span>
-            </div>
-            <div class="opt-box opt-box-reubicar">
-              <span class="opt-box-lbl">Personal a Reubicar</span>
-              <span class="opt-box-val" id="pop-opt-reubicar">-</span>
-            </div>
-          </div>
-        </div>
 
         <!-- Líneas de Transporte Conectadas -->
         <div class="popup-section-card" id="popup-transportes-section" style="display:none;">

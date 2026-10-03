@@ -670,7 +670,7 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
     }
   }
 
-  // 4 Stats Principales
+  // 3 Stats Principales
   const elCap = document.getElementById("popup-capacidad");
   if (elCap) elCap.textContent = nodo.capacidad || "S/D";
 
@@ -678,10 +678,24 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   if (elPiezas) elPiezas.textContent = nodo.piezasDia || "S/D";
 
   const elPiezasLbl = document.getElementById("popup-piezas-lbl");
-  if (elPiezasLbl) {
+  if (elPiezasLbl) elPiezasLbl.textContent = "Promedio diario";
+
+  const elPiezasSub = document.getElementById("popup-piezas-sub");
+  if (elPiezasSub) {
     const vVta = nodo.volumenVenta ? `${nodo.volumenVenta} Venta` : "";
     const vJur = nodo.volumenJurisdiccion ? `${nodo.volumenJurisdiccion} Jurisdicción` : "";
-    elPiezasLbl.textContent = (vVta && vJur) ? `${vVta} · ${vJur}` : "Envíos diarios totales";
+    if (vVta && vJur) {
+      elPiezasSub.textContent = `${vVta} · ${vJur}`;
+      elPiezasSub.style.display = "block";
+    } else if (nodo.ingresoEnvios && nodo.ingresoEnvios.diarioMaquinable) {
+      const maq = Math.round(nodo.ingresoEnvios.diarioMaquinable);
+      const noMaq = Math.round(nodo.ingresoEnvios.diarioNoMaquinable || 0);
+      elPiezasSub.textContent = `${maq.toLocaleString('es-AR')} Maq. · ${noMaq.toLocaleString('es-AR')} No Maq.`;
+      elPiezasSub.style.display = "block";
+    } else {
+      elPiezasSub.textContent = "Envíos / día";
+      elPiezasSub.style.display = "block";
+    }
   }
 
   const elDot = document.getElementById("popup-dotacion");
@@ -695,25 +709,33 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   const elEstado = document.getElementById("popup-estado");
   if (elEstado) elEstado.textContent = nodo.operatividad || "24 / 7";
 
-  // Turnos Reales del Excel
+  // Turnos Reales del Excel (Total de personal sin discriminar jerárquicos / auxiliares)
   const tNoche = nodo.turnos?.noche;
   const tManana = nodo.turnos?.manana;
   const tTarde = nodo.turnos?.tarde;
 
+  function formatDotacionTurno(t) {
+    if (!t) return "0 personas";
+    const jer = parseInt(t.jerarquico, 10) || 0;
+    const aux = parseInt(t.auxiliares, 10) || 0;
+    const tot = jer + aux;
+    return `${tot} personas`;
+  }
+
   const elNocheF = document.getElementById("turno-noche-franja");
   const elNocheD = document.getElementById("turno-noche-dot");
   if (elNocheF) elNocheF.textContent = (tNoche?.franja && tNoche.franja.toLowerCase() !== "no hay" && tNoche.franja.toLowerCase() !== "no" && tNoche.franja.toLowerCase() !== "no tiene") ? tNoche.franja : "Sin turno noche";
-  if (elNocheD) elNocheD.textContent = `${tNoche?.jerarquico || "0"} jerárq. · ${tNoche?.auxiliares || "0"} aux.`;
+  if (elNocheD) elNocheD.textContent = formatDotacionTurno(tNoche);
 
   const elMananaF = document.getElementById("turno-manana-franja");
   const elMananaD = document.getElementById("turno-manana-dot");
   if (elMananaF) elMananaF.textContent = (tManana?.franja && tManana.franja.toLowerCase() !== "no hay" && tManana.franja.toLowerCase() !== "no") ? tManana.franja : "Sin turno mañana";
-  if (elMananaD) elMananaD.textContent = `${tManana?.jerarquico || "0"} jerárq. · ${tManana?.auxiliares || "0"} aux.`;
+  if (elMananaD) elMananaD.textContent = formatDotacionTurno(tManana);
 
   const elTardeF = document.getElementById("turno-tarde-franja");
   const elTardeD = document.getElementById("turno-tarde-dot");
   if (elTardeF) elTardeF.textContent = (tTarde?.franja && tTarde.franja.toLowerCase() !== "no hay" && tTarde.franja.toLowerCase() !== "no" && tTarde.franja !== "0") ? tTarde.franja : "Sin turno tarde";
-  if (elTardeD) elTardeD.textContent = `${tTarde?.jerarquico || "0"} jerárq. · ${tTarde?.auxiliares || "0"} aux.`;
+  if (elTardeD) elTardeD.textContent = formatDotacionTurno(tTarde);
 
   // Procesos
   function updateProcBadge(id, val) {
@@ -760,14 +782,20 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
       const elUm = document.getElementById("pop-ing-um");
       const elUmSub = document.getElementById("pop-ing-um-sub");
 
-      if (elMaq) elMaq.textContent = `${(ing.impoMensualMaquinable || 0).toLocaleString("es-AR")} m.`;
-      if (elMaqSub) elMaqSub.textContent = `${ing.pctMaquinable || 0}% · ${(ing.diarioMaquinable || 0).toLocaleString("es-AR")} día`;
+      // Tarjeta 1: Columna H (Ingreso promedio diario maquinable)
+      const valMaq = Math.round(ing.diarioMaquinable || 0);
+      if (elMaq) elMaq.textContent = `${valMaq.toLocaleString("es-AR")} / día`;
+      if (elMaqSub) elMaqSub.textContent = ing.impoMensualMaquinable ? `${Math.round(ing.impoMensualMaquinable).toLocaleString("es-AR")} mensual` : "";
 
-      if (elNoMaq) elNoMaq.textContent = `${(ing.impoMensualNoMaquinable || 0).toLocaleString("es-AR")} m.`;
-      if (elNoMaqSub) elNoMaqSub.textContent = `${ing.pctNoMaquinable || 0}% · ${(ing.diarioNoMaquinable || 0).toLocaleString("es-AR")} día`;
+      // Tarjeta 2: Columna I (Ingreso promedio diario no maquinable)
+      const valNoMaq = Math.round(ing.diarioNoMaquinable || 0);
+      if (elNoMaq) elNoMaq.textContent = `${valNoMaq.toLocaleString("es-AR")} / día`;
+      if (elNoMaqSub) elNoMaqSub.textContent = ing.impoMensualNoMaquinable ? `${Math.round(ing.impoMensualNoMaquinable).toLocaleString("es-AR")} mensual` : "";
 
-      if (elUm) elUm.textContent = `${(ing.ingresoMensualUltimaMilla || 0).toLocaleString("es-AR")} m.`;
-      if (elUmSub) elUmSub.textContent = `${(ing.diarioUltimaMilla || 0).toLocaleString("es-AR")} día`;
+      // Tarjeta 3: Columna J (Ingreso promedio diario última milla)
+      const valUm = Math.round(ing.diarioUltimaMilla || 0);
+      if (elUm) elUm.textContent = `${valUm.toLocaleString("es-AR")} / día`;
+      if (elUmSub) elUmSub.textContent = ing.ingresoMensualUltimaMilla ? `${Math.round(ing.ingresoMensualUltimaMilla).toLocaleString("es-AR")} mensual` : "";
 
       secIngresos.style.display = "block";
     } else {
@@ -775,28 +803,6 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
     }
   }
 
-  // 2. Optimización y Personal Necesario (Sheet 6)
-  const secOpt = document.getElementById("popup-optimizacion-section");
-  if (secOpt) {
-    const opt = nodo.optimizacion;
-    if (opt && typeof opt.aReubicar !== "undefined") {
-      const elPaq = document.getElementById("pop-opt-paquetes");
-      const elTr = document.getElementById("pop-opt-transporte");
-      const elReub = document.getElementById("pop-opt-reubicar");
-
-      if (elPaq) elPaq.textContent = `${opt.manipularPaquetes || 0} pers.`;
-      if (elTr) elTr.textContent = `${opt.transporte || 0} pers.`;
-      if (elReub) {
-        elReub.textContent = opt.aReubicar > 0 
-          ? `${opt.aReubicar} pers.` 
-          : (opt.aReubicar < 0 ? `${Math.abs(opt.aReubicar)} faltante` : "0 (Dotación justa)");
-      }
-
-      secOpt.style.display = "block";
-    } else {
-      secOpt.style.display = "none";
-    }
-  }
 
   // 3. Líneas de Transporte Conectadas
   const secTrans = document.getElementById("popup-transportes-section");

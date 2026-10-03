@@ -268,7 +268,23 @@ photo_map = {
 # =============================================================
 # 5. ASSEMBLE COMPLETE NODOS DATASET
 # =============================================================
+FORCE_CLOG_CODES = {'DP2', 'DP4', 'DP6', 'DP5', 'DP3', 'MER', 'VMR', 'RCU', 'UAQ'}
+
+NAME_OVERRIDES = {
+    'DP2': 'CLOG CABA SUR',
+    'DP4': 'CLOG MERCADO CENTRAL',
+    'DP6': 'CLOG VICENTE LOPEZ',
+    'DP5': 'CLOG MORENO',
+    'DP3': 'CLOG QUILMES',
+    'MER': 'CLOG MERCEDES',
+    'VMR': 'CLOG VILLA MARIA',
+    'RCU': 'CLOG RIO CUARTO',
+    'UAQ': 'CLOG SAN JUAN'
+}
+
 def get_tipo(cod, nombre):
+    if cod in FORCE_CLOG_CODES:
+        return 'CLOG'
     n = nombre.upper()
     if 'SORTER' in n or cod == 'DP4':
         return 'Sorter'
@@ -402,12 +418,13 @@ for row in plantas_rows:
     tr_planta = [t for t in regional_transportes if t['codPlanta'].upper() == cod.upper()]
 
     nombre_limpio = get_short_name(cod, unidad)
+    nombre_completo = NAME_OVERRIDES.get(cod, unidad)
 
     nodo = {
         'id': cod.lower(),
         'cod': cod,
         'nombre': nombre_limpio,
-        'nombreCompleto': unidad,
+        'nombreCompleto': nombre_completo,
         'tipo': tipo,
         'provincia': provincia,
         'ubicacion': ubicacion,

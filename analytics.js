@@ -25,13 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Instancias de Chart.js
   let chartTopVolumen = null;
   let chartCuotaRegion = null;
-  let chartComposicion = null;
-  let chartSuperficie = null;
   let chartTurnos = null;
   let chartProcesos = null;
-  let chartOptimizacion = null;
-  let chartPuestos = null;
   let chartIngresosMaq = null;
+  let chartVolumenBarrasRegional = null;
 
   // Estado actual
   let currentRegion = "nacional";
@@ -105,20 +102,49 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = getFilteredData(regionKey);
 
     const totalPlantas = data.length;
-    const totalVolumen = data.reduce((acc, n) => acc + (n.volumenTotalNum || 0), 0);
-    const totalVenta = data.reduce((acc, n) => acc + (parseFloat(String(n.volumenVenta || "0").replace(/[^0-9.-]/g, "")) || 0), 0);
-    const totalJurisdiccion = data.reduce((acc, n) => acc + (parseFloat(String(n.volumenJurisdiccion || "0").replace(/[^0-9.-]/g, "")) || 0), 0);
+
+    // Cálculo según Columnas H, I, J (Imposición maquinable + no maquinable + última milla / jurisdicción)
+    let totalImposicion = 0;
+    let totalJurisdiccion = 0;
+    let totalVolumen = 0;
+
+    data.forEach(n => {
+      let imp = 0;
+      let jur = 0;
+      const ing = n.ingresoEnvios;
+      if (ing && (ing.diarioMaquinable || ing.diarioNoMaquinable || ing.diarioUltimaMilla)) {
+        // Columna H (Maquinable) + Columna I (No maquinable) = Imposición
+        imp = (ing.diarioMaquinable || 0) + (ing.diarioNoMaquinable || 0);
+        // Columna J (Última milla) = Jurisdicción
+        jur = ing.diarioUltimaMilla || 0;
+      } else {
+        imp = n.volumenVentaNum || 0;
+        jur = n.volumenJurisdiccionNum || 0;
+      }
+      totalImposicion += imp;
+      totalJurisdiccion += jur;
+      totalVolumen += (imp + jur);
+    });
+
     const totalDotacion = data.reduce((acc, n) => acc + (n.dotacionTotal || 0), 0);
     const totalAuxiliares = data.reduce((acc, n) => acc + (n.dotacionAuxiliares || 0), 0);
     const totalM2 = data.reduce((acc, n) => acc + (n.capacidadM2 || 0), 0);
 
     const elVol = document.getElementById("akpi-volumen");
     const elVolSub = document.getElementById("akpi-volumen-sub");
-    if (elVol) elVol.textContent = totalVolumen.toLocaleString("es-AR");
-    if (elVolSub) elVolSub.textContent = `${totalVenta.toLocaleString("es-AR")} Vta · ${totalJurisdiccion.toLocaleString("es-AR")} Jur.`;
+    if (elVol) elVol.textContent = Math.round(totalVolumen).toLocaleString("es-AR");
+    if (elVolSub) {
+      elVolSub.innerHTML = `Promedio diario de imposición más jurisdicción<br><span style="color:#0284c7; font-weight:600;">${Math.round(totalImposicion).toLocaleString("es-AR")} Imp. · ${Math.round(totalJurisdiccion).toLocaleString("es-AR")} Jur.</span>`;
+    }
 
     // Actualizar gráfico de fondo (sparkline dinámico según las plantas de la región)
-    const volumenes = data.map(n => n.volumenTotalNum || 0);
+    const volumenes = data.map(n => {
+      const ing = n.ingresoEnvios;
+      if (ing && (ing.diarioMaquinable || ing.diarioNoMaquinable || ing.diarioUltimaMilla)) {
+        return (ing.diarioMaquinable || 0) + (ing.diarioNoMaquinable || 0) + (ing.diarioUltimaMilla || 0);
+      }
+      return (n.volumenVentaNum || 0) + (n.volumenJurisdiccionNum || 0);
+    });
     const sparkD = calcularRutaSparkline(volumenes, 140, 28);
     const elSpark = document.getElementById("sparkline-path");
     const elArea = document.getElementById("sparkline-area");
@@ -174,14 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elTurno) elTurno.textContent = `Turno ${nombreMax}`;
     if (elTurnoSub) elTurnoSub.textContent = `${maxTurno} pers. (${totalDotacion ? Math.round((maxTurno / totalDotacion) * 100) : 0}%)`;
 
-    // Productividad
-    const elProd = document.getElementById("akpi-productividad");
-    const elProdSub = document.getElementById("akpi-productividad-sub");
-    if (elProd) {
-      const ratio = totalDotacion ? Math.round(totalVolumen / totalDotacion) : 0;
-      elProd.textContent = `${ratio.toLocaleString("es-AR")} env/p`;
-    }
-    if (elProdSub) elProdSub.textContent = "Capacidad media por operario";
   }
 
   // =============================================================
@@ -303,135 +321,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---------------------------------------------------------
-    // Gráfico 3: Venta vs Jurisdicción
-    // ---------------------------------------------------------
-    const ctxComp = document.getElementById("chart-composicion-envios")?.getContext("2d");
-    if (ctxComp) {
-      const regiones = ["amba", "pba", "centro", "cuyo", "patagonia"];
-      const labels = ["AMBA", "PBA", "Centro", "Cuyo/NOA", "Sur"];
-      const vtas = [];
-      const jurs = [];
-
-      regiones.forEach(rk => {
-        const nodosReg = NODOS_DATA_OFICIAL.filter(n => n.regionKey === rk);
-        const v = nodosReg.reduce((acc, n) => acc + (parseFloat(String(n.volumenVenta || "0").replace(/[^0-9.-]/g, "")) || 0), 0);
-        const j = nodosReg.reduce((acc, n) => acc + (parseFloat(String(n.volumenJurisdiccion || "0").replace(/[^0-9.-]/g, "")) || 0), 0);
-        vtas.push(v);
-        jurs.push(j);
-      });
-
-      chartComposicion = new Chart(ctxComp, {
-        type: "bar",
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: "Venta Directa",
-              data: vtas,
-              backgroundColor: COLOR_AZUL_MID,
-              borderRadius: 4
-            },
-            {
-              label: "Jurisdicción",
-              data: jurs,
-              backgroundColor: COLOR_AMARILLO,
-              borderRadius: 4
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top", labels: { boxWidth: 12 } },
-            tooltip: {
-              callbacks: {
-                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString("es-AR")} envíos`
-              }
-            }
-          },
-          scales: {
-            x: { stacked: true, grid: { display: false } },
-            y: {
-              stacked: true,
-              beginAtZero: true,
-              grid: { color: "#edf2f7" },
-              ticks: { callback: v => v >= 1000 ? `${(v / 1000).toLocaleString("es-AR")}k` : v }
-            }
-          }
-        }
-      });
-    }
-
-    // ---------------------------------------------------------
-    // Gráfico 4: Superficie vs Dotación
-    // ---------------------------------------------------------
-    const ctxSup = document.getElementById("chart-superficie-dotacion")?.getContext("2d");
-    if (ctxSup) {
-      const regiones = ["amba", "pba", "centro", "cuyo", "patagonia"];
-      const labels = ["AMBA", "PBA", "Centro", "Cuyo/NOA", "Sur"];
-      const sup = [];
-      const dot = [];
-
-      regiones.forEach(rk => {
-        const nodosReg = NODOS_DATA_OFICIAL.filter(n => n.regionKey === rk);
-        sup.push(nodosReg.reduce((acc, n) => acc + (n.capacidadM2 || 0), 0));
-        dot.push(nodosReg.reduce((acc, n) => acc + (n.dotacionTotal || 0), 0));
-      });
-
-      chartSuperficie = new Chart(ctxSup, {
-        type: "bar",
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              type: "bar",
-              label: "Superficie (m²)",
-              data: sup,
-              backgroundColor: "rgba(0, 37, 84, 0.8)",
-              yAxisID: "y",
-              borderRadius: 4
-            },
-            {
-              type: "line",
-              label: "Dotación (pers.)",
-              data: dot,
-              borderColor: COLOR_ORANGE,
-              backgroundColor: COLOR_ORANGE,
-              borderWidth: 3,
-              pointRadius: 5,
-              yAxisID: "y1"
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: "top" } },
-          scales: {
-            x: { grid: { display: false } },
-            y: {
-              type: "linear",
-              display: true,
-              position: "left",
-              grid: { color: "#edf2f7" },
-              ticks: { callback: v => v >= 1000 ? `${(v / 1000).toLocaleString("es-AR")}k m²` : `${v} m²` }
-            },
-            y1: {
-              type: "linear",
-              display: true,
-              position: "right",
-              beginAtZero: true,
-              grace: "10%",
-              grid: { drawOnChartArea: false },
-              ticks: { callback: v => `${v} pers.` }
-            }
-          }
-        }
-      });
-    }
-
-    // ---------------------------------------------------------
     // Gráfico 5: Turnos
     // ---------------------------------------------------------
     const ctxTurnos = document.getElementById("chart-distribucion-turnos")?.getContext("2d");
@@ -516,35 +405,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---------------------------------------------------------
-    // Gráfico 7: Optimización Regional (Sheet 6 - Imagen 2 Full-Width)
+    // Gráfico: Composición Regional Imposición vs Jurisdicción
     // ---------------------------------------------------------
-    const ctxOptReg = document.getElementById("chart-optimizacion-regional")?.getContext("2d");
-    if (ctxOptReg) {
-      chartOptimizacion = new Chart(ctxOptReg, {
+    const ctxVolBarras = document.getElementById("chart-volumen-barras-regional")?.getContext("2d");
+    if (ctxVolBarras) {
+      chartVolumenBarrasRegional = new Chart(ctxVolBarras, {
         type: "bar",
         data: {
-          labels: ["Patagonia / SUR", "CUYO / NOA", "CENTRO / NEA", "PBA / LA PAMPA"],
+          labels: ["PBA / LA PAMPA", "CENTRO / NEA", "CUYO / NOA", "Patagonia / SUR"],
           datasets: [
             {
-              label: "Auxiliares operativos actuales",
-              data: [105, 212, 224, 107],
+              label: "Imposición diaria (Col. H + I)",
+              data: [79250, 19579, 6595, 2154],
               backgroundColor: "#002554",
               borderRadius: 5,
               barPercentage: 0.72,
               categoryPercentage: 0.65
             },
             {
-              label: "Personal necesario (operación)",
-              data: [89, 150, 178, 81],
-              backgroundColor: "#10b981",
-              borderRadius: 5,
-              barPercentage: 0.72,
-              categoryPercentage: 0.65
-            },
-            {
-              label: "Personal a reubicar (excedente)",
-              data: [16, 62, 46, 26],
-              backgroundColor: "#ef4444",
+              label: "Jurisdicción última milla (Col. J)",
+              data: [61171, 32610, 12640, 12281],
+              backgroundColor: "#0284c7",
               borderRadius: 5,
               barPercentage: 0.72,
               categoryPercentage: 0.65
@@ -553,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         plugins: [
           {
-            id: "barValueLabels",
+            id: "barValueLabelsVol",
             afterDatasetsDraw(chart) {
               const { ctx } = chart;
               ctx.save();
@@ -565,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 meta.data.forEach((bar, index) => {
                   const val = dataset.data[index];
                   ctx.fillStyle = dataset.backgroundColor;
-                  ctx.fillText(val, bar.x, bar.y - 4);
+                  ctx.fillText(val.toLocaleString("es-AR"), bar.x, bar.y - 4);
                 });
               });
               ctx.restore();
@@ -578,9 +459,9 @@ document.addEventListener("DOMContentLoaded", () => {
           maintainAspectRatio: false,
           layout: {
             padding: {
-              top: 4,
-              right: 10,
-              left: 4,
+              top: 14,
+              right: 12,
+              left: 12,
               bottom: 4
             }
           },
@@ -589,29 +470,33 @@ document.addEventListener("DOMContentLoaded", () => {
               display: true,
               position: "top",
               align: "end",
-              maxHeight: 90,
               labels: {
                 usePointStyle: true,
                 pointStyle: "rectRounded",
                 boxWidth: 10,
                 boxHeight: 10,
-                padding: 12,
-                font: { family: "Plus Jakarta Sans, sans-serif", size: 11, weight: "700" },
+                padding: 14,
+                font: { family: "Plus Jakarta Sans, sans-serif", size: 11.5, weight: "700" },
                 color: "#334155"
               }
             },
             tooltip: {
               callbacks: {
-                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} personas`
+                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString("es-AR")} env/día`
               }
             }
           },
           scales: {
             y: {
               beginAtZero: true,
-              max: 260,
+              max: 90000,
               grid: { color: "#f1f5f9" },
-              ticks: { stepSize: 50, font: { size: 11, family: "Plus Jakarta Sans, sans-serif" }, color: "#64748b" }
+              ticks: {
+                stepSize: 20000,
+                font: { size: 11, family: "Plus Jakarta Sans, sans-serif" },
+                color: "#64748b",
+                callback: val => val.toLocaleString("es-AR")
+              }
             },
             x: {
               grid: { display: false },
@@ -620,90 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       });
-
-      // Asegurar renderizado correcto y completo de la leyenda tras carga de fuentes/layout
-      requestAnimationFrame(() => {
-        chartOptimizacion.resize();
-        chartOptimizacion.update("none");
-      });
-      setTimeout(() => {
-        chartOptimizacion.resize();
-        chartOptimizacion.update("none");
-      }, 100);
     }
-
-    // ---------------------------------------------------------
-    // Gráfico 8: Puestos Operativos vs Reubicación (Doughnut - Imagen 1)
-    // ---------------------------------------------------------
-    const ctxPuestos = document.getElementById("chart-puestos-operativos")?.getContext("2d");
-    if (ctxPuestos) {
-      chartPuestos = new Chart(ctxPuestos, {
-        type: "doughnut",
-        data: {
-          labels: ["Manipulación de paquetes", "Expedición / Transporte", "Personal a reubicar (otros)"],
-          datasets: [{
-            data: [78, 42, 30],
-            backgroundColor: ["#004b99", "#f59e0b", "#ef4444"],
-            borderWidth: 3,
-            borderColor: "#ffffff",
-            hoverOffset: 4
-          }]
-        },
-        plugins: [
-          {
-            id: "centerTextDoughnut",
-            beforeDraw(chart) {
-              const { ctx } = chart;
-              const meta = chart.getDatasetMeta(0);
-              if (!meta || !meta.data || !meta.data.length) return;
-
-              const x = meta.data[0].x;
-              const y = meta.data[0].y;
-
-              ctx.save();
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-
-              // 150
-              ctx.font = "800 24px 'Plus Jakarta Sans', sans-serif";
-              ctx.fillStyle = "#0f172a";
-              ctx.fillText("150", x, y - 8);
-
-              // personas
-              ctx.font = "600 11.5px 'Plus Jakarta Sans', sans-serif";
-              ctx.fillStyle = "#64748b";
-              ctx.fillText("personas", x, y + 13);
-
-              ctx.restore();
-            }
-          }
-        ],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: "rgba(0, 37, 84, 0.96)",
-              titleFont: { family: "Plus Jakarta Sans, sans-serif", size: 12.5, weight: "800" },
-              bodyFont: { family: "Plus Jakarta Sans, sans-serif", size: 12, weight: "600" },
-              padding: 10,
-              cornerRadius: 8,
-              callbacks: {
-                label: ctx => {
-                  const val = ctx.parsed;
-                  const pct = Math.round((val / 150) * 100);
-                  return ` ${val} personas (${pct}%)`;
-                }
-              }
-            }
-          },
-          cutout: "68%"
-        }
-      });
-    }
-
-    // ---------------------------------------------------------
     // Gráfico 9: Ingreso de Envíos Maquinables vs No Maquinables (Sheets 2 a 5)
     // ---------------------------------------------------------
     const ctxIngMaq = document.getElementById("chart-ingresos-maquinables")?.getContext("2d");
@@ -1104,9 +906,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 3. Reajustar gráficos Chart.js en la vista visible
       setTimeout(() => {
-        if (chartOptimizacion) {
-          chartOptimizacion.resize();
-          chartOptimizacion.update("none");
+        if (chartVolumenBarrasRegional) {
+          chartVolumenBarrasRegional.resize();
+          chartVolumenBarrasRegional.update("none");
         }
         window.dispatchEvent(new Event("resize"));
       }, 50);
@@ -1117,10 +919,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".opt-table-compact tbody tr").forEach((tr, idx) => {
     tr.style.cursor = "pointer";
     tr.addEventListener("click", () => {
-      const regKeys = ["patagonia", "cuyo", "centro", "pba"];
+      const regKeys = ["pba", "centro", "cuyo", "patagonia"];
       const key = regKeys[idx];
       if (key) {
-        const targetOpt = list?.querySelector(`.custom-select-option[data-value="${key}"]`);
+        const targetOpt = document.querySelector(`.custom-select-option[data-value="${key}"]`);
         if (targetOpt) targetOpt.click();
       }
     });
@@ -1131,14 +933,4 @@ document.addEventListener("DOMContentLoaded", () => {
   inicializarGraficos();
   renderTabla();
   renderTablaTransporte();
-
-  // Asegurar renderizado nítido de etiquetas y leyendas al completar carga de tipografía
-  if (document.fonts) {
-    document.fonts.ready.then(() => {
-      if (chartOptimizacion) {
-        chartOptimizacion.resize();
-        chartOptimizacion.update("none");
-      }
-    });
-  }
 });

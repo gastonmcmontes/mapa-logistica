@@ -101,46 +101,46 @@ svg += f'''  </g>
 
   <!-- Callout 1: CUYO / NOA (Top-Left) -->
   <g class="callout-cuyo">
-    <line x1="{cuyo_pt[0]}" y1="{cuyo_pt[1]}" x2="126" y2="68" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 3" />
-    <circle cx="{cuyo_pt[0]}" cy="{cuyo_pt[1]}" r="4" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
-    <circle cx="126" cy="68" r="2.5" fill="#ef4444" />
+    <line x1="{cuyo_pt[0]}" y1="{cuyo_pt[1]}" x2="126" y2="68" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3" />
+    <circle cx="{cuyo_pt[0]}" cy="{cuyo_pt[1]}" r="4" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5" />
+    <circle cx="126" cy="68" r="2.5" fill="#38bdf8" />
     <!-- Text -->
     <text x="118" y="50" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="12.5" fill="#0f172a" text-anchor="end">CUYO / NOA</text>
-    <text x="118" y="68" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#dc2626" text-anchor="end">29.2%</text>
-    <text x="118" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="end">a reubicar (62 pers.)</text>
+    <text x="118" y="68" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#0284c7" text-anchor="end">8.5%</text>
+    <text x="118" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="end">19.235 env/día</text>
   </g>
 
   <!-- Callout 2: CENTRO / NEA (Top-Right) -->
   <g class="callout-centro">
-    <line x1="{centro_pt[0]}" y1="{centro_pt[1]}" x2="294" y2="68" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3 3" />
-    <circle cx="{centro_pt[0]}" cy="{centro_pt[1]}" r="4" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5" />
-    <circle cx="294" cy="68" r="2.5" fill="#f59e0b" />
+    <line x1="{centro_pt[0]}" y1="{centro_pt[1]}" x2="294" y2="68" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3 3" />
+    <circle cx="{centro_pt[0]}" cy="{centro_pt[1]}" r="4" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />
+    <circle cx="294" cy="68" r="2.5" fill="#0284c7" />
     <!-- Text -->
     <text x="302" y="50" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="12.5" fill="#0f172a" text-anchor="start">CENTRO / NEA</text>
-    <text x="302" y="68" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#d97706" text-anchor="start">20.5%</text>
-    <text x="302" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="start">a reubicar (46 pers.)</text>
+    <text x="302" y="68" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#0284c7" text-anchor="start">23.1%</text>
+    <text x="302" y="82" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="start">52.189 env/día</text>
   </g>
 
   <!-- Callout 3: PBA / LA PAMPA (Mid-Left) -->
   <g class="callout-pba">
-    <line x1="{pba_pt[0]}" y1="{pba_pt[1]}" x2="126" y2="185" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3 3" />
-    <circle cx="{pba_pt[0]}" cy="{pba_pt[1]}" r="4" fill="#0284c7" stroke="#ffffff" stroke-width="1.5" />
-    <circle cx="126" cy="185" r="2.5" fill="#0284c7" />
+    <line x1="{pba_pt[0]}" y1="{pba_pt[1]}" x2="126" y2="185" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="3 3" />
+    <circle cx="{pba_pt[0]}" cy="{pba_pt[1]}" r="4" fill="#60a5fa" stroke="#ffffff" stroke-width="1.5" />
+    <circle cx="126" cy="185" r="2.5" fill="#60a5fa" />
     <!-- Text -->
     <text x="118" y="168" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="12.5" fill="#0f172a" text-anchor="end">PBA / LA PAMPA</text>
-    <text x="118" y="186" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#0284c7" text-anchor="end">24.3%</text>
-    <text x="118" y="200" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="end">a reubicar (26 pers.)</text>
+    <text x="118" y="186" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#0284c7" text-anchor="end">62.1%</text>
+    <text x="118" y="200" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="end">140.421 env/día</text>
   </g>
 
   <!-- Callout 4: Patagonia / SUR (Bottom-Right) -->
   <g class="callout-sur">
-    <line x1="{sur_pt[0]}" y1="{sur_pt[1]}" x2="278" y2="232" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="3 3" />
-    <circle cx="{sur_pt[0]}" cy="{sur_pt[1]}" r="4" fill="#0f172a" stroke="#ffffff" stroke-width="1.5" />
-    <circle cx="278" cy="232" r="2.5" fill="#0f172a" />
+    <line x1="{sur_pt[0]}" y1="{sur_pt[1]}" x2="278" y2="232" stroke="#0369a1" stroke-width="1.5" stroke-dasharray="3 3" />
+    <circle cx="{sur_pt[0]}" cy="{sur_pt[1]}" r="4" fill="#0369a1" stroke="#ffffff" stroke-width="1.5" />
+    <circle cx="278" cy="232" r="2.5" fill="#0369a1" />
     <!-- Text -->
     <text x="286" y="217" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="12.5" fill="#0f172a" text-anchor="start">Patagonia / SUR</text>
-    <text x="286" y="235" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#0f172a" text-anchor="start">15.2%</text>
-    <text x="286" y="249" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="start">a reubicar (16 pers.)</text>
+    <text x="286" y="235" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15.5" fill="#0284c7" text-anchor="start">6.4%</text>
+    <text x="286" y="249" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="10.5" fill="#64748b" text-anchor="start">14.435 env/día</text>
   </g>
 </svg>
 '''

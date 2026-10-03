@@ -71,21 +71,6 @@
         <span>Analytics</span>
       </a>
     </nav>
-
-    <!-- Pie del sidebar con marca de agua y slogan -->
-    <div class="sidebar-footer">
-      <div class="sidebar-watermark">
-        <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 32C25 52 75 52 90 32C75 42 25 42 10 32Z" fill="#083a75" />
-          <path d="M22 18C38 34 62 34 78 18C62 26 38 26 22 18Z" fill="#083a75" />
-        </svg>
-      </div>
-      <div class="sidebar-footer-text">
-        <h3>Correo<br>Argentino</h3>
-        <p>Conectando todo el país</p>
-      </div>
-    </div>
-
   </aside>
 
   <!-- =====================================================
@@ -161,11 +146,11 @@
           </svg>
           <span>Indicadores Globales</span>
         </button>
-        <button type="button" class="analytics-tab" data-tab="optimizacion">
+        <button type="button" class="analytics-tab" data-tab="distribucion">
           <svg class="tab-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
           </svg>
-          <span>Optimización de Personal</span>
+          <span>Distribución Federal</span>
         </button>
         <button type="button" class="analytics-tab" data-tab="ingresos">
           <svg class="tab-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
@@ -206,8 +191,8 @@
               <polyline points="17 6 23 6 23 12"></polyline>
             </svg>
           </div>
-          <div class="akpi-val" id="akpi-volumen">528.234</div>
-          <div class="akpi-sub" id="akpi-volumen-sub">30.156.849 Vta · 60.373.985 Jur.</div>
+          <div class="akpi-val" id="akpi-volumen">226.279</div>
+          <div class="akpi-sub" id="akpi-volumen-sub">Promedio diario de imposición más jurisdicción<br><span style="color:#0284c7; font-weight:600;">107.577 Imp. · 118.702 Jur.</span></div>
           <!-- Sparkline de tendencia dinámico en la base de la tarjeta -->
           <svg class="akpi-sparkline" viewBox="0 0 140 28" preserveAspectRatio="none">
             <defs>
@@ -271,184 +256,187 @@
           <div class="akpi-sub" id="akpi-turno-sub">493 pers. (34%)</div>
         </div>
 
-        <!-- 6. Envíos por Persona -->
-        <div class="akpi-card card-rendimiento">
-          <div class="akpi-top">
-            <span class="akpi-title">RENDIMIENTO OPERATIVO</span>
-            <svg class="akpi-naked-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-              <polyline points="17 6 23 6 23 12"></polyline>
-            </svg>
-          </div>
-          <div class="akpi-val" id="akpi-productividad">369 env/p</div>
-          <div class="akpi-sub" id="akpi-productividad-sub">Capacidad media por operario</div>
-        </div>
       </section>
 
-      <!-- ==========      <!-- =====================================================
-           SECCIÓN 1: RESUMEN EJECUTIVO Y PERSONAL A REUBICAR (SHEET 6)
+      <!-- =====================================================
+           SECCIÓN: DISTRIBUCIÓN FEDERAL DE VOLUMEN POR REGIÓN
            ===================================================== -->
-      <section class="analytics-section-block opt-section" id="sec-optimizacion" data-tab-section="optimizacion">
-        <!-- 1. Dark Blue Header Banner (Sin tarjetas, tipografía grande y legible) -->
+      <section class="analytics-section-block opt-section" id="sec-distribucion" data-tab-section="distribucion">
+        <!-- 1. Header Banner -->
         <div class="opt-banner-header">
           <div class="opt-banner-left">
-            <div class="opt-banner-badge">AUDITORÍA OPERATIVA FEDERAL · 4 REGIONES LOGÍSTICAS</div>
-            <h2 class="opt-banner-title">Optimización de Dotación y Recursos a Reubicar</h2>
-            <p class="opt-banner-desc">
-              Cálculo de personal necesario para manipulación de paquetes y transporte versus la dotación de auxiliares operativos actual en las plantas logísticas.
-            </p>
+            <span class="opt-banner-badge">VOLUMEN REGIONAL · AUDITORÍA CORREO ARGENTINO</span>
+            <h2 class="opt-banner-title">Distribución Federal de Volumen de Envíos</h2>
+            <p class="opt-banner-desc">Participación y balance regional del flujo diario nacional: imposición de paquetes (maquinable y manual) y jurisdicción de última milla distribuidos en las 4 regiones logísticas de Argentina.</p>
           </div>
           <div class="opt-banner-right">
             <div class="opt-banner-stat-item">
               <div class="opt-bstat-icon-wrap">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                  <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+                  <path d="M20 7l-8-4-8 4 8 4 8-4zm-8 6l-8-4v8l8 4V13zm2 .9l6-3V19l-6 3V13.9z"/>
                 </svg>
               </div>
               <div class="opt-bstat-content">
-                <span class="opt-bstat-title">PLANTAS AUDITADAS</span>
+                <span class="opt-bstat-title">Volumen Total País</span>
                 <div class="opt-bstat-num-row">
-                  <span class="opt-bstat-num">26</span>
-                  <span class="opt-bstat-sub">en 4 regiones</span>
+                  <span class="opt-bstat-num">226.279</span>
+                  <span class="opt-bstat-sub">envíos / día</span>
                 </div>
               </div>
             </div>
-
             <div class="opt-banner-divider"></div>
-
             <div class="opt-banner-stat-item">
               <div class="opt-bstat-icon-wrap">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
               </div>
               <div class="opt-bstat-content">
-                <span class="opt-bstat-title">TOTAL ANALIZADO</span>
+                <span class="opt-bstat-title">Región Principal</span>
                 <div class="opt-bstat-num-row">
-                  <span class="opt-bstat-num">648</span>
-                  <span class="opt-bstat-sub">auxiliares operativos</span>
+                  <span class="opt-bstat-num">62.1%</span>
+                  <span class="opt-bstat-sub">PBA / AMBA</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 2. Fila de 4 KPI Cards -->
+        <!-- 2. Top 4 KPI Cards: Las 4 Regiones y su Volumen -->
         <div class="opt-kpis-grid">
-          <!-- Card 1 -->
+          <!-- Card 1: PBA / LA PAMPA -->
           <div class="opt-kpi-card">
             <div class="opt-kpi-icon-wrap icon-blue">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-              </svg>
-            </div>
-            <div class="opt-kpi-body">
-              <div class="opt-kpi-num">648</div>
-              <div class="opt-kpi-label">Auxiliares relevados</div>
-              <div class="opt-kpi-sub">En 26 plantas auditadas</div>
-            </div>
-          </div>
-
-          <!-- Card 2 -->
-          <div class="opt-kpi-card">
-            <div class="opt-kpi-icon-wrap icon-red">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
             </div>
             <div class="opt-kpi-body">
               <div class="opt-kpi-num-row">
-                <span class="opt-kpi-num">150</span>
-                <span class="opt-kpi-badge-red">23.1% del total</span>
+                <span class="opt-kpi-num">140.421</span>
+                <span class="opt-badge-pct" style="background:#dbeafe; color:#1d4ed8; font-weight:800;">62.1% del total</span>
               </div>
-              <div class="opt-kpi-label">Personal a reubicar</div>
-              <div class="opt-kpi-sub">Excedente operativo regional</div>
+              <div class="opt-kpi-label">PBA / LA PAMPA</div>
+              <div class="opt-kpi-sub">79.250 Imp. · 61.171 Jur. (env/día)</div>
             </div>
           </div>
 
-          <!-- Card 3 -->
-          <div class="opt-kpi-card">
-            <div class="opt-kpi-icon-wrap icon-amber">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.36 4.18 3.84c-.01 1.37-.89 2.78-3.12 3.23z"/>
-              </svg>
-            </div>
-            <div class="opt-kpi-body">
-              <div class="opt-kpi-num">$2.831 M</div>
-              <div class="opt-kpi-label">Costo empresa anual promedio</div>
-              <div class="opt-kpi-sub">$3.197 M con +10 años antig.</div>
-            </div>
-          </div>
-
-          <!-- Card 4 -->
+          <!-- Card 2: CENTRO / NEA -->
           <div class="opt-kpi-card">
             <div class="opt-kpi-icon-wrap icon-cyan">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
             </div>
             <div class="opt-kpi-body">
-              <div class="opt-kpi-num">$235.9 M</div>
-              <div class="opt-kpi-label">Costo empresa mensual</div>
-              <div class="opt-kpi-sub">$264.4 M con +10 años antig.</div>
+              <div class="opt-kpi-num-row">
+                <span class="opt-kpi-num">52.189</span>
+                <span class="opt-badge-pct" style="background:#e0f2fe; color:#0284c7; font-weight:800;">23.1% del total</span>
+              </div>
+              <div class="opt-kpi-label">CENTRO / NEA</div>
+              <div class="opt-kpi-sub">19.579 Imp. · 32.610 Jur. (env/día)</div>
+            </div>
+          </div>
+
+          <!-- Card 3: CUYO / NOA -->
+          <div class="opt-kpi-card">
+            <div class="opt-kpi-icon-wrap icon-amber">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+            </div>
+            <div class="opt-kpi-body">
+              <div class="opt-kpi-num-row">
+                <span class="opt-kpi-num">19.235</span>
+                <span class="opt-badge-pct" style="background:#fef3c7; color:#b45309; font-weight:800;">8.5% del total</span>
+              </div>
+              <div class="opt-kpi-label">CUYO / NOA</div>
+              <div class="opt-kpi-sub">6.595 Imp. · 12.640 Jur. (env/día)</div>
+            </div>
+          </div>
+
+          <!-- Card 4: PATAGONIA / SUR -->
+          <div class="opt-kpi-card">
+            <div class="opt-kpi-icon-wrap icon-cyan" style="background:#f0fdf4; color:#16a34a;">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+            </div>
+            <div class="opt-kpi-body">
+              <div class="opt-kpi-num-row">
+                <span class="opt-kpi-num">14.435</span>
+                <span class="opt-badge-pct" style="background:#dcfce7; color:#15803d; font-weight:800;">6.4% del total</span>
+              </div>
+              <div class="opt-kpi-label">Patagonia / SUR</div>
+              <div class="opt-kpi-sub">2.154 Imp. · 12.281 Jur. (env/día)</div>
             </div>
           </div>
         </div>
 
         <!-- 3. Grid Principal de 3 Columnas: Tabla Resumen + Mapa Grande con Callouts + Donut -->
         <div class="opt-mid-grid">
-          <!-- Col 1: Resumen por Región (Tabla Ejecutiva) -->
+          <!-- Col 1: Resumen de Volumen por Región (Tabla Ejecutiva) -->
           <div class="opt-col-card">
             <div class="opt-card-header">
-              <h4 class="opt-card-title">Resumen por región</h4>
-              <p class="opt-card-sub">Indicadores operativos clave de las 4 regiones.</p>
+              <h4 class="opt-card-title">Resumen por Región</h4>
+              <p class="opt-card-sub">Volumen diario por región (Columnas H + I de imposición y Columna J de jurisdicción).</p>
             </div>
             <div class="opt-table-responsive">
               <table class="opt-table opt-table-compact">
                 <thead>
                   <tr>
                     <th>Región</th>
-                    <th>Auxiliares<br>operativos</th>
-                    <th>Personal a<br>reubicar</th>
-                    <th>% a reubicar</th>
-                    <th>Costo mensual<br>empresa</th>
+                    <th>Imposición<br>(H + I)</th>
+                    <th>Jurisdicción<br>(J)</th>
+                    <th>Total Diario<br>(env/día)</th>
+                    <th>% Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="td-bold"><span class="opt-dot-reg" style="background:#0369a1;"></span> Patagonia / SUR</td>
-                    <td class="td-num">105</td>
-                    <td class="td-num td-reubic">16</td>
-                    <td><span class="opt-badge-pct">15.2%</span></td>
-                    <td class="td-num">$235.9 M</td>
-                  </tr>
-                  <tr>
-                    <td class="td-bold"><span class="opt-dot-reg" style="background:#38bdf8;"></span> CUYO / NOA</td>
-                    <td class="td-num">212</td>
-                    <td class="td-num td-reubic">62</td>
-                    <td><span class="opt-badge-pct high">29.2%</span></td>
-                    <td class="td-num">$235.9 M</td>
+                    <td class="td-bold"><span class="opt-dot-reg" style="background:#60a5fa;"></span> PBA / LA PAMPA</td>
+                    <td class="td-num">79.250</td>
+                    <td class="td-num">61.171</td>
+                    <td class="td-num td-bold" style="color:#002554;">140.421</td>
+                    <td><span class="opt-badge-pct" style="background:#dbeafe; color:#1d4ed8; font-weight:800;">62.1%</span></td>
                   </tr>
                   <tr>
                     <td class="td-bold"><span class="opt-dot-reg" style="background:#0284c7;"></span> CENTRO / NEA</td>
-                    <td class="td-num">224</td>
-                    <td class="td-num td-reubic">46</td>
-                    <td><span class="opt-badge-pct mid">20.5%</span></td>
-                    <td class="td-num">$235.9 M</td>
+                    <td class="td-num">19.579</td>
+                    <td class="td-num">32.610</td>
+                    <td class="td-num td-bold" style="color:#002554;">52.189</td>
+                    <td><span class="opt-badge-pct" style="background:#e0f2fe; color:#0369a1; font-weight:800;">23.1%</span></td>
                   </tr>
                   <tr>
-                    <td class="td-bold"><span class="opt-dot-reg" style="background:#60a5fa;"></span> PBA / LA PAMPA</td>
-                    <td class="td-num">107</td>
-                    <td class="td-num td-reubic">26</td>
-                    <td><span class="opt-badge-pct mid">24.3%</span></td>
-                    <td class="td-num">$235.9 M</td>
+                    <td class="td-bold"><span class="opt-dot-reg" style="background:#38bdf8;"></span> CUYO / NOA</td>
+                    <td class="td-num">6.595</td>
+                    <td class="td-num">12.640</td>
+                    <td class="td-num td-bold" style="color:#002554;">19.235</td>
+                    <td><span class="opt-badge-pct" style="background:#fef3c7; color:#b45309; font-weight:800;">8.5%</span></td>
+                  </tr>
+                  <tr>
+                    <td class="td-bold"><span class="opt-dot-reg" style="background:#0369a1;"></span> Patagonia / SUR</td>
+                    <td class="td-num">2.154</td>
+                    <td class="td-num">12.281</td>
+                    <td class="td-num td-bold" style="color:#002554;">14.435</td>
+                    <td><span class="opt-badge-pct" style="background:#dcfce7; color:#15803d; font-weight:800;">6.4%</span></td>
                   </tr>
                 </tbody>
+                <tfoot>
+                  <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
+                    <td>TOTAL PAÍS</td>
+                    <td class="td-num">107.577</td>
+                    <td class="td-num">118.702</td>
+                    <td class="td-num" style="color:#002554;">226.279</td>
+                    <td><span class="opt-badge-pct" style="background:#e2e8f0; color:#0f172a; font-weight:800;">100.0%</span></td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
             <div class="opt-excedentes-box">
-              <span class="opt-exc-title">Mayor excedente por región:</span>
-              <span class="opt-exc-desc">Mendoza (16), Tucumán (12), Santa Fe (33), La Plata (18), Bahía Blanca (6).</span>
+              <span class="opt-exc-title">Concentración Logística:</span>
+              <span class="opt-exc-desc">PBA y AMBA concentran el 62.1% del volumen nacional (140.421 env/día), seguidos por Centro / NEA con el 23.1% (52.189 env/día).</span>
             </div>
           </div>
 
@@ -456,57 +444,28 @@
           <div class="opt-col-card opt-map-card">
             <div class="opt-card-header" style="margin-bottom: 6px;">
               <h4 class="opt-card-title">Distribución Federal</h4>
-              <p class="opt-card-sub">Porcentaje de personal a reubicar por región logística.</p>
+              <p class="opt-card-sub">Participación porcentual y volumen diario por región logística.</p>
             </div>
             <div class="opt-callout-map-wrap">
-              <img src="imagenes/argentina_map_callouts.svg" alt="Mapa de Reubicación Federal" class="opt-callout-map-img">
-            </div>
-          </div>
-
-          <!-- Col 3: Distribución de Recursos a Reubicar (Doughnut con 150 al centro) -->
-          <div class="opt-col-card">
-            <div class="opt-card-header">
-              <h4 class="opt-card-title">Distribución de Recursos</h4>
-              <p class="opt-card-sub">Personal excedente por tipo de tarea.</p>
-            </div>
-            <div class="opt-donut-container">
-              <div class="opt-donut-canvas-wrap">
-                <canvas id="chart-puestos-operativos"></canvas>
-              </div>
-              <div class="opt-donut-legend-list">
-                <div class="opt-dleg-row">
-                  <span class="opt-dleg-dot" style="background:#004b99;"></span>
-                  <span class="opt-dleg-label">Manipulación de paquetes</span>
-                  <strong class="opt-dleg-val">78 pers. (52%)</strong>
-                </div>
-                <div class="opt-dleg-row">
-                  <span class="opt-dleg-dot" style="background:#f59e0b;"></span>
-                  <span class="opt-dleg-label">Expedición / Transporte</span>
-                  <strong class="opt-dleg-val">42 pers. (28%)</strong>
-                </div>
-                <div class="opt-dleg-row">
-                  <span class="opt-dleg-dot" style="background:#ef4444;"></span>
-                  <span class="opt-dleg-label">Personal a reubicar (otros)</span>
-                  <strong class="opt-dleg-val">30 pers. (20%)</strong>
-                </div>
-              </div>
+              <img src="imagenes/argentina_map_callouts.svg" alt="Mapa de Distribución Federal de Volumen" class="opt-callout-map-img">
             </div>
           </div>
         </div>
 
-        <!-- 4. Gráfico Full-Width: Auxiliares actuales vs personal a reubicar por región -->
+        <!-- 4. Gráfico Full-Width: Composición Regional Imposición vs Jurisdicción -->
         <div class="opt-col-card opt-fullwidth-chart-card">
           <div class="opt-card-header opt-header-flex">
             <div>
-              <h4 class="opt-card-title">Auxiliares actuales vs personal a reubicar por región</h4>
-              <p class="opt-card-sub">Comparativa de dotación operativa vs requerimientos calculados en las 26 plantas auditadas.</p>
+              <h4 class="opt-card-title">Composición del Volumen por Región: Imposición vs Jurisdicción</h4>
+              <p class="opt-card-sub">Comparativa de envíos originados e impuestos (Col. H + I) vs envíos recibidos para distribución en destino local (Col. J - Jurisdicción).</p>
             </div>
           </div>
           <div class="opt-chart-canvas-box" style="height: 285px; position: relative;">
-            <canvas id="chart-optimizacion-regional"></canvas>
+            <canvas id="chart-volumen-barras-regional"></canvas>
           </div>
         </div>
       </section>
+
 
       <!-- =====================================================
            SECCIÓN 2: DETALLE INGRESO DE ENVÍOS (MAQUINABLES VS NO MAQUINABLES)
@@ -532,13 +491,13 @@
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; border-left:4px solid #0284c7;">
             <span style="font-size:12px; font-weight:700; color:#0369a1; text-transform:uppercase;">Envíos Maquinables (Sorter)</span>
-            <div style="font-size:24px; font-weight:800; color:#0f172a; margin:4px 0;" id="kpi-ingreso-maq">70% Promedio</div>
+            <div style="font-size:24px; font-weight:800; color:#0f172a; margin:4px 0;" id="kpi-ingreso-maq">89.6% Promedio</div>
             <span style="font-size:12px; color:#64748b;">Aptos para clasificación mecánica automatizada de alta velocidad.</span>
           </div>
 
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; border-left:4px solid #f59e0b;">
             <span style="font-size:12px; font-weight:700; color:#b45309; text-transform:uppercase;">Envíos No Maquinables (Manual)</span>
-            <div style="font-size:24px; font-weight:800; color:#0f172a; margin:4px 0;" id="kpi-ingreso-nomaq">30% Promedio</div>
+            <div style="font-size:24px; font-weight:800; color:#0f172a; margin:4px 0;" id="kpi-ingreso-nomaq">11.4% Promedio</div>
             <span style="font-size:12px; color:#64748b;">Bultos irregulares, sobredimensionados o con tratamiento manual.</span>
           </div>
 
@@ -653,53 +612,6 @@
           </div>
           <div class="chart-canvas-container">
             <canvas id="chart-cuota-region"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- =====================================================
-           SECCIÓN 5: INDICADORES MACRO (COMPOSICIÓN Y SUPERFICIE)
-           ===================================================== -->
-      <section class="analytics-section-block charts-grid-row" id="sec-composicion" data-tab-section="indicadores">
-        <!-- Gráfico 3: Venta vs Jurisdicción -->
-        <div class="chart-card col-6">
-          <div class="chart-card-header">
-            <div class="chart-card-titles">
-              <div class="chart-card-icon">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-                </svg>
-              </div>
-              <div>
-                <h3 class="chart-card-h3">Composición de Carga por Región (Venta vs Jurisdicción)</h3>
-                <p class="chart-card-sub">Desglose de envíos de origen comercial vs transferencias jurisdiccionales.</p>
-              </div>
-            </div>
-            <span class="chart-badge-tag">Apilado (Stacked)</span>
-          </div>
-          <div class="chart-canvas-container">
-            <canvas id="chart-composicion-envios"></canvas>
-          </div>
-        </div>
-
-        <!-- Gráfico 4: Superficie vs Dotación -->
-        <div class="chart-card col-6">
-          <div class="chart-card-header">
-            <div class="chart-card-titles">
-              <div class="chart-card-icon">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                </svg>
-              </div>
-              <div>
-                <h3 class="chart-card-h3">Superficie Logística (m²) vs Fuerza Laboral</h3>
-                <p class="chart-card-sub">Relación entre espacio físico operativo y dotación asignada por región.</p>
-              </div>
-            </div>
-            <span class="chart-badge-tag">Doble Eje</span>
-          </div>
-          <div class="chart-canvas-container">
-            <canvas id="chart-superficie-dotacion"></canvas>
           </div>
         </div>
       </section>
