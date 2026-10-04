@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // Dataset oficial de 36 nodos auditados (BUE y TRT se mantienen como compartimento estanco exclusivo en sus tarjetas del mapa)
+  const NODOS_ANALYTICS = NODOS_DATA_OFICIAL.filter(n => !n.isSpecialEstanco);
+
   // Paleta de colores oficial Correo Argentino
   const COLOR_AZUL_DARK   = "#002554";
   const COLOR_AZUL_MID    = "#004b99";
@@ -62,9 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Función de filtrado por región
   function getFilteredData(regionKey) {
     if (!regionKey || regionKey === "nacional") {
-      return [...NODOS_DATA_OFICIAL];
+      return [...NODOS_ANALYTICS];
     }
-    return NODOS_DATA_OFICIAL.filter(n => n.regionKey === regionKey);
+    return NODOS_ANALYTICS.filter(n => n.regionKey === regionKey);
   }
 
   // =============================================================
@@ -137,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const totalDotacion = data.reduce((acc, n) => acc + (n.dotacionTotal || 0), 0);
     const totalAuxiliares = data.reduce((acc, n) => acc + (n.dotacionAuxiliares || 0), 0);
-    const totalM2 = data.reduce((acc, n) => acc + (n.capacidadM2 || 0), 0);
 
     const elVol = document.getElementById("akpi-volumen");
     const elVolSub = document.getElementById("akpi-volumen-sub");
@@ -182,11 +184,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Total de superficie que abarca la totalidad de centros logísticos (incluyendo CTP BUE, Tortuguitas TRT, Tierra del Fuego y toda la red)
+    const datasetSuperficie = (regionKey === "nacional" || !regionKey)
+      ? NODOS_DATA_OFICIAL
+      : NODOS_DATA_OFICIAL.filter(n => n.regionKey === regionKey);
+    const totalM2 = datasetSuperficie.reduce((acc, n) => {
+      const num = (typeof n.capacidadM2 === "number" && n.capacidadM2 > 0)
+        ? n.capacidadM2
+        : (n.capacidad ? parseFloat(n.capacidad.replace(/[^0-9]/g, "")) : 0);
+      return acc + (num || 0);
+    }, 0);
+    const cantPlantasSuperficie = datasetSuperficie.length;
+
     const elM2 = document.getElementById("akpi-superficie");
     const elM2Sub = document.getElementById("akpi-superficie-sub");
     if (elM2) elM2.textContent = `${totalM2.toLocaleString("es-AR")} m²`;
     if (elM2Sub) {
-      const promM2 = totalPlantas ? Math.round(totalM2 / totalPlantas) : 0;
+      const promM2 = cantPlantasSuperficie ? Math.round(totalM2 / cantPlantasSuperficie) : 0;
       elM2Sub.textContent = `Promedio ${promM2.toLocaleString("es-AR")} m² / planta`;
     }
 
@@ -282,6 +296,23 @@ document.addEventListener("DOMContentLoaded", () => {
       elFvSub.innerHTML = regionKey === "nacional"
         ? `<span style="color:#0284c7; font-weight:700;">Efectividad en 1ª Visita</span><br>Paq.AR a Domicilio Total País`
         : `<span style="color:#0284c7; font-weight:700;">FV Regional Ponderado</span><br>Efectividad en 1ª Visita`;
+    }
+
+    // Piezas Postales 2D (Info Plantas Julio - Columna G)
+    let totalPostal2D = data.reduce((acc, n) => acc + (n.volumen2DNum || 0), 0);
+    let totalPostal2DMensual = data.reduce((acc, n) => acc + (n.volumen2dMensualNum || 0), 0);
+
+    const elPostal2D = document.getElementById("akpi-postal2d");
+    const elPostal2DSub = document.getElementById("akpi-postal2d-sub");
+    if (elPostal2D) {
+      elPostal2D.textContent = totalPostal2D > 0 ? Math.round(totalPostal2D).toLocaleString("es-AR") : "0";
+      if (elPostal2DSub) {
+        if (totalPostal2DMensual > 0) {
+          elPostal2DSub.innerHTML = `Promedio diario piezas postales 2D (Auditado)<br><span style="color:#6366f1; font-weight:600;">${Math.round(totalPostal2DMensual).toLocaleString("es-AR")} mensual</span>`;
+        } else {
+          elPostal2DSub.innerHTML = `Promedio diario piezas postales 2D (Auditado)<br><span style="color:#6366f1; font-weight:600;">Piezas postales tradicionales (excluido de paquetería)</span>`;
+        }
+      }
     }
 
     // Tarjetas de resumen de la sección SLA Paq.AR
@@ -384,7 +415,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Patagonia / Sur": 0
       };
 
-      NODOS_DATA_OFICIAL.forEach(n => {
+      NODOS_ANALYTICS.forEach(n => {
         const v = n.volumenTotalNum || 0;
         if (n.regionKey === "amba") volPorRegion["AMBA"] += v;
         else if (n.regionKey === "pba") volPorRegion["PBA / La Pampa"] += v;
@@ -694,7 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------------------------------------------------------
     const ctxIngMaq = document.getElementById("chart-ingresos-maquinables")?.getContext("2d");
     if (ctxIngMaq) {
-      const plantasConIngreso = NODOS_DATA_OFICIAL
+      const plantasConIngreso = NODOS_ANALYTICS
         .filter(n => n.ingresoEnvios && n.ingresoEnvios.impoMensual > 0)
         .sort((a, b) => b.ingresoEnvios.impoMensual - a.ingresoEnvios.impoMensual)
         .slice(0, 12);
@@ -834,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (countEl) {
-      countEl.textContent = `Mostrando ${data.length} de ${NODOS_DATA_OFICIAL.length} plantas`;
+      countEl.textContent = `Mostrando ${data.length} de ${NODOS_ANALYTICS.length} plantas`;
     }
 
     tbody.innerHTML = "";
@@ -957,7 +988,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (countEl) {
-      countEl.textContent = `Mostrando ${data.length} de ${NODOS_DATA_OFICIAL.length} nodos auditados`;
+      countEl.textContent = `Mostrando ${data.length} de ${NODOS_ANALYTICS.length} nodos auditados`;
     }
 
     tbody.innerHTML = "";
@@ -1098,7 +1129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (countEl) {
-      countEl.textContent = `Mostrando ${data.length} de ${NODOS_DATA_OFICIAL.length} nodos auditados`;
+      countEl.textContent = `Mostrando ${data.length} de ${NODOS_ANALYTICS.length} nodos auditados`;
     }
 
     tbody.innerHTML = "";

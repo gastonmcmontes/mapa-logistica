@@ -98,23 +98,26 @@ function Build-CompleteData {
                 $resumenEjecutivo += @{
                     region = $reg
                     auxiliaresOperativos = [int](Parse-Num $cells['C'])
-                    personalAReubicar = [int](Parse-Num $cells['E'])
-                    pctAReubicar = [math]::Round((Parse-Num $cells['F']) * 100, 1)
-                    costoMensualAuxiliar = Parse-Num $cells['I']
-                    costoEmpresaMensual = if ($cells['L']) { Parse-Num $cells['L'] } else { 0 }
-                    costoEmpresaAnual = if ($rNum -eq 5) { Parse-Num ($cells['I'] -or $cells['K']) } else { 0 }
+                    personalNecesario = [int](Parse-Num $cells['D'])
+                    reubicar = [int](Parse-Num $cells['E'])
+                    pctReubicar = [double](Parse-Num $cells['F'])
+                    costoAnualMas10 = [double](Parse-Num $cells['G'])
+                    costoAnualPromedio = [double](Parse-Num $cells['H'])
+                    costoMensualMas10 = [double](Parse-Num $cells['I'])
+                    costoMensualPromedio = [double](Parse-Num $cells['J'])
                 }
             }
         }
-
-        # Plantas optimizacion filas 11 a 50
-        if ($rNum -ge 11 -and $rNum -le 50) {
-            $cod = Clean-Str $cells['B']
-            if ($cod -and $cod.Length -le 5 -and $cod.ToUpper() -notmatch '^(COD|REGION|CODIGO|TOTAL)') {
+        
+        # Detalle plantas filas 10 a 50
+        if ($rNum -ge 10 -and $rNum -le 50) {
+            $codP = Clean-Str $cells['B']
+            if ($codP -and $codP.Length -le 4 -and $codP -ne 'COD') {
                 $manip = Parse-Num $cells['I']
                 $transp = Parse-Num $cells['J']
                 $reubic = Parse-Num $cells['K']
-                $plantasOptimizacion[$cod.ToUpper()] = @{
+                
+                $plantasOptimizacion[$codP.ToUpper()] = @{
                     regionSheet = Clean-Str $cells['A']
                     dotacionTotal = [int](Parse-Num $cells['D'])
                     auxiliaresOperativos = [int](Parse-Num $cells['E'])
@@ -220,33 +223,70 @@ function Build-CompleteData {
                 impoMensualNoMaquinable = Parse-Num $cells['E']
                 ingresoMensualUltimaMilla = Parse-Num $cells['F']
                 piezasAProcesar = Parse-Num $cells['G']
-                umParticRegional = Parse-Num $cells['H']
-                umParticNacional = Parse-Num $cells['I']
-                diarioMaquinable = Parse-Num $cells['J']
-                diarioNoMaquinable = Parse-Num $cells['K']
-                diarioUltimaMilla = Parse-Num $cells['L']
-                procesoDiario = Parse-Num $cells['M']
-                pctMaquinable = 89.6
-                pctNoMaquinable = 10.4
+                diarioMaquinable = Parse-Num $cells['H']
+                diarioNoMaquinable = Parse-Num $cells['I']
+                diarioUltimaMilla = Parse-Num $cells['J']
+                procesoDiario = Parse-Num $cells['K']
             }
         }
     }
 
-    # 5. ASSEMBLE 36 NODES
+    # 5. PARSE 2D POSTAL PIECES (Info Plantas julio.xlsx)
+    $zip2D = [System.IO.Compression.ZipFile]::OpenRead('data/Info Plantas julio.xlsx')
+    $ss2D = $zip2D.GetEntry('xl/sharedStrings.xml')
+    $sr = New-Object System.IO.StreamReader($ss2D.Open())
+    $xmlSS2D = [xml]$sr.ReadToEnd()
+    $sr.Dispose()
+    $strings2D = @()
+    foreach ($si in $xmlSS2D.sst.si) {
+        if ($si.t -ne $null) { $strings2D += $si.t }
+        elseif ($si.r -ne $null) { $strings2D += ($si.r | ForEach-Object { $_.t }) -join '' }
+        else { $strings2D += '' }
+    }
+    $s2D = $zip2D.GetEntry('xl/worksheets/sheet1.xml')
+    $sr = New-Object System.IO.StreamReader($s2D.Open())
+    $xmlS2D = [xml]$sr.ReadToEnd()
+    $sr.Dispose()
+    $zip2D.Dispose()
+
+    $map2D = @{}
+    foreach ($r in $xmlS2D.worksheet.sheetData.row) {
+        $rNum = [int]$r.r
+        if ($rNum -ge 3 -and $rNum -le 38) {
+            $cells = @{}
+            foreach ($c in $r.c) {
+                $val = $c.v
+                if ($c.t -eq 's' -and $val -ne $null) { $val = $strings2D[[int]$val] }
+                $colLetter = ($c.r -replace '[0-9]', '')
+                $cells[$colLetter] = $val
+            }
+            $code = (Clean-Str $cells['B']).ToUpper()
+            $m2d = Parse-Num $cells['F']
+            $d2d = Parse-Num $cells['G']
+            if ($code) {
+                $map2D[$code] = @{
+                    Mensual = $m2d
+                    Diario = $d2d
+                }
+            }
+        }
+    }
+
+    # 6. ASSEMBLE 36 NODES
     $photoMap = @{
-        'C12' = @('imagenes/sur/NEUQUEN_1.jpg', 'imagenes/sur/NEUQUEN_2.jpg', 'imagenes/sur/NEUQUEN_3.jpg', 'imagenes/sur/NEUQUEN_4.jpg', 'imagenes/sur/NEUQUEN_5.jpg', 'imagenes/sur/NEUQUEN_6.jpg')
-        'CRD' = @('imagenes/sur/COMODORO_RIVADAVIA_1.jpg', 'imagenes/sur/COMODORO_RIVADAVIA_2.jpg', 'imagenes/sur/COMODORO_RIVADAVIA_5.jpg', 'imagenes/sur/COMODORO_RIVADAVIA_6.jpg')
+        'C12' = @('imagenes/sur/NEUQUEN_1.jpg', 'imagenes/sur/NEUQUEN_2.jpg', 'imagenes/sur/NEUQUEN_3.jpg', 'imagenes/sur/NEUQUEN_4.jpg')
+        'CRD' = @('imagenes/sur/COMODORO_1.jpg', 'imagenes/sur/COMODORO_2.jpg', 'imagenes/sur/COMODORO_3.jpg', 'imagenes/sur/COMODORO_4.jpg')
         'REL' = @('imagenes/sur/TRELEW_1.jpg', 'imagenes/sur/TRELEW_2.jpg', 'imagenes/sur/TRELEW_3.jpg', 'imagenes/sur/TRELEW_4.jpg')
-        'C15' = @('imagenes/sur/RIO_GALLEGOS_1.jpg', 'imagenes/sur/RIO_GALLEGOS_2.jpg')
+        'C15' = @('imagenes/sur/RIO_GALLEGOS_1.jpg', 'imagenes/sur/RIO_GALLEGOS_2.jpg', 'imagenes/sur/RIO_GALLEGOS_3.jpg', 'imagenes/sur/RIO_GALLEGOS_4.jpg')
         'BRC' = @('imagenes/sur/BARILOCHE_1.jpg', 'imagenes/sur/BARILOCHE_2.jpg', 'imagenes/sur/BARILOCHE_3.jpg', 'imagenes/sur/BARILOCHE_4.jpg')
-        'VAE' = @('imagenes/sur/USHUAIA_1.jpg', 'imagenes/sur/USHUAIA_2.jpg')
-        'RGA' = @('imagenes/sur/RIO_GRANDE_1.jpg')
+        'VAE' = @('imagenes/placeholder.jpg')
+        'RGA' = @('imagenes/placeholder.jpg')
         'C14' = @('imagenes/metro-pba/La Plata.jpg', 'imagenes/metro-pba/La Plata 1.jpg', 'imagenes/metro-pba/La Plata 2.jpg', 'imagenes/metro-pba/La Plata 3.jpg')
         'CL4' = @('imagenes/metro-pba/Bahia Blanca.jpg', 'imagenes/metro-pba/Bahia Blanca 1.jpg')
         'CL3' = @('imagenes/metro-pba/M del Plata.jpg', 'imagenes/metro-pba/M del Plata 1.jpg', 'imagenes/metro-pba/M del Plata 2.jpg')
         'MER' = @('imagenes/metro-pba/Mercedes.jpg', 'imagenes/metro-pba/Mercedes 1.jpg', 'imagenes/metro-pba/Mercedes 2.jpg')
-        'PER' = @('imagenes/metro-pba/Pergamino.jpg', 'imagenes/metro-pba/Pergamino 2.jpg')
-        'RSA' = @('imagenes/metro-pba/Santa Rosa.jpg', 'imagenes/metro-pba/Santa Rosa 3.jpg')
+        'PER' = @('imagenes/metro-pba/Pergamino.jpg', 'imagenes/metro-pba/Pergamino 1.jpg', 'imagenes/metro-pba/Pergamino 2.jpg')
+        'RSA' = @('imagenes/metro-pba/Santa Rosa.jpg', 'imagenes/metro-pba/Santa Rosa 1.jpg', 'imagenes/metro-pba/Santa Rosa 3.jpg')
         'DP2' = @('imagenes/metro-pba/Barracas.jpg', 'imagenes/metro-pba/Barracas 1.jpg', 'imagenes/metro-pba/Barracas 2.jpg', 'imagenes/metro-pba/Barracas 3.jpg')
         'DP3' = @('imagenes/metro-pba/Quilmes .jpg', 'imagenes/metro-pba/Quilmes 1.jpg', 'imagenes/metro-pba/Quilmes 2.jpg', 'imagenes/metro-pba/Quilmes 3.jpg', 'imagenes/metro-pba/Quilmes 4.jpg')
         'DP4' = @('imagenes/metro-pba/Mercado Central.jpg', 'imagenes/metro-pba/Mercado central 1.jpg', 'imagenes/metro-pba/Mercado Central 2.jpg', 'imagenes/metro-pba/Mercado Central 3.jpg', 'imagenes/metro-pba/Mercado Central 4.jpg')
@@ -255,7 +295,7 @@ function Build-CompleteData {
         'CL6' = @('imagenes/cuyo-noa/mendoza.jpg', 'imagenes/cuyo-noa/mendoza 1.jpg', 'imagenes/cuyo-noa/mendoza 2.jpg', 'imagenes/cuyo-noa/Mendoza 3.jpg')
         'UAQ' = @('imagenes/cuyo-noa/San Juan.jpg', 'imagenes/cuyo-noa/San juan 1.jpg', 'imagenes/cuyo-noa/San juan 2.jpg')
         'LUQ' = @('imagenes/cuyo-noa/San Luis.jpg', 'imagenes/cuyo-noa/San Luis 1.jpg', 'imagenes/cuyo-noa/San luis 2.jpg', 'imagenes/cuyo-noa/San luis 3.jpg')
-        'CTC' = @('imagenes/cuyo-noa/Catamarca 1.jpg', 'imagenes/cuyo-noa/Catamarca 2.jpg')
+        'CTC' = @('imagenes/cuyo-noa/Catamarca.jpg', 'imagenes/cuyo-noa/Catamarca 1.jpg', 'imagenes/cuyo-noa/Catamarca 2.jpg')
         'CL8' = @('imagenes/cuyo-noa/La Rioja.jpg', 'imagenes/cuyo-noa/La Rioja 1.jpg', 'imagenes/cuyo-noa/La Rioja 2.jpg')
         'JUJ' = @('imagenes/cuyo-noa/Jujuy.jpg', 'imagenes/cuyo-noa/Jujuy 1.jpg', 'imagenes/cuyo-noa/Jujuy 2.jpg')
         'CL5' = @('imagenes/cuyo-noa/Salta.jpg', 'imagenes/cuyo-noa/Salta 1.jpg', 'imagenes/cuyo-noa/Salta 2.jpg')
@@ -338,22 +378,18 @@ function Build-CompleteData {
         } elseif ($regLower.Contains('pba') -or $regLower.Contains('buenos aires') -or $regLower.Contains('pampa')) {
             $regionKey = 'pba'
             $regionNorm = 'Provincia de Buenos Aires / La Pampa'
-        } elseif ($regLower.Contains('metro') -or $regLower.Contains('amba')) {
+        } elseif ($regLower.Contains('amba') -or $regLower.Contains('metropolitana')) {
             $regionKey = 'amba'
             $regionNorm = 'Metropolitana (AMBA)'
         } else {
-            $regionKey = 'nacional'
-            $regionNorm = $region
+            $regionKey = 'amba'
+            $regionNorm = 'Metropolitana (AMBA)'
         }
 
-        # Superficie m2 (Col I)
         $m2Num = Parse-Num $p.I
-
-        # Dotaciones oficiales directas de Analisis plantas (Col J = Dotacion Total, Col K = Dotacion Auxiliares)
         $dotTotal = [int](Parse-Num $p.J)
         $dotAux = [int](Parse-Num $p.K)
 
-        # Turnos directos de Solapa Plantas
         function Get-ValOrZero($v) {
             if ($v -eq $null -or $v -eq '' -or $v.ToString().ToLower() -eq 'no' -or $v.ToString().ToLower() -eq 'no hay') { return 0 }
             $num = 0
@@ -368,7 +404,6 @@ function Build-CompleteData {
         $jT = Get-ValOrZero $p.S
         $aT = Get-ValOrZero $p.T
 
-        # Si hay personal administrativo/jefatura no asignado a franja operativa, se consolida en Turno Mañana (horario central)
         $sumaActual = $jN + $aN + $jM + $aM + $jT + $aT
         $diffPlant = $dotTotal - $sumaActual
         if ($diffPlant -gt 0) {
@@ -418,7 +453,7 @@ function Build-CompleteData {
             seguridadObservaciones = Clean-Str $p.AK
         }
 
-        # Optimización (de Sheet 6)
+        # Optimización
         $opt = $plantasOptimizacion[$cod.ToUpper()]
         if (!$opt) { $opt = @{} }
 
@@ -463,8 +498,7 @@ function Build-CompleteData {
                 ($cod -eq 'NIJ' -and $k -like '*PARANA*') -or
                 ($cod -eq 'RPQ' -and $k -like '*RESISTENCIA*') -or
                 ($cod -eq 'VMR' -and $k -like '*VILLA MARIA*') -or
-                ($cod -eq 'RCU' -and $k -like '*RIO CUARTO*')
-            ) {
+                ($cod -eq 'RCU' -and $k -like '*RIO CUARTO*')) {
                 $matchedRP = $rpPlantData[$k]
                 break
             }
@@ -518,28 +552,6 @@ function Build-CompleteData {
         $vtaStr = ("{0:N0}" -f [math]::Round($volVtaNum)).Replace(",", ".")
         $jurStr = ("{0:N0}" -f [math]::Round($volJurNum)).Replace(",", ".")
 
-        if ($cod -eq 'VAE') {
-            $capStr = '180 m²'
-            $piezStr = '444'
-            $vtaStr = '8'
-            $jurStr = '436'
-            $m2Num = 180
-            $volVtaNum = 18.9
-            $volJurNum = 816.9
-            $volTotalNum = 835.8
-        }
-        elseif ($cod -eq 'RGA') {
-            $capStr = '140 m²'
-            $piezStr = '380'
-            $vtaStr = '11'
-            $jurStr = '369'
-            $m2Num = 140
-            $volVtaNum = 0
-            $volJurNum = 0
-            $volTotalNum = 0
-            $ingEnvios = $null
-        }
-
         $slaMap = @{
             'C12' = @{ SLA = 95.4; FV = 80.3 }
             'CRD' = @{ SLA = 95.8; FV = 91.6 }
@@ -582,45 +594,7 @@ function Build-CompleteData {
         $calidadPlanta = $slaMap[$cod.ToUpper()]
         if (!$calidadPlanta) { $calidadPlanta = @{ SLA = 96.5; FV = 85.6 } }
 
-        $map2D = @{
-            'C12' = @{ Diario = 6876.5; Mensual = 151282 }
-            'CRD' = @{ Diario = 1258.3; Mensual = 27683 }
-            'REL' = @{ Diario = 1622.4; Mensual = 35693 }
-            'C15' = @{ Diario = 1373.4; Mensual = 30214 }
-            'BRC' = @{ Diario = 1084.6; Mensual = 23861 }
-            'VAE' = @{ Diario = 154.0; Mensual = 0 }
-            'RGA' = @{ Diario = 78.0; Mensual = 0 }
-            'C14' = @{ Diario = 9607.5; Mensual = 211365 }
-            'CL4' = @{ Diario = 2397.0; Mensual = 52734 }
-            'CL3' = @{ Diario = 7517.4; Mensual = 165383 }
-            'MER' = @{ Diario = 6419.8; Mensual = 141235 }
-            'PER' = @{ Diario = 3745.0; Mensual = 82390 }
-            'RSA' = @{ Diario = 917.2; Mensual = 20178 }
-            'DP2' = @{ Diario = 35894.2; Mensual = 789672 }
-            'DP3' = @{ Diario = 14703.4; Mensual = 323475 }
-            'DP4' = @{ Diario = 37125.5; Mensual = 816760 }
-            'DP5' = @{ Diario = 27520.9; Mensual = 605459 }
-            'DP6' = @{ Diario = 10855.2; Mensual = 238815 }
-            'CL6' = @{ Diario = 6426.5; Mensual = 141383 }
-            'UAQ' = @{ Diario = 4994.1; Mensual = 109870 }
-            'LUQ' = @{ Diario = 954.1; Mensual = 20991 }
-            'CTC' = @{ Diario = 3609.4; Mensual = 79407 }
-            'CL8' = @{ Diario = 358.2; Mensual = 7880 }
-            'JUJ' = @{ Diario = 521.9; Mensual = 11481 }
-            'CL5' = @{ Diario = 1420.6; Mensual = 31253 }
-            'C11' = @{ Diario = 737.5; Mensual = 16224 }
-            'C10' = @{ Diario = 1004.5; Mensual = 22100 }
-            'ROL' = @{ Diario = 11274.9; Mensual = 248047 }
-            'CL9' = @{ Diario = 6648.8; Mensual = 146274 }
-            'C13' = @{ Diario = 950.0; Mensual = 20899 }
-            'NCQ' = @{ Diario = 2409.2; Mensual = 53002 }
-            'CL7' = @{ Diario = 5174.4; Mensual = 113836 }
-            'NIJ' = @{ Diario = 1983.2; Mensual = 43630 }
-            'RPQ' = @{ Diario = 1292.3; Mensual = 28431 }
-            'VMR' = @{ Diario = 591.6; Mensual = 13015 }
-            'RCU' = @{ Diario = 655.0; Mensual = 14411 }
-        }
-
+        # Match 2D volume
         $info2D = $map2D[$cod.ToUpper()]
         $v2d_d = if ($info2D) { [double]$info2D.Diario } else { 0.0 }
         $v2d_m = if ($info2D) { [double]$info2D.Mensual } else { 0.0 }
@@ -675,7 +649,7 @@ function Build-CompleteData {
         $nodosDataset += $nodo
     }
 
-    # Especiales BUE y TRT
+    # 7. APPEND SPECIAL NODES (BUE y TRT)
     $nodoBUE = @{
         id = "bue"
         cod = "BUE"
@@ -753,9 +727,9 @@ function Build-CompleteData {
     $nodosDataset += $nodoBUE
     $nodosDataset += $nodoTRT
 
-    # Resumen nacional
+    # 8. RESUMEN NACIONAL
     $totVta = 0.0; $totJur = 0.0; $totVol = 0.0; $totDot = 0; $totAux = 0; $totM2 = 0
-    foreach ($n in $nodosDataset) {
+    foreach ($n in ($nodosDataset | Where-Object { -not $_.isSpecialEstanco })) {
         $totVta += $n.volumenVentaNum
         $totJur += $n.volumenJurisdiccionNum
         $totVol += $n.volumenTotalNum
@@ -767,7 +741,7 @@ function Build-CompleteData {
     $resumenNacional = @{
         totalAuxiliaresOperativos = $totAux
         totalDotacion = $totDot
-        totalPlantas = $nodosDataset.Count
+        totalPlantas = ($nodosDataset | Where-Object { -not $_.isSpecialEstanco }).Count
         totalSuperficieM2 = $totM2
         totalImposicionDiaria = $totVta
         totalJurisdiccionDiaria = $totJur
@@ -783,29 +757,17 @@ function Build-CompleteData {
     }
 
     Write-Output "=== TOTALES GENERADOS ==="
-    Write-Output "Total Plantas: $($nodosDataset.Count)"
-    Write-Output "Total Imposición Diaria (Q piezas): $totVta"
-    Write-Output "Total Jurisdicción Diaria (Q piezas): $totJur"
-    Write-Output "Total Volumen Diario: $totVol"
-    Write-Output "Total Dotación: $totDot"
-    Write-Output "Total Auxiliares Operativos: $totAux"
-    Write-Output "Total Superficie: $totM2 m2"
+    Write-Output "Total Plantas: $($nodosDataset.Count) (36 auditadas + 2 estanco BUE y TRT)"
+    Write-Output "Total Imposición Diaria: $totVta"
+    Write-Output "Total Jurisdicción Diaria: $totJur"
+    Write-Output "Total Volumen Diario Paquetería: $totVol"
     Write-Output "Total Líneas Transporte: $($regionalTransportes.Count)"
 
-    $ltc_ltn = $regionalTransportes | Where-Object { 
-        $_.tipoServicio -like 'LTC*' -or $_.tipoServicio -like 'LTN*' -or 
-        $_.linea -like 'LTC*' -or $_.linea -like 'LTN*'
-    }
-    Write-Output "Total LTC + LTN: $($ltc_ltn.Count)"
-
-    # Export JSON
+    # 9. EXPORT DATASETS
     $jsonDataset = ConvertTo-Json -InputObject $nodosDataset -Depth 10
-    $jsonDataset = [regex]::Replace($jsonDataset, '\"fotos\":\s*\"([^\"]+)\"', '"fotos": [ "$1" ]')
     [System.IO.File]::WriteAllText('data/nodos_dataset.json', $jsonDataset, [System.Text.Encoding]::UTF8)
 
-    # Export JS
     $jsonNodosPretty = ConvertTo-Json -InputObject $nodosDataset -Depth 10
-    $jsonNodosPretty = [regex]::Replace($jsonNodosPretty, '\"fotos\":\s*\"([^\"]+)\"', '"fotos": [ "$1" ]')
     $jsonResumenEjecPretty = ConvertTo-Json -InputObject @{ regiones = $resumenEjecutivo; nacional = $resumenNacional } -Depth 10
     $jsonTransportPretty = ConvertTo-Json -InputObject $regionalTransportes -Depth 10
 
@@ -815,6 +777,7 @@ function Build-CompleteData {
         "// Extraccion de:",
         "// - data/Analisis plantas Logisticas act..xlsx (Dotaciones, Turnos, Procesos, Jefaturas, Inmuebles, Red Transporte)",
         "// - data/RESUMEN_PAIS_UM_MAS_6.3 3.xlsx (Valores de Q de Piezas Maquinables, No Maquinables y Ultima Milla)",
+        "// - data/Info Plantas julio.xlsx (Volumen Piezas Postales 2D Diario y Mensual)",
         "// =============================================================",
         "",
         "const NODOS_DATA_OFICIAL = $jsonNodosPretty;",
@@ -836,7 +799,7 @@ function Build-CompleteData {
 
     [System.IO.File]::WriteAllText('data/nodos-data.js', $jsContent, [System.Text.Encoding]::UTF8)
     [System.IO.File]::WriteAllText('nodos-data.js', $jsContent, [System.Text.Encoding]::UTF8)
-    Write-Output "Files exported successfully!"
+    Write-Output "Files exported successfully with full transport and 2D postal volume!"
 }
 
 Build-CompleteData

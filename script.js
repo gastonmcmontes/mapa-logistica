@@ -43,7 +43,7 @@ const BND_ARGENTINA = [
 ];
 
 // Nodos del AMBA para agrupamiento inteligente en vistas nacionales/lejanas
-const IDS_AMBA = ["dp2", "dp3", "dp4", "dp5", "dp6", "c14", "mer"];
+const IDS_AMBA = ["dp2", "dp3", "dp4", "dp5", "dp6", "c14", "mer", "bue", "trt"];
 
 // =============================================================
 // 3. INICIALIZACIÓN DEL MAPA LEAFLET
@@ -519,9 +519,11 @@ function centrarEnRegion(region) {
 // KPI CALCULATION AND AGGREGATION FROM EXCEL DATASET
 // =============================================================
 function actualizarKPIs(regionKey = "nacional") {
-  let filtrados = nodosData;
+  // Solo los 36 nodos auditados estándar para mantener la integridad total del mapa y analítica nacional
+  const datasetEstandar = nodosData.filter(n => !n.isSpecialEstanco);
+  let filtrados = datasetEstandar;
   if (regionKey && regionKey !== "nacional") {
-    filtrados = nodosData.filter(n => n.regionKey === regionKey);
+    filtrados = datasetEstandar.filter(n => n.regionKey === regionKey);
   }
 
   const cantNodos = filtrados.length;
@@ -549,7 +551,17 @@ function actualizarKPIs(regionKey = "nacional") {
 
   const totDotacion = filtrados.reduce((s, n) => s + (n.dotacionTotal || 0), 0);
   const totAuxiliares = filtrados.reduce((s, n) => s + (n.dotacionAuxiliares || 0), 0);
-  const totM2 = filtrados.reduce((s, n) => s + (n.capacidadM2 || 0), 0);
+  
+  // Total de superficie sobre la totalidad de centros logísticos (incluye BUE, TRT, TDF y toda la red)
+  const datasetSuperficie = (regionKey === "nacional" || !regionKey)
+    ? nodosData
+    : nodosData.filter(n => n.regionKey === regionKey);
+  const totM2 = datasetSuperficie.reduce((s, n) => {
+    const num = (typeof n.capacidadM2 === "number" && n.capacidadM2 > 0)
+      ? n.capacidadM2
+      : (n.capacidad ? parseFloat(n.capacidad.replace(/[^0-9]/g, "")) : 0);
+    return s + (num || 0);
+  }, 0);
 
   const cantClog = filtrados.filter(n => n.tipo === "CLOG").length;
   const cantCtp = filtrados.filter(n => n.tipo === "CTP").length;
@@ -631,9 +643,18 @@ function parseNumero(v) {
   return parseFloat(clean) || 0;
 }
 
-// =============================================================
-// 9. DETALLE DEL NODO AL HACER CLICK (POPUP CON FOTO)
-// =============================================================
+// Helper robusto para obtener siempre un array de URLs de fotos
+function obtenerFotosNodo(nodo) {
+  if (!nodo) return ["imagenes/placeholder.jpg"];
+  if (Array.isArray(nodo.fotos)) {
+    return nodo.fotos.length > 0 ? nodo.fotos : ["imagenes/placeholder.jpg"];
+  }
+  if (typeof nodo.fotos === "string" && nodo.fotos.trim().length > 0) {
+    return [nodo.fotos.trim()];
+  }
+  return ["imagenes/placeholder.jpg"];
+}
+
 function abrirDetalleNodo(nodo, nodosHermano = null) {
   nodoActivo = nodo;
 
@@ -659,9 +680,9 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   const elBadgeTipo = document.getElementById("popup-badge-tipo");
   if (elBadgeTipo) elBadgeTipo.textContent = formatearTipoBadge(nodo.tipo);
 
-  // Foto del nodo (o fallback a placeholder)
+  // Foto del nodo (o fallback a placeholder con soporte de array o string)
   const imgEl = document.getElementById("popup-img");
-  const fotos = (nodo.fotos && nodo.fotos.length > 0) ? nodo.fotos : ["imagenes/placeholder.jpg"];
+  const fotos = obtenerFotosNodo(nodo);
   fotoActualIdx = 0;
   if (imgEl) imgEl.src = fotos[0];
 
@@ -757,22 +778,53 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   const elEstado = document.getElementById("popup-estado");
   if (elEstado) elEstado.textContent = nodo.operatividad || "24 / 7";
 
-  // Calidad de Servicio Paq.AR y FV del Maestro KPIs
-  const elSlaVal = document.getElementById("popup-sla-val");
-  const elFvVal = document.getElementById("popup-fv-val");
-  if (elSlaVal) {
-    const sla = (nodo.calidad && nodo.calidad.slaPaqAr !== undefined) ? nodo.calidad.slaPaqAr : 96.5;
-    elSlaVal.textContent = `${sla.toString().replace(".", ",")}%`;
-  }
-  if (elFvVal) {
-    const fv = (nodo.calidad && nodo.calidad.fvPaqAr !== undefined) ? nodo.calidad.fvPaqAr : 85.4;
-    elFvVal.textContent = `${fv.toString().replace(".", ",")}%`;
+  // Piezas Postales 2D (Info Plantas Julio - Columna G)
+  const secPostal2D = document.getElementById("popup-postal2d-section");
+  const elPostal2DVal = document.getElementById("pop-postal2d-val");
+  const elPostal2DSub = document.getElementById("pop-postal2d-sub");
+  if (secPostal2D) {
+    if (nodo.volumen2DNum !== undefined && nodo.volumen2DNum !== null && nodo.volumen2DNum > 0) {
+      if (elPostal2DVal) elPostal2DVal.textContent = Math.round(nodo.volumen2DNum).toLocaleString("es-AR");
+      if (elPostal2DSub) {
+        if (nodo.volumen2dMensualNum) {
+          elPostal2DSub.textContent = `Volumen Mensual: ${Math.round(nodo.volumen2dMensualNum).toLocaleString("es-AR")} piezas 2D`;
+        } else {
+          elPostal2DSub.textContent = "Volumen diario auditado";
+        }
+      }
+      secPostal2D.style.display = "block";
+    } else {
+      secPostal2D.style.display = "none";
+    }
   }
 
-  // Turnos Reales del Excel (Total de personal sin discriminar jerárquicos / auxiliares)
+  // Calidad de Servicio Paq.AR y FV del Maestro KPIs (Solo para los 36 nodos auditados con datos)
+  const secCalidad = document.getElementById("popup-calidad-section");
+  const elSlaVal = document.getElementById("popup-sla-val");
+  const elFvVal = document.getElementById("popup-fv-val");
+  if (secCalidad) {
+    if (nodo.calidad && nodo.calidad.slaPaqAr !== undefined && nodo.calidad.fvPaqAr !== undefined && !nodo.isSpecialEstanco) {
+      if (elSlaVal) elSlaVal.textContent = `${nodo.calidad.slaPaqAr.toString().replace(".", ",")}%`;
+      if (elFvVal) elFvVal.textContent = `${nodo.calidad.fvPaqAr.toString().replace(".", ",")}%`;
+      secCalidad.style.display = "block";
+    } else {
+      secCalidad.style.display = "none";
+    }
+  }
+
+  // Turnos Reales del Excel (Ocultar si no aplica o no hay datos)
+  const secTurnos = document.getElementById("popup-turnos-section");
   const tNoche = nodo.turnos?.noche;
   const tManana = nodo.turnos?.manana;
   const tTarde = nodo.turnos?.tarde;
+
+  if (secTurnos) {
+    if (nodo.turnos && (tNoche || tManana || tTarde) && !nodo.isSpecialEstanco) {
+      secTurnos.style.display = "block";
+    } else {
+      secTurnos.style.display = "none";
+    }
+  }
 
   function formatDotacionTurno(t) {
     if (!t) return "0 personas";
@@ -800,6 +852,11 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   if (elTardeD) elTardeD.textContent = formatDotacionTurno(tTarde);
 
   // Procesos
+  const procGrid = document.querySelector(".popup-procesos-grid");
+  if (procGrid) {
+    procGrid.style.display = (nodo.isSpecialEstanco || !nodo.procesos) ? "none" : "flex";
+  }
+
   function updateProcBadge(id, val) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -819,16 +876,24 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   if (elJefePlanta) elJefePlanta.textContent = nodo.responsables?.jefePlanta || "No especificado";
 
   const elJefeNodo = document.getElementById("popup-jefe-nodo");
+  const respNodoWrap = elJefeNodo?.closest(".resp-item");
+  if (respNodoWrap) {
+    respNodoWrap.style.display = (nodo.isSpecialEstanco || !nodo.responsables?.jefeNodo || nodo.responsables.jefeNodo === nodo.responsables?.jefePlanta) ? "none" : "flex";
+  }
   if (elJefeNodo) elJefeNodo.textContent = nodo.responsables?.jefeNodo || "No especificado";
 
   const elInmueble = document.getElementById("popup-inmueble");
   if (elInmueble) {
-    elInmueble.textContent = nodo.inmueble?.alquilada ? `Alquilada (${nodo.inmueble.alquilada})` : "Inmueble Operativo / Propio";
+    elInmueble.textContent = nodo.inmueble?.alquilada ? (nodo.inmueble.alquilada === "Propio" ? "Inmueble Propio" : `Alquilada (${nodo.inmueble.alquilada})`) : "Inmueble Operativo";
   }
 
   const elAlmacen = document.getElementById("popup-almacenamiento");
   if (elAlmacen) {
-    const detalles = [nodo.inmueble?.almacenamiento, nodo.inmueble?.racks, nodo.inmueble?.seguridad].filter(Boolean);
+    const detalles = [
+      nodo.inmueble?.almacenamiento,
+      nodo.inmueble?.racks,
+      nodo.inmueble?.seguridadObservaciones || nodo.inmueble?.seguridad
+    ].filter(Boolean);
     elAlmacen.textContent = detalles.length > 0 ? detalles.join(" · ") : "Estándar operativo";
   }
 
@@ -844,20 +909,54 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
       const elUm = document.getElementById("pop-ing-um");
       const elUmSub = document.getElementById("pop-ing-um-sub");
 
-      // Tarjeta 1: Columna H (Ingreso promedio diario maquinable)
-      const valMaq = Math.round(ing.diarioMaquinable || 0);
-      if (elMaq) elMaq.textContent = `${valMaq.toLocaleString("es-AR")} / día`;
-      if (elMaqSub) elMaqSub.textContent = ing.impoMensualMaquinable ? `${Math.round(ing.impoMensualMaquinable).toLocaleString("es-AR")} mensual` : "";
+      const elMaqLbl = document.getElementById("pop-ing-maq-lbl");
+      const elNoMaqLbl = document.getElementById("pop-ing-nomaq-lbl");
+      const elUmLbl = document.getElementById("pop-ing-um-lbl");
 
-      // Tarjeta 2: Columna I (Ingreso promedio diario no maquinable)
-      const valNoMaq = Math.round(ing.diarioNoMaquinable || 0);
-      if (elNoMaq) elNoMaq.textContent = `${valNoMaq.toLocaleString("es-AR")} / día`;
-      if (elNoMaqSub) elNoMaqSub.textContent = ing.impoMensualNoMaquinable ? `${Math.round(ing.impoMensualNoMaquinable).toLocaleString("es-AR")} mensual` : "";
+      if (nodo.id === "trt") {
+        if (elMaqLbl) elMaqLbl.textContent = "Impo Volumen";
+        if (elMaq) elMaq.textContent = `${Math.round(ing.impoMensual / 22 || 3851).toLocaleString("es-AR")} / día`;
+        if (elMaqSub) elMaqSub.textContent = `${Math.round(ing.impoMensual).toLocaleString("es-AR")} mensual`;
 
-      // Tarjeta 3: Columna J (Ingreso promedio diario última milla)
-      const valUm = Math.round(ing.diarioUltimaMilla || 0);
-      if (elUm) elUm.textContent = `${valUm.toLocaleString("es-AR")} / día`;
-      if (elUmSub) elUmSub.textContent = ing.ingresoMensualUltimaMilla ? `${Math.round(ing.ingresoMensualUltimaMilla).toLocaleString("es-AR")} mensual` : "";
+        if (elNoMaqLbl) elNoMaqLbl.textContent = "No Maquinable";
+        if (elNoMaq) elNoMaq.textContent = `${Math.round(ing.diarioNoMaquinable || 2774).toLocaleString("es-AR")} / día`;
+        if (elNoMaqSub) elNoMaqSub.textContent = `${Math.round(ing.impoMensualNoMaquinable || 61033).toLocaleString("es-AR")} mensual`;
+
+        if (elUmLbl) elUmLbl.textContent = "Imposición Directa";
+        if (elUm) elUm.textContent = `${Math.round(ing.diarioUltimaMilla || 2754).toLocaleString("es-AR")} / día`;
+        if (elUmSub) elUmSub.textContent = `${Math.round(ing.ingresoMensualUltimaMilla || 60593).toLocaleString("es-AR")} mensual`;
+      } else if (nodo.id === "bue") {
+        if (elMaqLbl) elMaqLbl.textContent = "Proceso Maquinable";
+        if (elMaq) elMaq.textContent = `${Math.round(ing.diarioMaquinable).toLocaleString("es-AR")} / día`;
+        if (elMaqSub) elMaqSub.textContent = `${Math.round(ing.impoMensualMaquinable).toLocaleString("es-AR")} mensual`;
+
+        if (elNoMaqLbl) elNoMaqLbl.textContent = "Proceso No Maquinable";
+        if (elNoMaq) elNoMaq.textContent = `${Math.round(ing.diarioNoMaquinable).toLocaleString("es-AR")} / día`;
+        if (elNoMaqSub) elNoMaqSub.textContent = `${Math.round(ing.impoMensualNoMaquinable).toLocaleString("es-AR")} mensual`;
+
+        if (elUmLbl) elUmLbl.textContent = "Imposición";
+        if (elUm) elUm.textContent = `${Math.round(ing.diarioUltimaMilla).toLocaleString("es-AR")} / día`;
+        if (elUmSub) elUmSub.textContent = `${Math.round(ing.ingresoMensualUltimaMilla).toLocaleString("es-AR")} mensual`;
+      } else {
+        if (elMaqLbl) elMaqLbl.textContent = "Maquinable";
+        if (elNoMaqLbl) elNoMaqLbl.textContent = "No Maquinable";
+        if (elUmLbl) elUmLbl.textContent = "Promedio diario última milla";
+
+        // Tarjeta 1: Columna H (Ingreso promedio diario maquinable)
+        const valMaq = Math.round(ing.diarioMaquinable || 0);
+        if (elMaq) elMaq.textContent = `${valMaq.toLocaleString("es-AR")} / día`;
+        if (elMaqSub) elMaqSub.textContent = ing.impoMensualMaquinable ? `${Math.round(ing.impoMensualMaquinable).toLocaleString("es-AR")} mensual` : "";
+
+        // Tarjeta 2: Columna I (Ingreso promedio diario no maquinable)
+        const valNoMaq = Math.round(ing.diarioNoMaquinable || 0);
+        if (elNoMaq) elNoMaq.textContent = `${valNoMaq.toLocaleString("es-AR")} / día`;
+        if (elNoMaqSub) elNoMaqSub.textContent = ing.impoMensualNoMaquinable ? `${Math.round(ing.impoMensualNoMaquinable).toLocaleString("es-AR")} mensual` : "";
+
+        // Tarjeta 3: Columna J (Ingreso promedio diario última milla)
+        const valUm = Math.round(ing.diarioUltimaMilla || 0);
+        if (elUm) elUm.textContent = `${valUm.toLocaleString("es-AR")} / día`;
+        if (elUmSub) elUmSub.textContent = ing.ingresoMensualUltimaMilla ? `${Math.round(ing.ingresoMensualUltimaMilla).toLocaleString("es-AR")} mensual` : "";
+      }
 
       secIngresos.style.display = "block";
     } else {
@@ -996,7 +1095,7 @@ function actualizarFotoPopup(fotos) {
 function popupFotoAnterior(e) {
   if (e) e.stopPropagation();
   if (!nodoActivo) return;
-  const fotos = nodoActivo.fotos || ["imagenes/placeholder.jpg"];
+  const fotos = obtenerFotosNodo(nodoActivo);
   fotoActualIdx = (fotoActualIdx - 1 + fotos.length) % fotos.length;
   actualizarFotoPopup(fotos);
 }
@@ -1004,7 +1103,7 @@ function popupFotoAnterior(e) {
 function popupFotoSiguiente(e) {
   if (e) e.stopPropagation();
   if (!nodoActivo) return;
-  const fotos = nodoActivo.fotos || ["imagenes/placeholder.jpg"];
+  const fotos = obtenerFotosNodo(nodoActivo);
   fotoActualIdx = (fotoActualIdx + 1) % fotos.length;
   actualizarFotoPopup(fotos);
 }
@@ -1033,20 +1132,20 @@ function cerrarGaleriaOverlay(e) {
 
 function fotoAnterior() {
   if (!nodoActivo) return;
-  const fotos = nodoActivo.fotos || ["imagenes/placeholder.jpg"];
+  const fotos = obtenerFotosNodo(nodoActivo);
   fotoActualIdx = (fotoActualIdx - 1 + fotos.length) % fotos.length;
   actualizarVistaGaleria();
 }
 
 function fotoSiguiente() {
   if (!nodoActivo) return;
-  const fotos = nodoActivo.fotos || ["imagenes/placeholder.jpg"];
+  const fotos = obtenerFotosNodo(nodoActivo);
   fotoActualIdx = (fotoActualIdx + 1) % fotos.length;
   actualizarVistaGaleria();
 }
 
 function actualizarVistaGaleria() {
-  const fotos = (nodoActivo && nodoActivo.fotos && nodoActivo.fotos.length) ? nodoActivo.fotos : ["imagenes/placeholder.jpg"];
+  const fotos = obtenerFotosNodo(nodoActivo);
   document.getElementById("gal-img").src = fotos[fotoActualIdx];
   document.getElementById("gal-titulo").textContent = nodoActivo ? (nodoActivo.nombreCompleto || nodoActivo.nombre) : "Fotografía de Instalaciones";
   document.getElementById("gal-sub").textContent = nodoActivo ? `${nodoActivo.provincia} · ${nodoActivo.tipo}` : "";
@@ -1093,10 +1192,11 @@ function filtrarTipoNodo(tipo) {
   // 2. Actualizar badge de estado
   const statusEl = document.getElementById("filtro-tipo-status");
   if (statusEl) {
+    const cantTotalStd = nodosData.filter(n => !n.isSpecialEstanco).length;
     if (!tipoFiltroActivo) {
-      statusEl.textContent = `Mostrando todas (${nodosData.length} plantas)`;
+      statusEl.textContent = `Mostrando todas (${cantTotalStd} plantas)`;
     } else {
-      const cant = nodosData.filter(n => {
+      const cant = nodosData.filter(n => !n.isSpecialEstanco).filter(n => {
         if (tipoFiltroActivo === "CLOG") return n.tipo === "CLOG";
         if (tipoFiltroActivo === "CDP") return n.tipo === "CDP" || n.tipo === "DP";
         if (tipoFiltroActivo === "CTP") return n.tipo === "CTP";

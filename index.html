@@ -480,12 +480,35 @@
           </div>
           <div class="pstat">
             <span class="pstat-val" id="popup-piezas">42.000</span>
-            <span class="pstat-lbl" id="popup-piezas-lbl">Promedio diario</span>
+            <span class="pstat-lbl" id="popup-piezas-lbl">Promedio diario paquetería</span>
             <span class="pstat-sub" id="popup-piezas-sub">Envíos / día</span>
           </div>
           <div class="pstat">
             <span class="pstat-val" id="popup-dotacion">53</span>
             <span class="pstat-lbl" id="popup-dotacion-lbl">Dotación total</span>
+          </div>
+        </div>
+
+        <!-- Piezas Postales 2D (Auditado) -->
+        <div class="popup-section-card" id="popup-postal2d-section" style="display:none;">
+          <h4 class="popup-sec-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+            Volumen Piezas Postales 2D (Auditado)
+          </h4>
+          <div class="popup-postal2d-box">
+            <div class="postal2d-stat-row">
+              <div>
+                <span class="postal2d-val" id="pop-postal2d-val">-</span>
+                <span class="postal2d-unit">piezas postales 2D / día</span>
+              </div>
+              <span class="postal2d-badge" id="pop-postal2d-badge">Promedio Diario 2D</span>
+            </div>
+            <div class="postal2d-footer">
+              <span id="pop-postal2d-sub">-</span>
+              <span class="postal2d-tag-note">Correspondencia tradicional 2D · Separado de Paquetería</span>
+            </div>
           </div>
         </div>
 
@@ -595,17 +618,17 @@
           <div class="popup-ingresos-grid">
             <div class="pstat-subcard">
               <span class="pstat-subcard-val" id="pop-ing-maq">-</span>
-              <span class="pstat-subcard-lbl">Maquinable</span>
+              <span class="pstat-subcard-lbl" id="pop-ing-maq-lbl">Maquinable</span>
               <span class="pstat-subcard-sub" id="pop-ing-maq-sub">-</span>
             </div>
             <div class="pstat-subcard">
               <span class="pstat-subcard-val" id="pop-ing-nomaq">-</span>
-              <span class="pstat-subcard-lbl">No Maquinable</span>
+              <span class="pstat-subcard-lbl" id="pop-ing-nomaq-lbl">No Maquinable</span>
               <span class="pstat-subcard-sub" id="pop-ing-nomaq-sub">-</span>
             </div>
             <div class="pstat-subcard">
               <span class="pstat-subcard-val" id="pop-ing-um">-</span>
-              <span class="pstat-subcard-lbl">Promedio diario última milla</span>
+              <span class="pstat-subcard-lbl" id="pop-ing-um-lbl">Promedio diario última milla</span>
               <span class="pstat-subcard-sub" id="pop-ing-um-sub">-</span>
             </div>
           </div>

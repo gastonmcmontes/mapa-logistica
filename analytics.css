@@ -211,7 +211,7 @@
 
 @media (min-width: 1600px) {
   .analytics-kpis-grid {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(8, 1fr);
   }
 }
 
@@ -283,6 +283,11 @@
 .akpi-card.card-fv {
   border-left: 4px solid #0284c7;
   background: linear-gradient(180deg, #ffffff 55%, #f0f9ff 100%);
+}
+
+.akpi-card.card-postal2d {
+  border-left: 4px solid #6366f1;
+  background: linear-gradient(180deg, #ffffff 55%, #f5f3ff 100%);
 }
 
 .akpi-card.card-rendimiento {
