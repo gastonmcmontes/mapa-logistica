@@ -1332,7 +1332,9 @@ const NODOS_DATA_OFICIAL = [
                         "slaPaqArStr":  "94.4%"
                     },
         "nombreCompleto":  "RIO GRANDE",
-        "fotos": [ "imagenes/sur/RIO_GRANDE_1.jpg" ],
+        "fotos":  [
+                      "imagenes/sur/RIO_GRANDE_1.jpg"
+                  ],
         "responsables":  {
                              "jefeNodo":  "",
                              "jefePlanta":  ""
@@ -2873,12 +2875,12 @@ const NODOS_DATA_OFICIAL = [
                               "diarioUltimaMilla":  5006.42628571428,
                               "impoMensualNoMaquinable":  14997.95982993713
                           },
-        "lat":  -34.7139416,
+        "lat":  -34.7226221,
         "transportes":  [
 
                         ],
         "dotacionAuxiliares":  39,
-        "lng":  -58.4939291,
+        "lng":  -58.2823639,
         "calidad":  {
                         "fvPaqAr":  86.6,
                         "fvPaqArStr":  "86.6%",
@@ -2970,12 +2972,12 @@ const NODOS_DATA_OFICIAL = [
                               "diarioUltimaMilla":  8206.00566666667,
                               "impoMensualNoMaquinable":  30688.2174471907
                           },
-        "lat":  -34.6304111,
+        "lat":  -34.7139416,
         "transportes":  [
 
                         ],
         "dotacionAuxiliares":  57,
-        "lng":  -58.7644768,
+        "lng":  -58.4939291,
         "calidad":  {
                         "fvPaqAr":  92.8,
                         "fvPaqArStr":  "92.8%",
@@ -3067,12 +3069,12 @@ const NODOS_DATA_OFICIAL = [
                               "diarioUltimaMilla":  4476.69795238095,
                               "impoMensualNoMaquinable":  18754.630951908832
                           },
-        "lat":  -34.5179159,
+        "lat":  -34.6304111,
         "transportes":  [
 
                         ],
         "dotacionAuxiliares":  42,
-        "lng":  -58.5133463,
+        "lng":  -58.7644768,
         "calidad":  {
                         "fvPaqAr":  88,
                         "fvPaqArStr":  "88%",
@@ -3163,12 +3165,12 @@ const NODOS_DATA_OFICIAL = [
                               "diarioUltimaMilla":  6761.03433333333,
                               "impoMensualNoMaquinable":  17507.734904879104
                           },
-        "lat":  -34.7226221,
+        "lat":  -34.5179159,
         "transportes":  [
 
                         ],
         "dotacionAuxiliares":  40,
-        "lng":  -58.2823639,
+        "lng":  -58.5133463,
         "calidad":  {
                         "fvPaqAr":  90,
                         "fvPaqArStr":  "90%",
