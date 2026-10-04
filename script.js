@@ -765,7 +765,7 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
     elSlaVal.textContent = `${sla.toString().replace(".", ",")}%`;
   }
   if (elFvVal) {
-    const fv = (nodo.calidad && nodo.calidad.fvPaqAr !== undefined) ? nodo.calidad.fvPaqAr : 85.6;
+    const fv = (nodo.calidad && nodo.calidad.fvPaqAr !== undefined) ? nodo.calidad.fvPaqAr : 85.4;
     elFvVal.textContent = `${fv.toString().replace(".", ",")}%`;
   }
 

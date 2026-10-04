@@ -252,14 +252,23 @@ document.addEventListener("DOMContentLoaded", () => {
     data.forEach(n => {
       const vol = (n.volumenTotalNum && n.volumenTotalNum > 0) ? n.volumenTotalNum : 1;
       const slaVal = (n.calidad && n.calidad.slaPaqAr !== undefined) ? n.calidad.slaPaqAr : 96.5;
-      const fvVal = (n.calidad && n.calidad.fvPaqAr !== undefined) ? n.calidad.fvPaqAr : 85.6;
+      const fvVal = (n.calidad && n.calidad.fvPaqAr !== undefined) ? n.calidad.fvPaqAr : 85.4;
       totalSlaWeight += slaVal * vol;
       totalFvWeight += fvVal * vol;
       totalWeight += vol;
     });
 
+    const REGION_FV_OFICIAL = {
+      "nacional": 85.4,
+      "amba": 88.9,
+      "pba": 87.0,
+      "cuyo": 83.0,
+      "patagonia": 82.9,
+      "centro": 82.6
+    };
+
     const slaProm = regionKey === "nacional" ? 96.5 : (totalWeight > 0 ? (totalSlaWeight / totalWeight) : 96.5);
-    const fvProm = regionKey === "nacional" ? 85.6 : (totalWeight > 0 ? (totalFvWeight / totalWeight) : 85.6);
+    const fvProm = REGION_FV_OFICIAL[regionKey] !== undefined ? REGION_FV_OFICIAL[regionKey] : (totalWeight > 0 ? (totalFvWeight / totalWeight) : 85.4);
 
     if (elSla) elSla.textContent = `${slaProm.toFixed(1).replace(".", ",")}%`;
     if (elSlaSub) {
@@ -292,8 +301,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const elFvAle = document.getElementById("kpi-fv-nodos-alerta");
 
     if (elFvNac) elFvNac.textContent = `${fvProm.toFixed(1).replace(".", ",")}%`;
-    const nodosFvOptimo = data.filter(n => (n.calidad?.fvPaqAr || 85.6) >= 85).length;
-    const nodosFvAlerta = data.filter(n => (n.calidad?.fvPaqAr || 85.6) < 80).length;
+    const nodosFvOptimo = data.filter(n => (n.calidad?.fvPaqAr || 85.4) >= 85).length;
+    const nodosFvAlerta = data.filter(n => (n.calidad?.fvPaqAr || 85.4) < 80).length;
     if (elFvOpt) elFvOpt.textContent = `${nodosFvOptimo} / ${data.length}`;
     if (elFvAle) elFvAle.textContent = `${nodosFvAlerta} / ${data.length}`;
   }
@@ -847,7 +856,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tn = (parseInt(p.turnos?.noche?.jerarquico || 0) || 0) + (parseInt(p.turnos?.noche?.auxiliares || 0) || 0);
 
       const slaVal = (p.calidad && p.calidad.slaPaqAr !== undefined) ? `${p.calidad.slaPaqAr.toString().replace(".", ",")}%` : "96,5%";
-      const fvVal = (p.calidad && p.calidad.fvPaqAr !== undefined) ? `${p.calidad.fvPaqAr.toString().replace(".", ",")}%` : "85,6%";
+      const fvVal = (p.calidad && p.calidad.fvPaqAr !== undefined) ? `${p.calidad.fvPaqAr.toString().replace(".", ",")}%` : "85,4%";
 
       tr.innerHTML = `
         <td><span class="table-pill-cod">${p.cod}</span></td>
@@ -1072,8 +1081,8 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (sortFvCol === "provincia") {
         va = `${a.provincia} ${a.region}`; vb = `${b.provincia} ${b.region}`;
       } else if (sortFvCol === "fv" || sortFvCol === "desvio") {
-        va = a.calidad?.fvPaqAr !== undefined ? a.calidad.fvPaqAr : 85.6;
-        vb = b.calidad?.fvPaqAr !== undefined ? b.calidad.fvPaqAr : 85.6;
+        va = a.calidad?.fvPaqAr !== undefined ? a.calidad.fvPaqAr : 85.4;
+        vb = b.calidad?.fvPaqAr !== undefined ? b.calidad.fvPaqAr : 85.4;
       } else if (sortFvCol === "volumen") {
         va = a.volumenTotalNum || 0; vb = b.volumenTotalNum || 0;
       } else {
@@ -1106,7 +1115,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (p.tipo === "CDP") tipoClass = "tipo-cdp-badge";
       if (p.tipo === "CTP") tipoClass = "tipo-ctp-badge";
 
-      const fvNum = p.calidad?.fvPaqAr !== undefined ? p.calidad.fvPaqAr : 85.6;
+      const fvNum = p.calidad?.fvPaqAr !== undefined ? p.calidad.fvPaqAr : 85.4;
       const fvStr = fvNum.toString().replace(".", ",");
       const diffNum = fvNum - 85.0;
       const diffStr = Math.abs(diffNum).toFixed(1).replace(".", ",");
