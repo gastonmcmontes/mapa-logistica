@@ -200,22 +200,28 @@
 }
 
 /* =====================================================
-   GRID DE 6 TARJETAS DE KPIS ANALÍTICOS
+   GRID DE 7 TARJETAS DE KPIS ANALÍTICOS
    ===================================================== */
 .analytics-kpis-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 14px;
   margin-bottom: 24px;
 }
 
-@media (max-width: 1400px) {
+@media (min-width: 1600px) {
   .analytics-kpis-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(7, 1fr);
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1400px) {
+  .analytics-kpis-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
   .analytics-kpis-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -267,6 +273,16 @@
 
 .akpi-card.card-turno {
   border-left: 4px solid #ea580c;
+}
+
+.akpi-card.card-sla {
+  border-left: 4px solid #16a34a;
+  background: linear-gradient(180deg, #ffffff 55%, #f0fdf4 100%);
+}
+
+.akpi-card.card-fv {
+  border-left: 4px solid #0284c7;
+  background: linear-gradient(180deg, #ffffff 55%, #f0f9ff 100%);
 }
 
 .akpi-card.card-rendimiento {
@@ -1149,4 +1165,97 @@
 .srv-bue { background-color: #fef3c7; color: #92400e; }
 .srv-atp { background-color: #fce7f3; color: #9d174d; }
 .srv-ltn { background-color: #dcfce7; color: #166534; }
+
+/* =====================================================
+   ESTILOS PARA MATRIZ Y CUADRO DE CALIDAD (SLA / FV)
+   ===================================================== */
+.cal-val-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.cal-val-num {
+  font-size: 13.5px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.cal-val-num.sla-color {
+  color: #15803d;
+}
+
+.cal-val-num.fv-color {
+  color: #0369a1;
+}
+
+.cal-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cal-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.cal-progress-fill.sla-fill {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.cal-progress-fill.fv-fill {
+  background: linear-gradient(90deg, #38bdf8, #0284c7);
+}
+
+.cal-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 12px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.badge-sla-optimo {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-sla-bueno {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.badge-sla-alerta {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-fv-optimo {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.badge-fv-bueno {
+  background-color: #f0f9ff;
+  color: #0284c7;
+  border: 1px solid #7dd3fc;
+}
+
+.badge-fv-alerta {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
 

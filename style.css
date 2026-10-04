@@ -2206,6 +2206,54 @@ svg path:focus-visible,
   height: 17px;
 }
 
+.popup-calidad-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .popup-calidad-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calidad-box {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfe 100%);
+  border: 1.5px solid #d4e5f7;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  box-shadow: 0 2px 6px rgba(0, 37, 84, 0.04);
+}
+
+.calidad-tag {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tag-sla { color: #16a34a; }
+.tag-fv { color: #0284c7; }
+
+.calidad-val {
+  font-size: 26px;
+  font-weight: 800;
+  color: #002554;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.calidad-sub {
+  font-size: 11.5px;
+  color: #627d98;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
 .popup-turnos-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

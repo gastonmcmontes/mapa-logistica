@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartTopVolumen = null;
   let chartCuotaRegion = null;
   let chartTurnos = null;
-  let chartProcesos = null;
   let chartIngresosMaq = null;
   let chartVolumenBarrasRegional = null;
 
@@ -35,6 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentSearch = "";
   let sortColumn = "volumenTotalNum";
   let sortDirection = "desc";
+
+  // Estado SLA Paq.AR
+  let currentSlaSearch = "";
+  let sortSlaCol = "sla";
+  let sortSlaDir = "desc";
+
+  // Estado FV (1ª Visita)
+  let currentFvSearch = "";
+  let sortFvCol = "fv";
+  let sortFvDir = "desc";
 
   // Estado del transporte
   let currentTransportService = "TODOS";
@@ -156,16 +165,22 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elPlantas) elPlantas.textContent = totalPlantas;
     if (elPlantasSub) {
       const clogs = data.filter(n => n.tipo === "CLOG").length;
-      const sorters = data.filter(n => n.tipo === "Sorter" || n.tipo === "SORTER").length;
-      const cdps = data.filter(n => n.tipo === "CDP").length;
       const ctps = data.filter(n => n.tipo === "CTP").length;
-      elPlantasSub.textContent = `${clogs} CLOG · ${sorters} Sorter · ${cdps} CDP · ${ctps} CTP`;
+      if (ctps > 0) {
+        elPlantasSub.textContent = `${clogs} CLOG · ${ctps} CTP`;
+      } else {
+        elPlantasSub.textContent = `${clogs} CLOG`;
+      }
     }
 
     const elDot = document.getElementById("akpi-dotacion");
     const elDotSub = document.getElementById("akpi-dotacion-sub");
-    if (elDot) elDot.textContent = totalDotacion.toLocaleString("es-AR");
-    if (elDotSub) elDotSub.textContent = `${totalAuxiliares.toLocaleString("es-AR")} aux. operativos`;
+    if (elDot) {
+      elDot.textContent = totalDotacion.toLocaleString("es-AR");
+      if (elDotSub) {
+        elDotSub.innerHTML = `<span style="color:#0284c7; font-weight:700;">${totalAuxiliares.toLocaleString("es-AR")}</span> auxiliares operativos`;
+      }
+    }
 
     const elM2 = document.getElementById("akpi-superficie");
     const elM2Sub = document.getElementById("akpi-superficie-sub");
@@ -175,31 +190,112 @@ document.addEventListener("DOMContentLoaded", () => {
       elM2Sub.textContent = `Promedio ${promM2.toLocaleString("es-AR")} m² / planta`;
     }
 
-    // Turno con mayor dotación
+    // Turnos Reales del Excel (Jerárquico + Auxiliares)
     let tn = 0, tm = 0, tt = 0;
+    let jn = 0, an = 0;
+    let jm = 0, am = 0;
+    let jt = 0, at = 0;
+
     data.forEach(n => {
       const t = n.turnos || {};
-      const jn = parseInt(t.noche?.jerarquico || 0) || 0;
-      const an = parseInt(t.noche?.auxiliares || 0) || 0;
-      const jm = parseInt(t.manana?.jerarquico || 0) || 0;
-      const am = parseInt(t.manana?.auxiliares || 0) || 0;
-      const jt = parseInt(t.tarde?.jerarquico || 0) || 0;
-      const at = parseInt(t.tarde?.auxiliares || 0) || 0;
-      tn += (jn + an);
-      tm += (jm + am);
-      tt += (jt + at);
+      const dj_n = parseInt(t.noche?.jerarquico || 0) || 0;
+      const da_n = parseInt(t.noche?.auxiliares || 0) || 0;
+      const dj_m = parseInt(t.manana?.jerarquico || 0) || 0;
+      const da_m = parseInt(t.manana?.auxiliares || 0) || 0;
+      const dj_t = parseInt(t.tarde?.jerarquico || 0) || 0;
+      const da_t = parseInt(t.tarde?.auxiliares || 0) || 0;
+
+      jn += dj_n; an += da_n; tn += (dj_n + da_n);
+      jm += dj_m; am += da_m; tm += (dj_m + da_m);
+      jt += dj_t; at += da_t; tt += (dj_t + da_t);
     });
 
+    const totTurnos = tn + tm + tt;
     const maxTurno = Math.max(tn, tm, tt);
     let nombreMax = "Mañana";
-    if (maxTurno === tn) nombreMax = "Noche";
-    if (maxTurno === tt) nombreMax = "Tarde";
+    let auxMax = am;
+    if (maxTurno === tn) { nombreMax = "Noche"; auxMax = an; }
+    if (maxTurno === tt) { nombreMax = "Tarde"; auxMax = at; }
 
     const elTurno = document.getElementById("akpi-turno");
     const elTurnoSub = document.getElementById("akpi-turno-sub");
     if (elTurno) elTurno.textContent = `Turno ${nombreMax}`;
-    if (elTurnoSub) elTurnoSub.textContent = `${maxTurno} pers. (${totalDotacion ? Math.round((maxTurno / totalDotacion) * 100) : 0}%)`;
+    if (elTurnoSub) {
+      const pct = totTurnos ? ((maxTurno / totTurnos) * 100).toFixed(1).replace(".", ",") : "0";
+      elTurnoSub.innerHTML = `<strong style="color:#002554;">${maxTurno} pers.</strong> (${pct}%) · ${auxMax} aux.`;
+    }
 
+    // Actualizar las 3 tarjetas de turnos de la sección
+    const elBoxM = document.getElementById("turno-box-manana");
+    const elBoxMSub = document.getElementById("turno-box-manana-sub");
+    const elBoxT = document.getElementById("turno-box-tarde");
+    const elBoxTSub = document.getElementById("turno-box-tarde-sub");
+    const elBoxN = document.getElementById("turno-box-noche");
+    const elBoxNSub = document.getElementById("turno-box-noche-sub");
+
+    if (elBoxM) elBoxM.textContent = `${tm} pers.`;
+    if (elBoxMSub) elBoxMSub.textContent = `${am} Auxiliares · ${jm} Jerárquicos`;
+    if (elBoxT) elBoxT.textContent = `${tt} pers.`;
+    if (elBoxTSub) elBoxTSub.textContent = `${at} Auxiliares · ${jt} Jerárquicos`;
+    if (elBoxN) elBoxN.textContent = `${tn} pers.`;
+    if (elBoxNSub) elBoxNSub.textContent = `${an} Auxiliares · ${jn} Jerárquicos`;
+
+    // Calidad SLA Paq.AR y FV (Maestro KPIs)
+    const elSla = document.getElementById("akpi-sla");
+    const elSlaSub = document.getElementById("akpi-sla-sub");
+    const elFv = document.getElementById("akpi-fv");
+    const elFvSub = document.getElementById("akpi-fv-sub");
+
+    let totalSlaWeight = 0;
+    let totalFvWeight = 0;
+    let totalWeight = 0;
+    data.forEach(n => {
+      const vol = (n.volumenTotalNum && n.volumenTotalNum > 0) ? n.volumenTotalNum : 1;
+      const slaVal = (n.calidad && n.calidad.slaPaqAr !== undefined) ? n.calidad.slaPaqAr : 96.5;
+      const fvVal = (n.calidad && n.calidad.fvPaqAr !== undefined) ? n.calidad.fvPaqAr : 85.6;
+      totalSlaWeight += slaVal * vol;
+      totalFvWeight += fvVal * vol;
+      totalWeight += vol;
+    });
+
+    const slaProm = regionKey === "nacional" ? 96.5 : (totalWeight > 0 ? (totalSlaWeight / totalWeight) : 96.5);
+    const fvProm = regionKey === "nacional" ? 85.6 : (totalWeight > 0 ? (totalFvWeight / totalWeight) : 85.6);
+
+    if (elSla) elSla.textContent = `${slaProm.toFixed(1).replace(".", ",")}%`;
+    if (elSlaSub) {
+      elSlaSub.innerHTML = regionKey === "nacional"
+        ? `<span style="color:#16a34a; font-weight:700;">Nivel de Servicio Cumplido</span><br>Objetivo Paq.AR en plazo`
+        : `<span style="color:#16a34a; font-weight:700;">SLA Regional Ponderado</span><br>Cumplimiento Paq.AR`;
+    }
+
+    if (elFv) elFv.textContent = `${fvProm.toFixed(1).replace(".", ",")}%`;
+    if (elFvSub) {
+      elFvSub.innerHTML = regionKey === "nacional"
+        ? `<span style="color:#0284c7; font-weight:700;">Efectividad en 1ª Visita</span><br>Paq.AR a Domicilio Total País`
+        : `<span style="color:#0284c7; font-weight:700;">FV Regional Ponderado</span><br>Efectividad en 1ª Visita`;
+    }
+
+    // Tarjetas de resumen de la sección SLA Paq.AR
+    const elSlaNac = document.getElementById("kpi-sla-nac");
+    const elSlaOpt = document.getElementById("kpi-sla-nodos-optimos");
+    const elSlaAle = document.getElementById("kpi-sla-nodos-alerta");
+
+    if (elSlaNac) elSlaNac.textContent = `${slaProm.toFixed(1).replace(".", ",")}%`;
+    const nodosSlaOptimo = data.filter(n => (n.calidad?.slaPaqAr || 96.5) >= 96).length;
+    const nodosSlaAlerta = data.filter(n => (n.calidad?.slaPaqAr || 96.5) < 95).length;
+    if (elSlaOpt) elSlaOpt.textContent = `${nodosSlaOptimo} / ${data.length}`;
+    if (elSlaAle) elSlaAle.textContent = `${nodosSlaAlerta} / ${data.length}`;
+
+    // Tarjetas de resumen de la sección FV (1ª Visita)
+    const elFvNac = document.getElementById("kpi-fv-nac");
+    const elFvOpt = document.getElementById("kpi-fv-nodos-destacados");
+    const elFvAle = document.getElementById("kpi-fv-nodos-alerta");
+
+    if (elFvNac) elFvNac.textContent = `${fvProm.toFixed(1).replace(".", ",")}%`;
+    const nodosFvOptimo = data.filter(n => (n.calidad?.fvPaqAr || 85.6) >= 85).length;
+    const nodosFvAlerta = data.filter(n => (n.calidad?.fvPaqAr || 85.6) < 80).length;
+    if (elFvOpt) elFvOpt.textContent = `${nodosFvOptimo} / ${data.length}`;
+    if (elFvAle) elFvAle.textContent = `${nodosFvAlerta} / ${data.length}`;
   }
 
   // =============================================================
@@ -321,83 +417,78 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---------------------------------------------------------
-    // Gráfico 5: Turnos
+    // Gráfico 5: Turnos (Stacked Bar Chart: Auxiliares + Jerárquicos)
     // ---------------------------------------------------------
     const ctxTurnos = document.getElementById("chart-distribucion-turnos")?.getContext("2d");
     if (ctxTurnos) {
-      let tn = 0, tm = 0, tt = 0;
+      let jn = 0, an = 0;
+      let jm = 0, am = 0;
+      let jt = 0, at = 0;
+
       data.forEach(n => {
         const t = n.turnos || {};
-        tn += (parseInt(t.noche?.jerarquico || 0) || 0) + (parseInt(t.noche?.auxiliares || 0) || 0);
-        tm += (parseInt(t.manana?.jerarquico || 0) || 0) + (parseInt(t.manana?.auxiliares || 0) || 0);
-        tt += (parseInt(t.tarde?.jerarquico || 0) || 0) + (parseInt(t.tarde?.auxiliares || 0) || 0);
+        jn += parseInt(t.noche?.jerarquico || 0) || 0;
+        an += parseInt(t.noche?.auxiliares || 0) || 0;
+        jm += parseInt(t.manana?.jerarquico || 0) || 0;
+        am += parseInt(t.manana?.auxiliares || 0) || 0;
+        jt += parseInt(t.tarde?.jerarquico || 0) || 0;
+        at += parseInt(t.tarde?.auxiliares || 0) || 0;
       });
 
       chartTurnos = new Chart(ctxTurnos, {
-        type: "pie",
+        type: "bar",
         data: {
-          labels: ["Turno Noche", "Turno Mañana", "Turno Tarde"],
-          datasets: [{
-            data: [tn, tm, tt],
-            backgroundColor: ["#5a3bc2", "#0077b6", "#d97706"],
-            borderWidth: 2,
-            borderColor: "#ffffff"
-          }]
+          labels: ["Turno Mañana (04:00 a 13:00)", "Turno Tarde (13:00 a 22:00)", "Turno Noche (20:00 a 04:00)"],
+          datasets: [
+            {
+              label: "Auxiliares Operativos",
+              data: [am, at, an],
+              backgroundColor: "#0284c7",
+              borderRadius: 5,
+              stack: "Stack 0"
+            },
+            {
+              label: "Personal Jerárquico / Supervisión",
+              data: [jm, jt, jn],
+              backgroundColor: "#7c3aed",
+              borderRadius: 5,
+              stack: "Stack 0"
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { position: "bottom", labels: { boxWidth: 12, padding: 14 } },
+            legend: {
+              position: "top",
+              align: "end",
+              labels: { boxWidth: 12, padding: 14, font: { weight: "600" } }
+            },
             tooltip: {
               callbacks: {
-                label: ctx => {
-                  const val = ctx.parsed;
-                  const total = tn + tm + tt;
-                  const pct = total ? Math.round((val / total) * 100) : 0;
-                  return ` ${ctx.label}: ${val} personas (${pct}%)`;
+                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} personas`,
+                afterBody: items => {
+                  const idx = items[0].dataIndex;
+                  const tots = [am + jm, at + jt, an + jn];
+                  const sumTotal = (am + jm) + (at + jt) + (an + jn);
+                  const val = tots[idx];
+                  const pct = sumTotal ? ((val / sumTotal) * 100).toFixed(1) : 0;
+                  return [
+                    ` ─────── Total del Turno ───────`,
+                    ` Dotación Total: ${val} personas (${pct}%)`
+                  ];
                 }
               }
             }
-          }
-        }
-      });
-    }
-
-    // ---------------------------------------------------------
-    // Gráfico 6: Procesos
-    // ---------------------------------------------------------
-    const ctxProc = document.getElementById("chart-procesos-tipos")?.getContext("2d");
-    if (ctxProc) {
-      const counts = {
-        "CDP Paquetería": data.filter(n => n.procesos?.cdp && n.procesos.cdp !== "0" && n.procesos.cdp !== "no").length,
-        "CTP Postal": data.filter(n => n.procesos?.ctp && n.procesos.ctp !== "0" && n.procesos.ctp !== "no").length,
-        "Planta a Planta": data.filter(n => n.procesos?.ptaPta && n.procesos.ptaPta !== "0" && n.procesos.ptaPta !== "no").length,
-        "Clasificación": data.filter(n => n.procesos?.clasificacion && n.procesos.clasificacion !== "0" && n.procesos.clasificacion !== "no").length
-      };
-
-      chartProcesos = new Chart(ctxProc, {
-        type: "bar",
-        data: {
-          labels: Object.keys(counts),
-          datasets: [{
-            label: "Plantas con Proceso Activo",
-            data: Object.values(counts),
-            backgroundColor: [COLOR_AZUL_MID, COLOR_CYAN, COLOR_PURPLE, COLOR_AMARILLO],
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          },
           scales: {
-            x: { grid: { display: false } },
+            x: { stacked: true, grid: { display: false } },
             y: {
+              stacked: true,
               beginAtZero: true,
-              max: data.length,
               grid: { color: "#edf2f7" },
-              ticks: { stepSize: 5 }
+              ticks: { stepSize: 100 }
             }
           }
         }
@@ -409,14 +500,27 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------------------------------------------------------
     const ctxVolBarras = document.getElementById("chart-volumen-barras-regional")?.getContext("2d");
     if (ctxVolBarras) {
+      const TOTAL_PAIS = 215333;
+      const datosImp = [72658, 22778, 7426, 2438];
+      const datosJur = [46563, 34901, 14076, 14494];
+      const totalesRegion = [119222, 57679, 21501, 16932];
+      const pctsRegion = ["55,4%", "26,8%", "10,0%", "7,9%"];
+      const pctsImp = ["33,7%", "10,6%", "3,4%", "1,1%"];
+      const pctsJur = ["21,6%", "16,2%", "6,5%", "6,7%"];
+
       chartVolumenBarrasRegional = new Chart(ctxVolBarras, {
         type: "bar",
         data: {
-          labels: ["PBA / LA PAMPA", "CENTRO / NEA", "CUYO / NOA", "Patagonia / SUR"],
+          labels: [
+            ["PBA / LA PAMPA", "Total: 55,4%"],
+            ["CENTRO / NEA", "Total: 26,8%"],
+            ["CUYO / NOA", "Total: 10,0%"],
+            ["Patagonia / SUR", "Total: 7,9%"]
+          ],
           datasets: [
             {
               label: "Imposición diaria (Col. H + I)",
-              data: [79250, 19579, 6595, 2154],
+              data: datosImp,
               backgroundColor: "#002554",
               borderRadius: 5,
               barPercentage: 0.72,
@@ -424,7 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             {
               label: "Jurisdicción última milla (Col. J)",
-              data: [61171, 32610, 12640, 12281],
+              data: datosJur,
               backgroundColor: "#0284c7",
               borderRadius: 5,
               barPercentage: 0.72,
@@ -438,17 +542,70 @@ document.addEventListener("DOMContentLoaded", () => {
             afterDatasetsDraw(chart) {
               const { ctx } = chart;
               ctx.save();
-              ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
-              ctx.textAlign = "center";
-              ctx.textBaseline = "bottom";
-              chart.data.datasets.forEach((dataset, i) => {
-                const meta = chart.getDatasetMeta(i);
-                meta.data.forEach((bar, index) => {
-                  const val = dataset.data[index];
-                  ctx.fillStyle = dataset.backgroundColor;
-                  ctx.fillText(val.toLocaleString("es-AR"), bar.x, bar.y - 4);
-                });
+
+              const metaImp = chart.getDatasetMeta(0);
+              const metaJur = chart.getDatasetMeta(1);
+
+              metaImp.data.forEach((barImp, idx) => {
+                const barJur = metaJur.data[idx];
+                const valImp = chart.data.datasets[0].data[idx];
+                const valJur = chart.data.datasets[1].data[idx];
+                const pImp = pctsImp[idx];
+                const pJur = pctsJur[idx];
+                const totReg = totalesRegion[idx];
+                const pTot = pctsRegion[idx];
+
+                // 1. Etiqueta sobre barra de Imposición: valor y porcentaje de la barra
+                ctx.textAlign = "center";
+                ctx.textBaseline = "bottom";
+                ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+                ctx.fillStyle = "#002554";
+                ctx.fillText(valImp.toLocaleString("es-AR"), barImp.x, barImp.y - 17);
+                ctx.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+                ctx.fillStyle = "#475569";
+                ctx.fillText(`(${pImp})`, barImp.x, barImp.y - 4);
+
+                // 2. Etiqueta sobre barra de Jurisdicción: valor y porcentaje de la barra
+                ctx.font = "bold 11px 'Plus Jakarta Sans', sans-serif";
+                ctx.fillStyle = "#0284c7";
+                ctx.fillText(valJur.toLocaleString("es-AR"), barJur.x, barJur.y - 17);
+                ctx.font = "bold 10px 'Plus Jakarta Sans', sans-serif";
+                ctx.fillStyle = "#475569";
+                ctx.fillText(`(${pJur})`, barJur.x, barJur.y - 4);
+
+                // 3. Insignia consolidada de la región (Suma de las dos barras respecto del total)
+                const centerX = (barImp.x + barJur.x) / 2;
+                const minY = Math.min(barImp.y, barJur.y);
+                const pillY = minY - 34;
+                const pillText = `Total: ${totReg.toLocaleString("es-AR")} (${pTot})`;
+
+                ctx.font = "bold 10.5px 'Plus Jakarta Sans', sans-serif";
+                const textWidth = ctx.measureText(pillText).width;
+                const padX = 8;
+                const pillW = textWidth + padX * 2;
+                const pillH = 19;
+                const pillX = centerX - pillW / 2;
+
+                // Fondo y borde del pill
+                ctx.fillStyle = "#f8fafc";
+                ctx.strokeStyle = "#cbd5e1";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                if (typeof ctx.roundRect === "function") {
+                  ctx.roundRect(pillX, pillY - pillH + 4, pillW, pillH, 6);
+                } else {
+                  ctx.rect(pillX, pillY - pillH + 4, pillW, pillH);
+                }
+                ctx.fill();
+                ctx.stroke();
+
+                // Texto del pill
+                ctx.fillStyle = "#0f172a";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(pillText, centerX, pillY - pillH / 2 + 4);
               });
+
               ctx.restore();
             }
           }
@@ -459,10 +616,10 @@ document.addEventListener("DOMContentLoaded", () => {
           maintainAspectRatio: false,
           layout: {
             padding: {
-              top: 14,
-              right: 12,
-              left: 12,
-              bottom: 4
+              top: 38,
+              right: 14,
+              left: 14,
+              bottom: 6
             }
           },
           plugins: {
@@ -482,7 +639,22 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             tooltip: {
               callbacks: {
-                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString("es-AR")} env/día`
+                label: ctx => {
+                  const val = ctx.parsed.y;
+                  const pct = ((val / TOTAL_PAIS) * 100).toFixed(1).replace(".", ",");
+                  return ` ${ctx.dataset.label}: ${val.toLocaleString("es-AR")} env/día (${pct}% del total país)`;
+                },
+                afterBody: items => {
+                  const idx = items[0].dataIndex;
+                  const totReg = totalesRegion[idx];
+                  const pTot = pctsRegion[idx];
+                  return [
+                    "",
+                    ` ─────── Consolidado Regional ───────`,
+                    ` Total Región: ${totReg.toLocaleString("es-AR")} env/día`,
+                    ` Suma Regional: ${pTot} del total país`
+                  ];
+                }
               }
             }
           },
@@ -500,7 +672,10 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             x: {
               grid: { display: false },
-              ticks: { font: { size: 12, weight: "800", family: "Plus Jakarta Sans, sans-serif" }, color: "#0f172a" }
+              ticks: {
+                font: { size: 11.5, weight: "800", family: "Plus Jakarta Sans, sans-serif" },
+                color: "#0f172a"
+              }
             }
           }
         }
@@ -557,6 +732,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     }
+
   }
 
   // =============================================================
@@ -578,28 +754,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 5. Turnos
     if (chartTurnos) {
-      let tn = 0, tm = 0, tt = 0;
+      let jn = 0, an = 0;
+      let jm = 0, am = 0;
+      let jt = 0, at = 0;
+
       data.forEach(n => {
         const t = n.turnos || {};
-        tn += (parseInt(t.noche?.jerarquico || 0) || 0) + (parseInt(t.noche?.auxiliares || 0) || 0);
-        tm += (parseInt(t.manana?.jerarquico || 0) || 0) + (parseInt(t.manana?.auxiliares || 0) || 0);
-        tt += (parseInt(t.tarde?.jerarquico || 0) || 0) + (parseInt(t.tarde?.auxiliares || 0) || 0);
+        jn += parseInt(t.noche?.jerarquico || 0) || 0;
+        an += parseInt(t.noche?.auxiliares || 0) || 0;
+        jm += parseInt(t.manana?.jerarquico || 0) || 0;
+        am += parseInt(t.manana?.auxiliares || 0) || 0;
+        jt += parseInt(t.tarde?.jerarquico || 0) || 0;
+        at += parseInt(t.tarde?.auxiliares || 0) || 0;
       });
-      chartTurnos.data.datasets[0].data = [tn, tm, tt];
-      chartTurnos.update();
-    }
 
-    // 6. Procesos
-    if (chartProcesos) {
-      const counts = [
-        data.filter(n => n.procesos?.cdp && n.procesos.cdp !== "0" && n.procesos.cdp !== "no").length,
-        data.filter(n => n.procesos?.ctp && n.procesos.ctp !== "0" && n.procesos.ctp !== "no").length,
-        data.filter(n => n.procesos?.ptaPta && n.procesos.ptaPta !== "0" && n.procesos.ptaPta !== "no").length,
-        data.filter(n => n.procesos?.clasificacion && n.procesos.clasificacion !== "0" && n.procesos.clasificacion !== "no").length
-      ];
-      chartProcesos.data.datasets[0].data = counts;
-      chartProcesos.options.scales.y.max = data.length || 10;
-      chartProcesos.update();
+      chartTurnos.data.datasets[0].data = [am, at, an];
+      chartTurnos.data.datasets[1].data = [jm, jt, jn];
+      chartTurnos.update();
     }
   }
 
@@ -635,6 +806,16 @@ document.addEventListener("DOMContentLoaded", () => {
         vb = b.responsables?.jefePlanta || "";
       }
 
+      if (sortColumn === "sla") {
+        va = a.calidad?.slaPaqAr || 0;
+        vb = b.calidad?.slaPaqAr || 0;
+      }
+
+      if (sortColumn === "fv") {
+        va = a.calidad?.fvPaqAr || 0;
+        vb = b.calidad?.fvPaqAr || 0;
+      }
+
       if (typeof va === "string") va = va.toLowerCase();
       if (typeof vb === "string") vb = vb.toLowerCase();
 
@@ -649,7 +830,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tbody.innerHTML = "";
     if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#64748b;">No se encontraron plantas para los filtros seleccionados.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:#64748b;">No se encontraron plantas para los filtros seleccionados.</td></tr>`;
       return;
     }
 
@@ -661,6 +842,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (p.tipo === "CDP") tipoClass = "tipo-cdp-badge";
       if (p.tipo === "CTP") tipoClass = "tipo-ctp-badge";
 
+      const tm = (parseInt(p.turnos?.manana?.jerarquico || 0) || 0) + (parseInt(p.turnos?.manana?.auxiliares || 0) || 0);
+      const tt = (parseInt(p.turnos?.tarde?.jerarquico || 0) || 0) + (parseInt(p.turnos?.tarde?.auxiliares || 0) || 0);
+      const tn = (parseInt(p.turnos?.noche?.jerarquico || 0) || 0) + (parseInt(p.turnos?.noche?.auxiliares || 0) || 0);
+
+      const slaVal = (p.calidad && p.calidad.slaPaqAr !== undefined) ? `${p.calidad.slaPaqAr.toString().replace(".", ",")}%` : "96,5%";
+      const fvVal = (p.calidad && p.calidad.fvPaqAr !== undefined) ? `${p.calidad.fvPaqAr.toString().replace(".", ",")}%` : "85,6%";
+
       tr.innerHTML = `
         <td><span class="table-pill-cod">${p.cod}</span></td>
         <td><strong>${p.nombreCompleto || p.nombre}</strong></td>
@@ -668,7 +856,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${p.provincia} (${p.region})</td>
         <td><strong>${(p.volumenTotalNum || 0).toLocaleString("es-AR")}</strong></td>
         <td>${(p.capacidadM2 || 0).toLocaleString("es-AR")} m²</td>
-        <td>${p.dotacionTotal || 0} pers.</td>
+        <td><strong>${p.dotacionTotal || 0}</strong> <span style="font-size:11px;color:#64748b;">(${p.dotacionAuxiliares || 0} aux)</span></td>
+        <td><span style="color:#0284c7;font-weight:700;">${tm > 0 ? `${tm} pers.` : "-"}</span></td>
+        <td><span style="color:#d97706;font-weight:700;">${tt > 0 ? `${tt} pers.` : "-"}</span></td>
+        <td><span style="color:#7c3aed;font-weight:700;">${tn > 0 ? `${tn} pers.` : "-"}</span></td>
+        <td><span style="color:#16a34a;font-weight:700;">${slaVal}</span></td>
+        <td><span style="color:#0284c7;font-weight:700;">${fvVal}</span></td>
         <td>${p.responsables?.jefePlanta || "S/D"}</td>
       `;
       tbody.appendChild(tr);
@@ -701,6 +894,288 @@ document.addEventListener("DOMContentLoaded", () => {
     searchInput.addEventListener("input", e => {
       currentSearch = e.target.value;
       renderTabla();
+    });
+  }
+
+  // =============================================================
+  // 4b. TABLA DE SLA PAQ.AR (36 NODOS)
+  // =============================================================
+  function renderTablaSla() {
+    const tbody = document.getElementById("sla-table-body");
+    const countEl = document.getElementById("sla-table-count");
+    if (!tbody) return;
+
+    let data = getFilteredData(currentRegion);
+
+    // Filtro de búsqueda
+    if (currentSlaSearch.trim()) {
+      const q = currentSlaSearch.toLowerCase().trim();
+      data = data.filter(p =>
+        (p.nombre && p.nombre.toLowerCase().includes(q)) ||
+        (p.cod && p.cod.toLowerCase().includes(q)) ||
+        (p.provincia && p.provincia.toLowerCase().includes(q)) ||
+        (p.region && p.region.toLowerCase().includes(q)) ||
+        (p.tipo && p.tipo.toLowerCase().includes(q))
+      );
+    }
+
+    // Ordenamiento
+    data.sort((a, b) => {
+      let va, vb;
+      if (sortSlaCol === "cod") {
+        va = a.cod || ""; vb = b.cod || "";
+      } else if (sortSlaCol === "nombre") {
+        va = a.nombreCompleto || a.nombre || ""; vb = b.nombreCompleto || b.nombre || "";
+      } else if (sortSlaCol === "tipo") {
+        va = a.tipo || ""; vb = b.tipo || "";
+      } else if (sortSlaCol === "provincia") {
+        va = `${a.provincia} ${a.region}`; vb = `${b.provincia} ${b.region}`;
+      } else if (sortSlaCol === "sla" || sortSlaCol === "desvio") {
+        va = a.calidad?.slaPaqAr !== undefined ? a.calidad.slaPaqAr : 96.5;
+        vb = b.calidad?.slaPaqAr !== undefined ? b.calidad.slaPaqAr : 96.5;
+      } else if (sortSlaCol === "volumen") {
+        va = a.volumenTotalNum || 0; vb = b.volumenTotalNum || 0;
+      } else {
+        va = a[sortSlaCol] || 0; vb = b[sortSlaCol] || 0;
+      }
+
+      if (typeof va === "string") va = va.toLowerCase();
+      if (typeof vb === "string") vb = vb.toLowerCase();
+
+      if (va < vb) return sortSlaDir === "asc" ? -1 : 1;
+      if (va > vb) return sortSlaDir === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    if (countEl) {
+      countEl.textContent = `Mostrando ${data.length} de ${NODOS_DATA_OFICIAL.length} nodos auditados`;
+    }
+
+    tbody.innerHTML = "";
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#64748b;">No se encontraron nodos logísticos para la búsqueda.</td></tr>`;
+      return;
+    }
+
+    data.forEach(p => {
+      const tr = document.createElement("tr");
+
+      let tipoClass = "tipo-clog-badge";
+      if (p.tipo === "Sorter" || p.tipo === "SORTER") tipoClass = "tipo-sorter-badge";
+      if (p.tipo === "CDP") tipoClass = "tipo-cdp-badge";
+      if (p.tipo === "CTP") tipoClass = "tipo-ctp-badge";
+
+      const slaNum = p.calidad?.slaPaqAr !== undefined ? p.calidad.slaPaqAr : 96.5;
+      const slaStr = slaNum.toString().replace(".", ",");
+      const diffNum = slaNum - 96.0;
+      const diffStr = Math.abs(diffNum).toFixed(1).replace(".", ",");
+
+      let badgeSlaHtml = "";
+      if (slaNum >= 97) {
+        badgeSlaHtml = `<span class="cal-badge badge-sla-optimo">Excelente (≥97%)</span>`;
+      } else if (slaNum >= 95) {
+        badgeSlaHtml = `<span class="cal-badge badge-sla-bueno">Cumplido (≥95%)</span>`;
+      } else {
+        badgeSlaHtml = `<span class="cal-badge badge-sla-alerta">A Mejorar (<95%)</span>`;
+      }
+
+      let diffHtml = "";
+      if (diffNum > 0) {
+        diffHtml = `<span style="color:#16a34a; font-weight:800; font-size:12.5px;">+${diffStr}%</span>`;
+      } else if (diffNum === 0) {
+        diffHtml = `<span style="color:#64748b; font-weight:700; font-size:12.5px;">0,0%</span>`;
+      } else {
+        diffHtml = `<span style="color:#dc2626; font-weight:800; font-size:12.5px;">-${diffStr}%</span>`;
+      }
+
+      tr.innerHTML = `
+        <td><span class="table-pill-cod">${p.cod}</span></td>
+        <td><strong>${p.nombreCompleto || p.nombre}</strong></td>
+        <td><span class="table-pill-tipo ${tipoClass}">${p.tipo}</span></td>
+        <td>${p.provincia} <span style="font-size:11px; color:#64748b;">(${p.region})</span></td>
+        <td>
+          <div class="cal-val-wrap">
+            <span class="cal-val-num sla-color">${slaStr}%</span>
+            <div class="cal-progress-bar">
+              <div class="cal-progress-fill sla-fill" style="width: ${Math.min(100, Math.max(0, slaNum))}%"></div>
+            </div>
+          </div>
+        </td>
+        <td>${badgeSlaHtml}</td>
+        <td>${diffHtml}</td>
+        <td><strong>${(p.volumenTotalNum || 0).toLocaleString("es-AR")}</strong> <span style="font-size:11px;color:#64748b;">env/día</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Ordenamiento de tabla SLA
+  document.querySelectorAll("#tabla-sla-nodos th[data-sort-sla]").forEach(th => {
+    th.addEventListener("click", () => {
+      const col = th.getAttribute("data-sort-sla");
+      if (sortSlaCol === col) {
+        sortSlaDir = sortSlaDir === "asc" ? "desc" : "asc";
+      } else {
+        sortSlaCol = col;
+        sortSlaDir = (col === "cod" || col === "nombre" || col === "tipo" || col === "provincia") ? "asc" : "desc";
+      }
+
+      document.querySelectorAll("#tabla-sla-nodos th[data-sort-sla]").forEach(el => {
+        el.classList.remove("sorted-asc", "sorted-desc");
+      });
+      th.classList.add(sortSlaDir === "asc" ? "sorted-asc" : "sorted-desc");
+
+      renderTablaSla();
+    });
+  });
+
+  // Buscador SLA
+  const slaSearchInput = document.getElementById("sla-search");
+  if (slaSearchInput) {
+    slaSearchInput.addEventListener("input", e => {
+      currentSlaSearch = e.target.value;
+      renderTablaSla();
+    });
+  }
+
+  // =============================================================
+  // 4c. TABLA DE FV (1ª VISITA) (36 NODOS)
+  // =============================================================
+  function renderTablaFv() {
+    const tbody = document.getElementById("fv-table-body");
+    const countEl = document.getElementById("fv-table-count");
+    if (!tbody) return;
+
+    let data = getFilteredData(currentRegion);
+
+    // Filtro de búsqueda
+    if (currentFvSearch.trim()) {
+      const q = currentFvSearch.toLowerCase().trim();
+      data = data.filter(p =>
+        (p.nombre && p.nombre.toLowerCase().includes(q)) ||
+        (p.cod && p.cod.toLowerCase().includes(q)) ||
+        (p.provincia && p.provincia.toLowerCase().includes(q)) ||
+        (p.region && p.region.toLowerCase().includes(q)) ||
+        (p.tipo && p.tipo.toLowerCase().includes(q))
+      );
+    }
+
+    // Ordenamiento
+    data.sort((a, b) => {
+      let va, vb;
+      if (sortFvCol === "cod") {
+        va = a.cod || ""; vb = b.cod || "";
+      } else if (sortFvCol === "nombre") {
+        va = a.nombreCompleto || a.nombre || ""; vb = b.nombreCompleto || b.nombre || "";
+      } else if (sortFvCol === "tipo") {
+        va = a.tipo || ""; vb = b.tipo || "";
+      } else if (sortFvCol === "provincia") {
+        va = `${a.provincia} ${a.region}`; vb = `${b.provincia} ${b.region}`;
+      } else if (sortFvCol === "fv" || sortFvCol === "desvio") {
+        va = a.calidad?.fvPaqAr !== undefined ? a.calidad.fvPaqAr : 85.6;
+        vb = b.calidad?.fvPaqAr !== undefined ? b.calidad.fvPaqAr : 85.6;
+      } else if (sortFvCol === "volumen") {
+        va = a.volumenTotalNum || 0; vb = b.volumenTotalNum || 0;
+      } else {
+        va = a[sortFvCol] || 0; vb = b[sortFvCol] || 0;
+      }
+
+      if (typeof va === "string") va = va.toLowerCase();
+      if (typeof vb === "string") vb = vb.toLowerCase();
+
+      if (va < vb) return sortFvDir === "asc" ? -1 : 1;
+      if (va > vb) return sortFvDir === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    if (countEl) {
+      countEl.textContent = `Mostrando ${data.length} de ${NODOS_DATA_OFICIAL.length} nodos auditados`;
+    }
+
+    tbody.innerHTML = "";
+    if (data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#64748b;">No se encontraron nodos logísticos para la búsqueda.</td></tr>`;
+      return;
+    }
+
+    data.forEach(p => {
+      const tr = document.createElement("tr");
+
+      let tipoClass = "tipo-clog-badge";
+      if (p.tipo === "Sorter" || p.tipo === "SORTER") tipoClass = "tipo-sorter-badge";
+      if (p.tipo === "CDP") tipoClass = "tipo-cdp-badge";
+      if (p.tipo === "CTP") tipoClass = "tipo-ctp-badge";
+
+      const fvNum = p.calidad?.fvPaqAr !== undefined ? p.calidad.fvPaqAr : 85.6;
+      const fvStr = fvNum.toString().replace(".", ",");
+      const diffNum = fvNum - 85.0;
+      const diffStr = Math.abs(diffNum).toFixed(1).replace(".", ",");
+
+      let badgeFvHtml = "";
+      if (fvNum >= 90) {
+        badgeFvHtml = `<span class="cal-badge badge-fv-optimo">Destacado (≥90%)</span>`;
+      } else if (fvNum >= 82) {
+        badgeFvHtml = `<span class="cal-badge badge-fv-bueno">Estándar (≥82%)</span>`;
+      } else {
+        badgeFvHtml = `<span class="cal-badge badge-fv-alerta">Atención (<82%)</span>`;
+      }
+
+      let diffHtml = "";
+      if (diffNum > 0) {
+        diffHtml = `<span style="color:#0284c7; font-weight:800; font-size:12.5px;">+${diffStr}%</span>`;
+      } else if (diffNum === 0) {
+        diffHtml = `<span style="color:#64748b; font-weight:700; font-size:12.5px;">0,0%</span>`;
+      } else {
+        diffHtml = `<span style="color:#dc2626; font-weight:800; font-size:12.5px;">-${diffStr}%</span>`;
+      }
+
+      tr.innerHTML = `
+        <td><span class="table-pill-cod">${p.cod}</span></td>
+        <td><strong>${p.nombreCompleto || p.nombre}</strong></td>
+        <td><span class="table-pill-tipo ${tipoClass}">${p.tipo}</span></td>
+        <td>${p.provincia} <span style="font-size:11px; color:#64748b;">(${p.region})</span></td>
+        <td>
+          <div class="cal-val-wrap">
+            <span class="cal-val-num fv-color">${fvStr}%</span>
+            <div class="cal-progress-bar">
+              <div class="cal-progress-fill fv-fill" style="width: ${Math.min(100, Math.max(0, fvNum))}%"></div>
+            </div>
+          </div>
+        </td>
+        <td>${badgeFvHtml}</td>
+        <td>${diffHtml}</td>
+        <td><strong>${(p.volumenTotalNum || 0).toLocaleString("es-AR")}</strong> <span style="font-size:11px;color:#64748b;">env/día</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Ordenamiento de tabla FV
+  document.querySelectorAll("#tabla-fv-nodos th[data-sort-fv]").forEach(th => {
+    th.addEventListener("click", () => {
+      const col = th.getAttribute("data-sort-fv");
+      if (sortFvCol === col) {
+        sortFvDir = sortFvDir === "asc" ? "desc" : "asc";
+      } else {
+        sortFvCol = col;
+        sortFvDir = (col === "cod" || col === "nombre" || col === "tipo" || col === "provincia") ? "asc" : "desc";
+      }
+
+      document.querySelectorAll("#tabla-fv-nodos th[data-sort-fv]").forEach(el => {
+        el.classList.remove("sorted-asc", "sorted-desc");
+      });
+      th.classList.add(sortFvDir === "asc" ? "sorted-asc" : "sorted-desc");
+
+      renderTablaFv();
+    });
+  });
+
+  // Buscador FV
+  const fvSearchInput = document.getElementById("fv-search");
+  if (fvSearchInput) {
+    fvSearchInput.addEventListener("input", e => {
+      currentFvSearch = e.target.value;
+      renderTablaFv();
     });
   }
 
@@ -745,7 +1220,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Limitamos la vista a las primeras 100 para fluidez en DOM, o render completo
+    // Limitamos la vista a las primeras 120 para fluidez en DOM
     filtered.slice(0, 120).forEach(t => {
       const tr = document.createElement("tr");
 
@@ -762,14 +1237,33 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${t.region}</td>
         <td><span class="chip-servicio ${srvClass}">${t.tipoServicio || "TR"}</span></td>
         <td>${t.frecuencia || "LUN A VIE"}</td>
-        <td>${t.horarioLlegada || "-"}</td>
-        <td>${t.horarioSalida || "-"}</td>
-        <td>${t.tiempoOperacion || "-"}</td>
+        <td>${formatHorarioTransporte(t.horarioLlegada) || "-"}</td>
+        <td>${formatHorarioTransporte(t.horarioSalida) || "-"}</td>
+        <td>${formatHorarioTransporte(t.tiempoOperacion) || "-"}</td>
         <td>${t.distanciaKm ? `${t.distanciaKm} km` : "-"}</td>
         <td><strong>${t.capacidadBodega || "-"}</strong></td>
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function formatHorarioTransporte(val) {
+    if (!val) return "";
+    const str = String(val).trim();
+    if (str === "-" || str === "0" || str.toLowerCase() === "no" || str.toLowerCase() === "s/d" || str.toLowerCase() === "no hay") return "";
+    if (/^\d{1,2}:\d{2}/.test(str)) return str.includes("hs") ? str : `${str} hs`;
+    const clean = str.replace(",", ".");
+    const num = parseFloat(clean);
+    if (!isNaN(num) && num > 0 && num <= 1) {
+      const totalMinutes = Math.round(num * 24 * 60);
+      const hours = Math.floor(totalMinutes / 60) % 24;
+      const mins = totalMinutes % 60;
+      const hh = String(hours).padStart(2, "0");
+      const mm = String(mins).padStart(2, "0");
+      return `${hh}:${mm} hs`;
+    }
+    if (!isNaN(num)) return "";
+    return str;
   }
 
   // Configuración de chips de filtro de transporte
@@ -861,6 +1355,8 @@ document.addEventListener("DOMContentLoaded", () => {
       actualizarKPIs(val);
       actualizarGraficosRegion(val);
       renderTabla();
+      renderTablaSla();
+      renderTablaFv();
 
       wrap.classList.remove("open");
       btn.setAttribute("aria-expanded", "false");
@@ -932,5 +1428,7 @@ document.addEventListener("DOMContentLoaded", () => {
   actualizarKPIs("nacional");
   inicializarGraficos();
   renderTabla();
+  renderTablaSla();
+  renderTablaFv();
   renderTablaTransporte();
 });

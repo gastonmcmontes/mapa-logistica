@@ -525,9 +525,28 @@ function actualizarKPIs(regionKey = "nacional") {
   }
 
   const cantNodos = filtrados.length;
-  const totPiezas = filtrados.reduce((s, n) => s + (n.volumenTotalNum || 0), 0);
-  const totVenta = filtrados.reduce((s, n) => s + (parseNumero(n.volumenVenta) || 0), 0);
-  const totJuris = filtrados.reduce((s, n) => s + (parseNumero(n.volumenJurisdiccion) || 0), 0);
+
+  // Cálculo unificado según Columnas H + I (Imposición) y Columna J (Jurisdicción)
+  let totImposicion = 0;
+  let totJurisdiccion = 0;
+  let totPiezas = 0;
+
+  filtrados.forEach(n => {
+    let imp = 0;
+    let jur = 0;
+    const ing = n.ingresoEnvios;
+    if (ing && (ing.diarioMaquinable || ing.diarioNoMaquinable || ing.diarioUltimaMilla)) {
+      imp = (ing.diarioMaquinable || 0) + (ing.diarioNoMaquinable || 0);
+      jur = ing.diarioUltimaMilla || 0;
+    } else {
+      imp = n.volumenVentaNum || 0;
+      jur = n.volumenJurisdiccionNum || 0;
+    }
+    totImposicion += imp;
+    totJurisdiccion += jur;
+    totPiezas += (imp + jur);
+  });
+
   const totDotacion = filtrados.reduce((s, n) => s + (n.dotacionTotal || 0), 0);
   const totAuxiliares = filtrados.reduce((s, n) => s + (n.dotacionAuxiliares || 0), 0);
   const totM2 = filtrados.reduce((s, n) => s + (n.capacidadM2 || 0), 0);
@@ -550,10 +569,10 @@ function actualizarKPIs(regionKey = "nacional") {
   const elVehiculos = document.getElementById("kpi-vehiculos");
   const elVehiculosSub = document.getElementById("kpi-vehiculos-sub");
 
-  if (elPiezas) elPiezas.textContent = totPiezas > 0 ? totPiezas.toLocaleString("es-AR") : "S/D";
+  if (elPiezas) elPiezas.textContent = totPiezas > 0 ? Math.round(totPiezas).toLocaleString("es-AR") : "S/D";
   if (elPiezasSub) {
-    if (totVenta > 0 && totJuris > 0) {
-      elPiezasSub.textContent = `${Math.round(totVenta / 1000)}k Venta + ${Math.round(totJuris / 1000)}k Jurisdicción`;
+    if (totImposicion > 0 && totJurisdiccion > 0) {
+      elPiezasSub.textContent = `${Math.round(totImposicion).toLocaleString("es-AR")} Imp. · ${Math.round(totJurisdiccion).toLocaleString("es-AR")} Jur.`;
     } else {
       elPiezasSub.textContent = "Volumen operativo verificado";
     }
@@ -565,11 +584,40 @@ function actualizarKPIs(regionKey = "nacional") {
   if (elDotacion) elDotacion.textContent = totDotacion.toLocaleString("es-AR");
   if (elDotacionSub) elDotacionSub.textContent = `${totAuxiliares.toLocaleString("es-AR")} auxiliares operativos`;
   if (elSuperficie) elSuperficie.textContent = `${totM2.toLocaleString("es-AR")} m²`;
-  if (elSuperficieSub) elSuperficieSub.textContent = "Almacenaje y naves";
   if (elSorters) elSorters.textContent = `${cantClog} CLOGs`;
-  if (elSortersSub) elSortersSub.textContent = `${cantCtp} CTP · ${cantCdp} CDP · ${cantSorter} Sorter`;
-  if (elVehiculos) elVehiculos.textContent = regionKey === "nacional" ? "36 Rutas" : `${cantNodos * 2} Rutas`;
-  if (elVehiculosSub) elVehiculosSub.textContent = "Red interconectada";
+  if (elSortersSub) {
+    if (regionKey === "nacional") {
+      elSortersSub.textContent = `${cantClog} CLOG · ${cantCtp} CTP`;
+    } else {
+      elSortersSub.textContent = cantCtp > 0 ? `${cantClog} CLOG · ${cantCtp} CTP` : `${cantClog} CLOGs`;
+    }
+  }
+  // Card 6: Líneas Troncales (solo LTC y LTN sin solapar tramos)
+  if (elVehiculos) {
+    if (regionKey === "nacional") {
+      elVehiculos.textContent = "27 Líneas";
+      if (elVehiculosSub) elVehiculosSub.textContent = "4 LTC · 23 LTN";
+    } else {
+      const regLtc = new Set();
+      const regLtn = new Set();
+      filtrados.forEach(n => {
+        (n.transportes || []).forEach(t => {
+          const tipo = (t.tipoServicio || "").toUpperCase();
+          const lin = (t.linea || "").toUpperCase();
+          if (tipo.startsWith("LTC") || lin.startsWith("LTC")) {
+            const clean = lin.replace(/\s*\(.*?\)/g, "").replace(/\s*(IDA|VTA|DOMINGO|BIS|SIN).*/g, "").trim();
+            if (clean && clean !== "T") regLtc.add(clean);
+          } else if (tipo.startsWith("LTN") || lin.startsWith("LTN")) {
+            const clean = lin.replace(/\s*\(.*?\)/g, "").replace(/\s*(DOMINGO|MARTES|VIERNES|MAÑANA|TARDE|BIS).*/g, "").trim();
+            if (clean && clean !== "T") regLtn.add(clean);
+          }
+        });
+      });
+      const totReg = regLtc.size + regLtn.size;
+      elVehiculos.textContent = `${totReg} Líneas`;
+      if (elVehiculosSub) elVehiculosSub.textContent = `${regLtc.size} LTC · ${regLtn.size} LTN`;
+    }
+  }
 }
 
 function parseNumero(v) {
@@ -682,10 +730,10 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
 
   const elPiezasSub = document.getElementById("popup-piezas-sub");
   if (elPiezasSub) {
-    const vVta = nodo.volumenVenta ? `${nodo.volumenVenta} Venta` : "";
-    const vJur = nodo.volumenJurisdiccion ? `${nodo.volumenJurisdiccion} Jurisdicción` : "";
-    if (vVta && vJur) {
-      elPiezasSub.textContent = `${vVta} · ${vJur}`;
+    const numVta = parseNumero(nodo.volumenVenta);
+    const numJur = parseNumero(nodo.volumenJurisdiccion);
+    if (numVta > 0 || numJur > 0) {
+      elPiezasSub.textContent = `${numVta.toLocaleString("es-AR")} Imp. · ${numJur.toLocaleString("es-AR")} Jur.`;
       elPiezasSub.style.display = "block";
     } else if (nodo.ingresoEnvios && nodo.ingresoEnvios.diarioMaquinable) {
       const maq = Math.round(nodo.ingresoEnvios.diarioMaquinable);
@@ -709,6 +757,18 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   const elEstado = document.getElementById("popup-estado");
   if (elEstado) elEstado.textContent = nodo.operatividad || "24 / 7";
 
+  // Calidad de Servicio Paq.AR y FV del Maestro KPIs
+  const elSlaVal = document.getElementById("popup-sla-val");
+  const elFvVal = document.getElementById("popup-fv-val");
+  if (elSlaVal) {
+    const sla = (nodo.calidad && nodo.calidad.slaPaqAr !== undefined) ? nodo.calidad.slaPaqAr : 96.5;
+    elSlaVal.textContent = `${sla.toString().replace(".", ",")}%`;
+  }
+  if (elFvVal) {
+    const fv = (nodo.calidad && nodo.calidad.fvPaqAr !== undefined) ? nodo.calidad.fvPaqAr : 85.6;
+    elFvVal.textContent = `${fv.toString().replace(".", ",")}%`;
+  }
+
   // Turnos Reales del Excel (Total de personal sin discriminar jerárquicos / auxiliares)
   const tNoche = nodo.turnos?.noche;
   const tManana = nodo.turnos?.manana;
@@ -719,7 +779,9 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
     const jer = parseInt(t.jerarquico, 10) || 0;
     const aux = parseInt(t.auxiliares, 10) || 0;
     const tot = jer + aux;
-    return `${tot} personas`;
+    if (tot === 0) return "0 personas";
+    if (jer > 0) return `${tot} personas (${aux} aux · ${jer} jer)`;
+    return `${tot} personas (${aux} aux)`;
   }
 
   const elNocheF = document.getElementById("turno-noche-franja");
@@ -804,6 +866,34 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
   }
 
 
+// Helper para formatear horarios de transporte y eliminar números decimales
+function formatHorarioTransporte(val) {
+  if (!val) return "";
+  const str = String(val).trim();
+  if (str === "-" || str === "0" || str.toLowerCase() === "no" || str.toLowerCase() === "s/d" || str.toLowerCase() === "no hay") return "";
+  
+  // Si ya tiene formato HH:mm o HH:mm hs
+  if (/^\d{1,2}:\d{2}/.test(str)) {
+    return str.includes("hs") ? str : `${str} hs`;
+  }
+  
+  // Si es un número decimal (serial de Excel como 0.5833333333333333 o 0,5833333)
+  const clean = str.replace(",", ".");
+  const num = parseFloat(clean);
+  if (!isNaN(num) && num > 0 && num <= 1) {
+    const totalMinutes = Math.round(num * 24 * 60);
+    const hours = Math.floor(totalMinutes / 60) % 24;
+    const mins = totalMinutes % 60;
+    const hh = String(hours).padStart(2, "0");
+    const mm = String(mins).padStart(2, "0");
+    return `${hh}:${mm} hs`;
+  }
+  
+  // Si es un número no válido como horario, no mostrar decimales
+  if (!isNaN(num)) return "";
+  return str;
+}
+
   // 3. Líneas de Transporte Conectadas
   const secTrans = document.getElementById("popup-transportes-section");
   if (secTrans) {
@@ -813,18 +903,31 @@ function abrirDetalleNodo(nodo, nodosHermano = null) {
       const elList = document.getElementById("popup-transportes-list");
       if (elCant) elCant.textContent = rutas.length;
       if (elList) {
-        elList.innerHTML = rutas.slice(0, 15).map(r => `
+        elList.innerHTML = rutas.slice(0, 15).map(r => {
+          const horLleg = formatHorarioTransporte(r.horarioLlegada);
+          const horSal = formatHorarioTransporte(r.horarioSalida);
+          let horarioTexto = "";
+          if (horLleg && horSal && horLleg !== horSal) {
+            horarioTexto = `${horLleg} a ${horSal}`;
+          } else if (horLleg) {
+            horarioTexto = horLleg;
+          } else if (horSal) {
+            horarioTexto = horSal;
+          }
+
+          return `
           <div class="popup-tr-chip">
             <div>
               <strong>${r.linea}</strong>
               <span style="font-size:11px;color:#64748b;margin-left:6px;">${r.frecuencia || "LUN A VIE"}</span>
             </div>
             <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:11px;color:#002554;font-weight:700;">${r.horarioLlegada || "-"}</span>
+              ${horarioTexto ? `<span style="font-size:11px;color:#002554;font-weight:700;">${horarioTexto}</span>` : ""}
               <span class="tr-badge">${r.tipoServicio || "TR"}</span>
             </div>
           </div>
-        `).join("");
+        `;
+        }).join("");
         if (rutas.length > 15) {
           elList.innerHTML += `<div style="font-size:11.5px;color:#64748b;text-align:center;padding-top:4px;">+ ${rutas.length - 15} líneas adicionales en analytics</div>`;
         }
